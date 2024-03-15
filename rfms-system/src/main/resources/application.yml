@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: rfms-system
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      discovery:
+        server-addr: ${nacos_host:127.0.0.1}:${nacos_port:8848}
+        namespace: public
+      config:
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        namespace: ${spring.cloud.nacos.discovery.namespace}
+  config:
+    import:
+      - optional:nacos:datasource.yaml
+      - optional:nacos:common.yaml
+
+
+storage:
+  enabled: true
+  config:
+    # 存储类型：local、aliyun、tencent、qiniu、huawei、minio
+    type: local
+    domain: http://localhost:8080
+  local:
+    path: D://upload

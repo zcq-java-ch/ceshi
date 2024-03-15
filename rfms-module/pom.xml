@@ -1,0 +1,17 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>com.hxls</groupId>
+		<artifactId>rfms</artifactId>
+		<version>${revision}</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>rfms-module</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+	    <module>rfms-module-quartz</module>
+		<module>rfms-module-message</module>
+		<module>rfms-module-monitor</module>
+    </modules>
+
+</project>
