@@ -6,11 +6,11 @@ spring:
     name: rfms-new
   cloud:
     nacos:
-      username: @nacos.username@
-      password: @nacos.password@
+      username: nacos
+      password: nacos
       discovery:
-        server-addr: @nacos.server-addr@
-        namespace: @nacos.namespace@
+        server-addr: ${nacos_host:182.43.128.29}:${nacos_port:8848}
+        namespace: public
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
         namespace: ${spring.cloud.nacos.discovery.namespace}
