@@ -1,4 +1,4 @@
-package com.hxls.module.controller;
+package com.hxls.appointment.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;

@@ -14,10 +14,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 @EnableDiscoveryClient
 @SpringBootApplication
-public class NewApplication {
+public class AppointmentApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(NewApplication.class, args);
+		SpringApplication.run(AppointmentApplication.class, args);
 	}
 
 }
