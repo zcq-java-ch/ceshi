@@ -10,7 +10,7 @@ import java.util.Date;
 /**
 * 通用车辆管理表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-15
 */
 @Data
@@ -38,6 +38,27 @@ public class TVehicleVO implements Serializable {
 
 	@Schema(description = "使用司机（关联用户）")
 	private Long userId;
+
+	@Schema(description = "车辆注册日期")
+	private Date registrationDate;
+
+	@Schema(description = "车辆识别码")
+	private String vinNumber;
+
+	@Schema(description = "发动机号")
+	private String engineNumber;
+
+	@Schema(description = "车队名称")
+	private String fleetName;
+
+	@Schema(description = "最大运输量")
+	private String maxCapacity;
+
+	@Schema(description = "行驶证照片")
+	private String licenseImage;
+
+	@Schema(description = "图片")
+	private String images;
 
 	@Schema(description = "排序")
 	private Integer sort;

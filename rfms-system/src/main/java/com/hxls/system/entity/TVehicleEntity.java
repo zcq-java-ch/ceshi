@@ -1,5 +1,6 @@
 package com.hxls.system.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.baomidou.mybatisplus.annotation.*;
@@ -9,7 +10,7 @@ import com.hxls.framework.mybatis.entity.BaseEntity;
 /**
  * 通用车辆管理表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-15
  */
 @EqualsAndHashCode(callSuper=false)
@@ -46,6 +47,41 @@ public class TVehicleEntity extends BaseEntity {
 	* 使用司机（关联用户）
 	*/
 	private Long userId;
+
+	/**
+	* 车辆注册日期
+	*/
+	private Date registrationDate;
+
+	/**
+	 * 车辆识别码
+	 */
+	private String vinNumber;
+
+	/**
+	 * 发动机号
+	 */
+	private String engineNumber;
+
+	/**
+	 * 车队名称
+	 */
+	private String fleetName;
+
+	/**
+	 * 最大运输量
+	 */
+	private String maxCapacity;
+
+	/**
+	 * 行驶证照片
+	 */
+	private String licenseImage;
+
+	/**
+	 * 图片
+	 */
+	private String images;
 
 	/**
 	* 排序
