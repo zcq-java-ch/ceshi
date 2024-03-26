@@ -46,9 +46,9 @@ public class SysOrgController {
         SysOrgVO vo = SysOrgConvert.INSTANCE.convert(entity);
 
         // 获取上级机构名称
-        if (entity.getPid() != null) {
-            SysOrgEntity parentEntity = sysOrgService.getById(entity.getPid());
-            vo.setParentName(parentEntity.getName());
+        if (entity.getPcode() != null) {
+            SysOrgEntity parentEntity = sysOrgService.getById(entity.getPcode());
+            vo.setPname(parentEntity.getName());
         }
 
         return Result.ok(vo);
@@ -83,5 +83,15 @@ public class SysOrgController {
 
         return Result.ok();
     }
+
+    @PostMapping("synOrg")
+    @Operation(summary = "同步组织结构")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    public Result<String> synOrg() {
+        sysOrgService.synOrg();
+
+        return Result.ok();
+    }
+
 
 }

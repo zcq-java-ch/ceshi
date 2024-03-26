@@ -23,6 +23,13 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 	void delete(Long id);
 
 	/**
+	* @Author zhaohong
+	* @Description  同步组织结构
+	* @Date 18:08 2024/3/26
+	**/
+	void synOrg();
+
+	/**
 	 * 根据机构ID，获取子机构ID列表(包含本机构ID)
 	 * @param id   机构ID
 	 */
