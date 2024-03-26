@@ -1,11 +1,9 @@
 package com.hxls.system.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.hxls.framework.mybatis.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.hxls.framework.mybatis.entity.BaseEntity;
 
 /**
  * 机构管理
@@ -17,30 +15,56 @@ import com.hxls.framework.mybatis.entity.BaseEntity;
 @EqualsAndHashCode(callSuper = false)
 @TableName("sys_org")
 public class SysOrgEntity extends BaseEntity {
+
     /**
-     * 上级ID
+     * 单位类型（1：公司 2：部门）
      */
-    private Long pid;
+    private Integer property;
+
     /**
-     * 机构名称
+     * 组织编码
+     */
+    private String code;
+
+    /**
+     * 上级组织编码
+     */
+    private String pcode;
+
+    /**
+     * 组织名称
      */
     private String name;
+
+    /**
+     * 上级组织编码名称
+     */
+    private String pname;
+
+
     /**
      * 排序
      */
     private Integer sort;
+
     /**
-     * 负责人ID
+     * 图标
      */
-    @TableField(updateStrategy = FieldStrategy.ALWAYS)
-    private Long leaderId;
+    private String orgIcon;
+
     /**
-     * 上级名称
+     * 是否是虚拟组织
      */
-    @TableField(exist = false)
-    private String parentName;
+    private Integer virtualFlag;
+
     /**
-     * 租户ID
+     * 简称
      */
-    private Long tenantId;
+    private String orgAlias;
+
+    /**
+     * 状态 0:停用, 1:启用
+     */
+    private Integer status;
+
 }

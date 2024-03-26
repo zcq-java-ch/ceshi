@@ -1,15 +1,9 @@
 package com.hxls.system.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hxls.framework.common.utils.TreeNodeByCode;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.hxls.framework.common.utils.DateUtils;
-import com.hxls.framework.common.utils.TreeNode;
-
-import java.util.Date;
 
 /**
  * 机构列表
@@ -19,25 +13,38 @@ import java.util.Date;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "机构")
-public class SysOrgVO extends TreeNode<SysOrgVO> {
+@Schema(description = "组织")
+public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
 
-    @Schema(description = "机构名称", required = true)
-    @NotBlank(message = "机构名称不能为空")
+
+    @Schema(description = "单位类型（1：公司 2：部门）")
+    private Integer property;
+
+    @Schema(description = "组织编码")
+    private String code;
+
+    @Schema(description = "上级组织编码")
+    private String pcode;
+
+    @Schema(description = "组织名称")
     private String name;
 
-    @Schema(description = "排序", required = true)
-    @Min(value = 0, message = "排序值不能小于0")
+    @Schema(description = "上级组织编码名称")
+    private String pname;
+
+    @Schema(description = "排序")
     private Integer sort;
 
-    @Schema(description = "负责人ID")
-    private Long leaderId;
+    @Schema(description = "图标")
+    private String orgIcon;
 
-    @Schema(description = "创建时间")
-    @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
-    private Date createTime;
+    @Schema(description = "是否是虚拟组织")
+    private Integer virtualFlag;
 
-    @Schema(description = "上级名称")
-    private String parentName;
+    @Schema(description = "简称")
+    private String orgAlias;
+
+    @Schema(description = "状态 0:停用, 1:启用")
+    private Integer status;
 
 }
