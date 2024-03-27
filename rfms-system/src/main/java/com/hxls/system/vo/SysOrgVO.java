@@ -16,6 +16,10 @@ import lombok.EqualsAndHashCode;
 @Schema(description = "组织")
 public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
 
+    private static final long serialVersionUID = 1L;
+
+    @Schema(description = "id")
+    private Long id;
 
     @Schema(description = "单位类型（1：公司 2：部门）")
     private Integer property;

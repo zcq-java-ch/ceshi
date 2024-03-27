@@ -1,16 +1,21 @@
 package com.hxls.system.controller;
 
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.system.entity.SysOrgEntity;
+import com.hxls.system.query.SysOrgQuery;
+import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.SysOrgService;
 import com.hxls.system.vo.SysOrgVO;
+import com.hxls.system.vo.SysUserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import com.hxls.system.convert.SysOrgConvert;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +33,15 @@ import java.util.List;
 @AllArgsConstructor
 public class SysOrgController {
     private final SysOrgService sysOrgService;
+
+    @GetMapping("page")
+    @Operation(summary = "分页")
+    @PreAuthorize("hasAuthority('sys:org:page')")
+    public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
+        PageResult<SysOrgVO> page = sysOrgService.page(query);
+
+        return Result.ok(page);
+    }
 
     @GetMapping("list")
     @Operation(summary = "列表")

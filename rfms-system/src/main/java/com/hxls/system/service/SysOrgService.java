@@ -1,7 +1,9 @@
 package com.hxls.system.service;
 
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.system.entity.SysOrgEntity;
+import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.vo.SysOrgVO;
 
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.List;
  *
  */
 public interface SysOrgService extends BaseService<SysOrgEntity> {
+
+	PageResult<SysOrgVO> page(SysOrgQuery query);
 
 	List<SysOrgVO> getList();
 

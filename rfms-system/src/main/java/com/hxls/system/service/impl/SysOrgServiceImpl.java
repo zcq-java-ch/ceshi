@@ -4,26 +4,30 @@ import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
-import com.hxls.framework.common.utils.TreeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.dao.SysOrgDao;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.service.SysOrgService;
 import com.hxls.system.vo.OrganizationVO;
 import com.hxls.system.vo.SysOrgVO;
 import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
-import com.hxls.system.convert.SysOrgConvert;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +43,22 @@ import java.util.Map;
 @AllArgsConstructor
 public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> implements SysOrgService {
     private final SysUserDao sysUserDao;
+
+    @Override
+    public PageResult<SysOrgVO> page(SysOrgQuery query) {
+        IPage<SysOrgEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+
+        return new PageResult<>(SysOrgConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
+    }
+
+    private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query){
+        LambdaQueryWrapper<SysOrgEntity> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
+        wrapper.eq(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
+        wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
+        wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
+        return wrapper;
+    }
 
     @Override
     public List<SysOrgVO> getList() {
@@ -67,13 +87,13 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         SysOrgEntity entity = SysOrgConvert.INSTANCE.convert(vo);
 
         // 上级机构不能为自身
-        if (entity.getId().equals(entity.getPcode())) {
+        if (entity.getCode().equals(entity.getPcode())) {
             throw new ServerException("上级机构不能为自身");
         }
 
         // 上级机构不能为下级
-        List<Long> subOrgList = getSubOrgIdList(entity.getId());
-        if (subOrgList.contains(entity.getId())) {
+        List<String> subOrgList = getSubOrgCodeList(entity.getCode());
+        if (subOrgList.contains(entity.getPcode())) {
             throw new ServerException("上级机构不能为下级");
         }
 
@@ -98,6 +118,31 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         // 删除
         removeById(id);
     }
+
+
+    public List<String> getSubOrgCodeList(String code) {
+        // 所有机构的id、pid列表
+        List<SysOrgEntity> orgList = baseMapper.getIdAndPidList();
+
+        // 递归查询所有子机构ID列表
+        List<String> subIdList = new ArrayList<>();
+        getTreeByCode(code, orgList, subIdList);
+
+        // 本机构也添加进去
+        subIdList.add(code);
+
+        return subIdList;
+    }
+
+    private void getTreeByCode(String code, List<SysOrgEntity> orgList, List<String> subIdList) {
+        for (SysOrgEntity org : orgList) {
+            if (ObjectUtil.equals(org.getPcode(), code)) {
+                getTreeByCode(org.getCode(), orgList, subIdList);
+                subIdList.add(org.getCode());
+            }
+        }
+    }
+
 
     @Override
     public List<Long> getSubOrgIdList(Long id) {
@@ -177,6 +222,18 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
                         for (OrganizationVO organization : organizationList) {
                             // 例如，打印每个OrganizationVO的名称
                             System.out.println(organization.getName());
+
+                            SysOrgEntity sysOrgEntity = new SysOrgEntity();
+
+                            sysOrgEntity.setCode(organization.getCode());
+                            sysOrgEntity.setName(organization.getName());
+                            sysOrgEntity.setPcode(organization.getPcode());
+                            sysOrgEntity.setPname(organization.getPname());
+                            sysOrgEntity.setSort(1);
+                            sysOrgEntity.setStatus(1);
+                            sysOrgEntity.setProperty(Integer.parseInt(organization.getProperty()+""));
+                            sysOrgEntity.setVirtualFlag(0);
+                            baseMapper.insert(sysOrgEntity);
                         }
                     }
 

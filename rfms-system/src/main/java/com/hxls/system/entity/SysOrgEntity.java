@@ -53,7 +53,7 @@ public class SysOrgEntity extends BaseEntity {
     private String orgIcon;
 
     /**
-     * 是否是虚拟组织
+     * 是否是虚拟组织 0否  1是
      */
     private Integer virtualFlag;
 
