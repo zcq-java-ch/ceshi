@@ -60,7 +60,6 @@ public class StaffAppointmentController {
     @PreAuthorize("hasAuthority('system:appointment:update')")
     public Result<String> update(@RequestBody @Valid TAppointmentVO vo){
         tAppointmentService.update(vo);
-
         return Result.ok();
     }
 

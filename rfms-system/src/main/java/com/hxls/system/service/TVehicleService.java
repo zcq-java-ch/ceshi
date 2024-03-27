@@ -2,9 +2,9 @@ package com.hxls.system.service;
 
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
-import com.hxls.system.vo.TVehicleVO;
 import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.entity.TVehicleEntity;
+import com.hxls.system.vo.TVehicleVO;
 
 import java.util.List;
 
@@ -23,4 +23,13 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
     void update(TVehicleVO vo);
 
     void delete(List<Long> idList);
+
+    /**
+     * 通过车牌号，查询车辆基本信息
+     * @param data 入参车牌号
+     * @return 返回车辆信息
+     */
+    List<TVehicleVO> getByLicensePlates(List<String> data);
+
+
 }

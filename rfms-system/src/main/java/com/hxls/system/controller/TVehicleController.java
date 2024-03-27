@@ -1,5 +1,6 @@
 package com.hxls.system.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -79,4 +80,14 @@ public class TVehicleController {
 
         return Result.ok();
     }
+
+
+
+    @PostMapping("getByLicensePlates")
+    @Operation(summary = "临时查询")
+    public Result<List<TVehicleVO>> getByLicensePlates(@RequestBody List<String> data){
+       return Result.ok( tVehicleService.getByLicensePlates(data));
+
+    }
+
 }

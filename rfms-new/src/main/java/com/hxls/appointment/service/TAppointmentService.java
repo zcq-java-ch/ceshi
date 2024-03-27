@@ -17,12 +17,29 @@ import java.util.List;
  */
 public interface TAppointmentService extends BaseService<TAppointmentEntity> {
 
+    /**
+     * 分页查询
+     * @param query
+     * @return
+     */
     PageResult<TAppointmentVO> page(TAppointmentQuery query);
 
+    /**
+     * 保存预约信息
+     * @param vo
+     */
     void save(TAppointmentVO vo);
 
+    /**
+     * 修改本次预约信息
+     * @param vo
+     */
     void update(TAppointmentVO vo);
 
+    /**
+     * 删除预约表单
+     * @param idList
+     */
     void delete(List<Long> idList);
 
     /**
@@ -31,4 +48,17 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @return
      */
     TAppointmentVO getDetailById(Long id);
+
+    /**
+     * 查看权限下面的列表
+     * @param query
+     * @return
+     */
+    PageResult<TAppointmentVO> pageByAuthority(TAppointmentQuery query);
+
+    /**
+     * 修改审核状态
+     * @param vo
+     */
+    void updateByAudit(TAppointmentVO vo);
 }

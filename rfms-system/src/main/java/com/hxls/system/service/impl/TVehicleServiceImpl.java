@@ -65,4 +65,19 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         removeByIds(idList);
     }
 
+    /**
+     * 通过车牌号，查询车辆基本信息
+     * @param data 入参车牌号
+     * @return 返回车辆信息
+     */
+    @Override
+    public List<TVehicleVO> getByLicensePlates(List<String> data) {
+
+        List<TVehicleEntity> list = this.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getLicensePlate , data));
+
+        return  TVehicleConvert.INSTANCE.convertList(list);
+    }
+
+
+
 }

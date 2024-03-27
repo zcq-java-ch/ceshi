@@ -19,6 +19,8 @@ import java.io.Serializable;
 public class SysUserBaseVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+
+
     @Schema(description = "姓名", required = true)
     @NotBlank(message = "姓名不能为空")
     private String realName;
@@ -37,5 +39,13 @@ public class SysUserBaseVO implements Serializable {
     @Schema(description = "手机号", required = true)
     @NotBlank(message = "手机号不能为空")
     private String mobile;
+
+
+    /**
+     * 车牌号
+     */
+    @Schema(description = "车牌号")
+    private String licensePlate;
+
 
 }

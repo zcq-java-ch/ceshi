@@ -86,4 +86,8 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "创建时间")
     @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
     private Date createTime;
+
+    @Schema(description = "车牌号")
+    private String licensePlate;
+
 }

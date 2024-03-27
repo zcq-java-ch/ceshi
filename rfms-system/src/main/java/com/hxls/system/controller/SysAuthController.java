@@ -29,7 +29,6 @@ public class SysAuthController {
     @Operation(summary = "验证码")
     public Result<SysCaptchaVO> captcha() {
         SysCaptchaVO captchaVO = sysCaptchaService.generate();
-
         return Result.ok(captchaVO);
     }
 
@@ -37,7 +36,6 @@ public class SysAuthController {
     @Operation(summary = "是否开启验证码")
     public Result<Boolean> captchaEnabled() {
         boolean enabled = sysCaptchaService.isCaptchaEnabled();
-
         return Result.ok(enabled);
     }
 
@@ -45,7 +43,6 @@ public class SysAuthController {
     @Operation(summary = "账号密码登录")
     public Result<SysUserTokenVO> login(@RequestBody SysAccountLoginVO login) {
         SysUserTokenVO token = sysAuthService.loginByAccount(login);
-
         return Result.ok(token);
     }
 
@@ -56,7 +53,6 @@ public class SysAuthController {
         if (!flag) {
             return Result.error("短信发送失败！");
         }
-
         return Result.ok();
     }
 
@@ -64,7 +60,6 @@ public class SysAuthController {
     @Operation(summary = "手机号登录")
     public Result<SysUserTokenVO> mobile(@RequestBody SysMobileLoginVO login) {
         SysUserTokenVO token = sysAuthService.loginByMobile(login);
-
         return Result.ok(token);
     }
 
@@ -83,6 +78,7 @@ public class SysAuthController {
 
         return Result.ok(token);
     }
+
 
     @PostMapping("logout")
     @Operation(summary = "退出")

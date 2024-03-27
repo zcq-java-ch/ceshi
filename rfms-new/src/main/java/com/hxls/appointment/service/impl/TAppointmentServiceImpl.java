@@ -1,21 +1,29 @@
 package com.hxls.appointment.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.appointment.convert.TAppointmentConvert;
+import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
+import com.hxls.appointment.convert.TAppointmentVehicleConvert;
 import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
+import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
+import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 /**
  * 预约信息表
@@ -66,6 +74,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
+        wrapper.eq(query.getSupplierSubclass() != null , TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         return wrapper;
     }
 
@@ -74,26 +83,70 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      * @param vo
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void save(TAppointmentVO vo) {
         //主表转换
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
         //插入主预约信息单
-         baseMapper.insert(entity);
-
-
+        int insert = baseMapper.insert(entity);
+        //判断是否插入成功
+        if (insert>0){
+            Long id = entity.getId();
+            //避免没有id报错
+            if (ObjectUtil.isNull(id)){
+                //判断是否有人员清单
+                List<TAppointmentPersonnelVO> personnelList = vo.getPersonnelList();
+                if (CollectionUtils.isNotEmpty(personnelList)){
+                    List<TAppointmentPersonnel> tAppointmentPersonnels = personnelList.stream().map(item -> {
+                        TAppointmentPersonnel tAppointmentPersonnel = new TAppointmentPersonnel();
+                        BeanUtil.copyProperties(item, tAppointmentPersonnel);
+                        tAppointmentPersonnel.setAppointmentId(id);
+                        return tAppointmentPersonnel;
+                    }).toList();
+                    tAppointmentPersonnelService.saveBatch(tAppointmentPersonnels);
+                }
+                //判断是否有车辆清单
+                List<TAppointmentVehicleVO> vehicleList = vo.getVehicleList();
+                if (CollectionUtils.isNotEmpty(vehicleList)){
+                    List<TAppointmentVehicle> tAppointmentVehicles = vehicleList.stream().map(item -> {
+                        TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
+                        BeanUtil.copyProperties(item, tAppointmentVehicle);
+                        tAppointmentVehicle.setAppointmentId(id);
+                        return tAppointmentVehicle;
+                    }).toList();
+                    tAppointmentVehicleService.saveBatch(tAppointmentVehicles);
+                }
+            }
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void update(TAppointmentVO vo) {
+        //修改主表的信息
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
-
         updateById(entity);
+        //判断是否修改随行人员表
+        List<TAppointmentPersonnelVO> personnelList = vo.getPersonnelList();
+        if (CollectionUtils.isNotEmpty(personnelList)){
+            List<TAppointmentPersonnel> tAppointmentPersonnels = BeanUtil.copyToList(personnelList, TAppointmentPersonnel.class);
+            tAppointmentPersonnelService.updateBatchById(tAppointmentPersonnels);
+        }
+        //判断是否有随行车辆
+        List<TAppointmentVehicleVO> vehicleList = vo.getVehicleList();
+        if (CollectionUtils.isNotEmpty(vehicleList)){
+            List<TAppointmentVehicle> vehicles = BeanUtil.copyToList(vehicleList, TAppointmentVehicle.class);
+            tAppointmentVehicleService.updateBatchById(vehicles);
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(List<Long> idList) {
         removeByIds(idList);
+        //关联的子表单也需要删除
+        tAppointmentPersonnelService.remove(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId , idList));
+        tAppointmentVehicleService.remove(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId , idList));
     }
 
 
@@ -119,11 +172,38 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //2 车辆
         List<TAppointmentVehicle> vehicleList = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId , id));
 
-        vo.setPersonnelList(personnelList);
-        vo.setVehicleList(vehicleList);
+        vo.setPersonnelList(TAppointmentPersonnelConvert.INSTANCE.convertList(personnelList));
+        vo.setVehicleList(TAppointmentVehicleConvert.INSTANCE.convertList(vehicleList));
 
         return vo;
 
+    }
+
+
+    @Override
+    public PageResult<TAppointmentVO> pageByAuthority(TAppointmentQuery query) {
+
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)){
+            throw new ServerException("请登陆");
+        }
+        Set<String> manageStation = user.getManageStation();
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
+        wrapper.in(TAppointmentEntity::getSiteId , manageStation);
+
+        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
+
+        return new PageResult<>(TAppointmentConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
+
+    }
+
+
+
+    @Override
+    public void updateByAudit(TAppointmentVO vo) {
+        //修改主表的信息
+        TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
+        updateById(entity);
     }
 
 }

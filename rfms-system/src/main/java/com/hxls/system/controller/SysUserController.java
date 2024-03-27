@@ -1,14 +1,14 @@
 package com.hxls.system.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysUserQuery;
-import com.hxls.system.service.SysPostService;
-import com.hxls.system.service.SysUserPostService;
-import com.hxls.system.service.SysUserRoleService;
-import com.hxls.system.service.SysUserService;
+import com.hxls.system.service.*;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserPasswordVO;
 import com.hxls.system.vo.SysUserVO;
@@ -46,13 +46,13 @@ public class SysUserController {
     private final SysUserPostService sysUserPostService;
     private final SysPostService sysPostService;
     private final PasswordEncoder passwordEncoder;
+    private final TVehicleService tVehicleService;
 
     @GetMapping("page")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> page(@ParameterObject @Valid SysUserQuery query) {
         PageResult<SysUserVO> page = sysUserService.page(query);
-
         return Result.ok(page);
     }
 
@@ -80,6 +80,10 @@ public class SysUserController {
     public Result<SysUserVO> info() {
         SysUserVO user = SysUserConvert.INSTANCE.convert(SecurityUser.getUser());
 
+        if (user == null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+
         // 用户岗位列表
         List<Long> postIdList = sysUserPostService.getPostIdList(user.getId());
         user.setPostIdList(postIdList);
@@ -87,6 +91,11 @@ public class SysUserController {
         // 用户岗位名称列表
         List<String> postNameList = sysPostService.getNameList(postIdList);
         user.setPostNameList(postNameList);
+
+        //用户车牌号
+        SysUserEntity byId = sysUserService.getById(user.getId());
+        user.setLicensePlate(byId.getLicensePlate());
+        //用户管理的站点
 
         return Result.ok(user);
     }
@@ -96,7 +105,6 @@ public class SysUserController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
     public Result<String> loginInfo(@RequestBody @Valid SysUserBaseVO vo) {
         sysUserService.updateLoginInfo(vo);
-
         return Result.ok();
     }
 

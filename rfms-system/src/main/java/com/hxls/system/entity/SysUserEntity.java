@@ -66,4 +66,27 @@ public class SysUserEntity extends BaseEntity {
      * 租户ID
      */
     private Long tenantId;
+
+    /**
+     * 车牌号
+     */
+    private String licensePlate;
+
+    /**
+     * 车辆照片
+     */
+    private String imageUrl;
+
+    /**
+     * 排放标准（数据字典）
+     */
+    private String emissionStandard;
+    /**
+     * 车辆类型（数据字典）
+     */
+    private String carType;
+    /**
+     * 三方关联id（数据字典）
+     */
+    private String openId;
 }

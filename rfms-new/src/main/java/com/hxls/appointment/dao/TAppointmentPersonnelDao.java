@@ -1,7 +1,8 @@
 package com.hxls.appointment.dao;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
+import com.hxls.framework.mybatis.dao.BaseDao;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
 * @author admin
@@ -9,7 +10,8 @@ import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 * @createDate 2024-03-21 16:57:24
 * @Entity com/hxls/appointment.pojo/entity.TAppointmentPersonnel
 */
-public interface TAppointmentPersonnelDao extends BaseMapper<TAppointmentPersonnel> {
+@Mapper
+public interface TAppointmentPersonnelDao extends BaseDao<TAppointmentPersonnel> {
 
 }
 
