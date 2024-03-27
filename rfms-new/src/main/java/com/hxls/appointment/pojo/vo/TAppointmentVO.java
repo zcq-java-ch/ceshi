@@ -85,9 +85,9 @@ public class TAppointmentVO implements Serializable {
 	private Date updateTime;
 
 	@Schema(description = "车辆信息")
-	private List<TAppointmentVehicle> vehicleList;
+	private List<TAppointmentVehicleVO> vehicleList;
 
 	@Schema(description = "人员信息")
-	private List<TAppointmentPersonnel> personnelList;
+	private List<TAppointmentPersonnelVO> personnelList;
 
 }

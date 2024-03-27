@@ -1,8 +1,10 @@
 package com.hxls.appointment.controller;
 
-import com.hxls.appointment.pojo.query.TAppointmentQuery;
+import com.hxls.appointment.pojo.query.TSupplementRecordQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
+import com.hxls.appointment.pojo.vo.TSupplementRecordVO;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.appointment.service.TSupplementRecordService;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -18,54 +20,48 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("appointment/supplierCar")
-@Tag(name = "供应商车辆管理")
+@RequestMapping("record/supplement")
+@Tag(name = "记录补充")
 @AllArgsConstructor
-public class SupplierCarController {
+public class RecordSupplementController {
 
     private final TAppointmentService tAppointmentService;
+    private final TSupplementRecordService service;
 
     @GetMapping("page")
     @Operation(summary = "分页")
-    @PreAuthorize("hasAuthority('supplierCar:appointment:page')")
-    public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
-        PageResult<TAppointmentVO> page = tAppointmentService.page(query);
+    @PreAuthorize("hasAuthority('record:appointment:page')")
+    public Result<PageResult<TSupplementRecordVO>> page(@ParameterObject @Valid TSupplementRecordQuery query) {
+        PageResult<TSupplementRecordVO> page = service.page(query);
         return Result.ok(page);
     }
 
-    @GetMapping("{id}")
-    @Operation(summary = "信息")
-    @PreAuthorize("hasAuthority('supplierCar:appointment:info')")
-    public Result<TAppointmentVO> get(@PathVariable("id") Long id){
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
-        return Result.ok(vo);
-    }
+
 
     @PostMapping
     @Operation(summary = "保存")
     @OperateLog(type = OperateTypeEnum.INSERT)
-    @PreAuthorize("hasAuthority('supplierCar:appointment:save')")
-    public Result<String> save(@RequestBody TAppointmentVO vo){
-        tAppointmentService.save(vo);
+    @PreAuthorize("hasAuthority('record:appointment:save')")
+    public Result<String> save(@RequestBody TSupplementRecordVO vo) {
+        service.save(vo);
         return Result.ok();
     }
 
     @PutMapping
     @Operation(summary = "修改")
     @OperateLog(type = OperateTypeEnum.UPDATE)
-    @PreAuthorize("hasAuthority('supplierCar:appointment:update')")
-    public Result<String> update(@RequestBody @Valid TAppointmentVO vo){
-        tAppointmentService.update(vo);
-
+    @PreAuthorize("hasAuthority('record:appointment:update')")
+    public Result<String> update(@RequestBody @Valid TSupplementRecordVO vo) {
+        service.update(vo);
         return Result.ok();
     }
 
     @DeleteMapping
     @Operation(summary = "删除")
     @OperateLog(type = OperateTypeEnum.DELETE)
-    @PreAuthorize("hasAuthority('supplierCar:appointment:delete')")
-    public Result<String> delete(@RequestBody List<Long> idList){
-        tAppointmentService.delete(idList);
+    @PreAuthorize("hasAuthority('record:appointment:delete')")
+    public Result<String> delete(@RequestBody List<Long> idList) {
+        service.delete(idList);
         return Result.ok();
     }
 

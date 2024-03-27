@@ -17,12 +17,9 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "预约信息表查询")
-public class TAppointmentQuery extends Query {
+public class TAppointmentVehicleQuery extends Query {
     @Schema(description = "预约类型（数据字典）")
     private String appointmentType;
-
-    @Schema(description = "供应商小类（ 0：人  ； 1：车 ），选择供应商的时候选择")
-    private Integer supplierSubclass;
 
     @Schema(description = "提交人")
     private String submitter;

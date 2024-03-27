@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.hxls.system.dao.TAppointmentDao">
+<mapper namespace="com.hxls.appointment.dao.TAppointmentDao">
 
     <resultMap type="com.hxls.appointment.pojo.entity.TAppointmentEntity" id="tAppointmentMap">
         <result property="id" column="id"/>
@@ -24,5 +24,32 @@
         <result property="updater" column="updater"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
+
+
+    <resultMap type="com.hxls.appointment.pojo.vo.TVehicleVO" id="tVehicleMap">
+        <result property="siteId" column="site_id"/>
+        <result property="licensePlate" column="license_plate"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="emissionStandard" column="emission_standard"/>
+        <result property="driverId" column="driver_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="registrationDate" column="registration_date"/>
+        <result property="vinNumber" column="vin_number"/>
+        <result property="engineNumber" column="engine_number"/>
+        <result property="fleetName" column="fleet_name"/>
+        <result property="maxCapacity" column="max_capacity"/>
+        <result property="licenseImage" column="license_image"/>
+        <result property="images" column="images"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+
+    <select id="listByCarNumber" resultMap="tVehicleMap">
+        select * FROM t_vehicle WHERE license_plate IN
+        <foreach collection="strings" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </select>
 
 </mapper>

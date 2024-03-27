@@ -1,16 +1,13 @@
 package com.hxls.appointment.controller;
 
+import com.hxls.appointment.dao.TAppointmentDao;
+import com.hxls.appointment.pojo.vo.TVehicleVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-
-import com.hxls.api.feign.system.StorageFeign;
-import com.hxls.api.feign.system.dto.StorageDTO;
 import com.hxls.framework.common.utils.Result;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
 * 新增模块演示
@@ -18,22 +15,18 @@ import org.springframework.web.multipart.MultipartFile;
 * @author
 */
 @RestController
-@Tag(name="新增模块演示")
+@Tag(name="企业检查演示")
 @AllArgsConstructor
+@RequestMapping("car")
 public class TestController {
-    private final StorageFeign storageFeign;
 
-    @GetMapping("test")
-    public Result<String> test(){
+    private final TAppointmentDao dao;
 
-        return Result.ok("新增模块演示。。。");
-    }
-
-    @PostMapping("upload")
-    public Result<StorageDTO> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        StorageDTO storage = storageFeign.upload(file);
-
-        return Result.ok(storage);
+    @PostMapping("listByCarNumber")
+    public Result<List<TVehicleVO>> listByCarNumber(@RequestBody List<String> data){
+        System.out.println("开始进入方法");
+       List<TVehicleVO> tVehicleVOS = dao.listByCarNumber(data);
+        return Result.ok(tVehicleVOS);
     }
 
 }

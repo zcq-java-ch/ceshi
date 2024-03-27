@@ -45,6 +45,7 @@ public class TDeviceManagementController {
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('system:device:info')")
     public Result<TDeviceManagementVO> get(@PathVariable("id") Long id){
+
         TDeviceManagementEntity entity = tDeviceManagementService.getById(id);
 
         return Result.ok(TDeviceManagementConvert.INSTANCE.convert(entity));

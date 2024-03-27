@@ -153,7 +153,6 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         if (user != null && !user.getId().equals(entity.getId())) {
             throw new ServerException("手机号已经存在");
         }
-
         // 更新用户
         updateById(entity);
 

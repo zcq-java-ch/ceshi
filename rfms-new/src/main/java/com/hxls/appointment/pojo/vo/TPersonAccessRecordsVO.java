@@ -3,16 +3,19 @@ package com.hxls.appointment.pojo.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 人员出入记录表
+ * @TableName t_person_access_records
+ */
 @Data
-public class TAppointmentPersonnelVO implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class TPersonAccessRecordsVO implements Serializable {
     /**
      * id
      */
@@ -20,28 +23,40 @@ public class TAppointmentPersonnelVO implements Serializable {
     private Long id;
 
     /**
-     * 对应预约单
+     * 对应站点id
      */
-    @Schema(description = "对应预约单")
-    private Long appointmentId;
+    @Schema(description = "对应站点id")
+    private Long siteId;
 
     /**
-     * 预约人id
+     * 出入类型（数据字典）
      */
-    @Schema(description = "预约人id")
-    private Long userId;
+    @Schema(description = "出入类型（数据字典）")
+    private String accessType;
 
     /**
-     * 组织编码
+     * 出入通道
      */
-    @Schema(description = "组织编码")
-    private String orgCode;
+    @Schema(description = "出入通道")
+    private String channel;
 
     /**
-     * 组织名字
+     * 记录时间
      */
-    @Schema(description = "组织名字")
-    private String orgName;
+    @Schema(description = "记录时间")
+    private Date recordTime;
+
+    /**
+     * 名字
+     */
+    @Schema(description = "名字")
+    private String personName;
+
+    /**
+     * 单位
+     */
+    @Schema(description = "单位")
+    private String company;
 
     /**
      * 带班负责人id
@@ -86,44 +101,19 @@ public class TAppointmentPersonnelVO implements Serializable {
     private String positionName;
 
     /**
-     * 车辆照片地址
-     */
-    @Schema(description = "车辆照片地址")
-    private String carUrl;
-
-    /**
-     * 车牌号
-     */
-    @Schema(description = "车牌号")
-    private String plateNumber;
-
-    /**
-     * 车型（数据字典）
-     */
-    @Schema(description = "车型（数据字典）")
-    private String vehicleModel;
-
-    /**
-     * 车辆排放标准（数据字典）
-     */
-    @Schema(description = "车辆排放标准（数据字典）")
-    private String emissionStandard;
-
-    /**
      * 排序
      */
     @Schema(description = "排序")
     private Integer sort;
 
-    /**
-     * 版本号
-     */
-    private Integer version;
 
     /**
      * 状态 0:停用, 1:启用
      */
+    @Schema(description = "状态 0:停用, 1:启用")
     private Integer status;
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 删除标识  0：正常   1：已删除
@@ -149,6 +139,5 @@ public class TAppointmentPersonnelVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
-
 
 }

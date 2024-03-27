@@ -2,7 +2,7 @@ package com.hxls.system.feign;
 
 import lombok.AllArgsConstructor;
 import com.hxls.api.feign.system.StorageFeign;
-import com.hxls.api.feign.system.dto.StorageDTO;
+import com.hxls.api.dto.StorageDTO;
 import com.hxls.storage.service.StorageService;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;

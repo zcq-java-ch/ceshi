@@ -10,7 +10,7 @@ import java.util.List;
 /**
 * 预约信息表
 *
-* @author zhaohong 
+* @author zhuchuanqiu
 * @since 1.0.0 2024-03-15
 */
 @Mapper
