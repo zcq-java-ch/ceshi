@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.appointment.dao.TPersonAccessRecordsMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.appointment.pojo.entity.TPersonAccessRecords">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="siteId" column="site_id" jdbcType="BIGINT"/>
+            <result property="accessType" column="access_type" jdbcType="VARCHAR"/>
+            <result property="channel" column="channel" jdbcType="VARCHAR"/>
+            <result property="recordTime" column="record_time" jdbcType="TIMESTAMP"/>
+            <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+            <result property="company" column="company" jdbcType="VARCHAR"/>
+            <result property="supervisorId" column="supervisor_id" jdbcType="BIGINT"/>
+            <result property="supervisorName" column="supervisor_name" jdbcType="VARCHAR"/>
+            <result property="idCardNumber" column="id_card_number" jdbcType="VARCHAR"/>
+            <result property="phone" column="phone" jdbcType="VARCHAR"/>
+            <result property="headUrl" column="head_url" jdbcType="VARCHAR"/>
+            <result property="positionId" column="position_id" jdbcType="BIGINT"/>
+            <result property="positionName" column="position_name" jdbcType="VARCHAR"/>
+            <result property="sort" column="sort" jdbcType="INTEGER"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,site_id,access_type,
+        channel,record_time,person_name,
+        company,supervisor_id,supervisor_name,
+        id_card_number,phone,head_url,
+        position_id,position_name,sort,
+        version,status,deleted,
+        creator,create_time,updater,
+        update_time
+    </sql>
+</mapper>

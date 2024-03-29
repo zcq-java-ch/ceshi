@@ -1,6 +1,6 @@
 package com.hxls.api.feign.system;
 
-import com.hxls.api.feign.system.dto.StorageDTO;
+import com.hxls.api.dto.StorageDTO;
 import feign.codec.Encoder;
 import feign.form.spring.SpringFormEncoder;
 import com.hxls.api.feign.ServerNames;

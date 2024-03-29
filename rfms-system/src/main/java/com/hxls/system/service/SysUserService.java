@@ -1,6 +1,7 @@
 package com.hxls.system.service;
 
 import com.hxls.framework.mybatis.service.BaseService;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
@@ -25,7 +26,7 @@ public interface SysUserService extends BaseService<SysUserEntity> {
 
     void update(SysUserVO vo);
 
-    void updateLoginInfo(SysUserBaseVO vo);
+    void updateLoginInfo(SysUserBaseVO vo , UserDetail user);
 
     void delete(List<Long> idList);
 

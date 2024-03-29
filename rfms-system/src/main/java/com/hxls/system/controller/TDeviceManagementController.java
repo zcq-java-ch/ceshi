@@ -1,5 +1,6 @@
 package com.hxls.system.controller;
 
+import com.hxls.framework.common.cache.RedisCache;
 import io.swagger.v3.oas.annotations.Operation;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -31,6 +32,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TDeviceManagementController {
     private final TDeviceManagementService tDeviceManagementService;
+    private final RedisCache redisCache;
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -79,5 +81,14 @@ public class TDeviceManagementController {
         tDeviceManagementService.delete(idList);
 
         return Result.ok();
+    }
+
+
+    @GetMapping("online")
+    @Operation(summary = "在线状态")
+    public void IsOnline(@RequestParam String ip){
+        //接收心跳 -- 放入缓存
+        redisCache.set(ip,"在线",20);
+
     }
 }
