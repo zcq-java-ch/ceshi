@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.vo.TransPojo;
+import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.system.entity.SysOrgEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import com.hxls.framework.common.utils.DateUtils;
 import org.hibernate.validator.constraints.Range;
 
 import java.io.Serializable;
@@ -31,6 +31,49 @@ public class SysUserVO implements Serializable, TransPojo {
 
     @Schema(description = "id")
     private Long id;
+
+    @Schema(description = "员工编码")
+    private String code;
+
+    @Schema(description = "用户类型: 数据字典（内部/客户/供应商）")
+    private String userType;
+
+    @Schema(description = "所属站点（组织类型为站点的组织id）")
+    private String stationId;
+
+
+    @Schema(description = "业务：数据字典")
+    private String busis;
+
+
+    @Schema(description = "身份证")
+    private String idCard;
+
+
+    @Schema(description = "岗位编码")
+    private String postId;
+
+
+    @Schema(description = "岗位名称")
+    private String postName;
+
+    @Schema(description = "职级：数据字典")
+    private Integer ranks;
+
+
+    @Schema(description = "NC编号")
+    private String ncNo;
+
+
+    @Schema(description = "登录方式：数据字典（1：用户名；2：手机号；3：用户名+手机号）")
+    private Integer loginType;
+
+
+    @Schema(description = "是否支持创建子用户：1：支持；0：不支持")
+    private Integer createChindAccount;
+
+    @Schema(description = "家庭住址")
+    private String address;
 
     @Schema(description = "用户名", required = true)
     @NotBlank(message = "用户名不能为空")

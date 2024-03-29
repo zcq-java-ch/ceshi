@@ -17,6 +17,79 @@ import com.hxls.system.enums.UserStatusEnum;
 @EqualsAndHashCode(callSuper = false)
 @TableName("sys_user")
 public class SysUserEntity extends BaseEntity {
+
+    /**
+     * 员工编码
+     **/
+    private String code;
+
+    /**
+    * 用户类型: 数据字典 内部/客户/供应商
+    **/
+    private String userType;
+
+    /**
+     * 所属站点
+     **/
+    private String stationId;
+
+
+    /**
+     * 业务
+     **/
+    private String busis;
+
+
+
+    /**
+     * 身份证
+     **/
+    private String idCard;
+
+
+
+    /**
+     * 岗位编码
+     **/
+    private String postId;
+
+
+    /**
+     * 岗位名称
+     **/
+    private String postName;
+
+    /**
+     * 职级（数据字典）
+     **/
+    private Integer ranks;
+
+
+
+    /**
+     * NC编号
+     **/
+    private String ncNo;
+
+
+
+    /**
+     * 登录方式：1：用户名；2：手机号；3：用户名+手机号
+     **/
+    private Integer loginType;
+
+
+    /**
+     * 是否支持创建子用户：1：支持；0：不支持
+     **/
+    private Integer createChindAccount;
+
+    /**
+     * 家庭住址
+     **/
+    private String address;
+
+
     /**
      * 用户名
      */
@@ -46,7 +119,7 @@ public class SysUserEntity extends BaseEntity {
      */
     private String mobile;
     /**
-     * 机构ID
+     * 组织ID
      */
     private Long orgId;
     /**
@@ -58,14 +131,10 @@ public class SysUserEntity extends BaseEntity {
      */
     private Integer status;
     /**
-     * 机构名称
+     * 组织名称
      */
     @TableField(exist = false)
     private String orgName;
-    /**
-     * 租户ID
-     */
-    private Long tenantId;
 
     /**
      * 车牌号
