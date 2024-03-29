@@ -1,0 +1,105 @@
+package com.hxls.datasection.entity;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hxls.framework.common.utils.DateUtils;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import com.baomidou.mybatisplus.annotation.*;
+import java.util.Date;
+import com.hxls.framework.mybatis.entity.BaseEntity;
+
+/**
+ * 车辆出入记录表
+ *
+ * @author zhaohong 
+ * @since 1.0.0 2024-03-29
+ */
+@EqualsAndHashCode(callSuper=false)
+@Data
+@TableName("t_vehicle_access_records")
+public class TVehicleAccessRecordsEntity extends BaseEntity {
+
+	/**
+	* 对应站点id
+	*/
+	private Long manufacturerId;
+
+	/**
+	* 对应站点名字
+	*/
+	private String manufacturerName;
+
+	/**
+	* 出入类型（数据字典）
+	*/
+	private String accessType;
+
+	/**
+	* 出入通道ID
+	*/
+	private Long channelId;
+
+	/**
+	* 出入通道名字
+	*/
+	private String channelName;
+
+
+	/**
+	* 记录时间
+	*/
+	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	private Date recordTime;
+
+	/**
+	* 车牌号
+	*/
+	private String plateNumber;
+
+	/**
+	* 车型（数据字典）
+	*/
+	private String vehicleModel;
+
+	/**
+	* 车辆排放标准（数据字典）
+	*/
+	private String emissionStandard;
+
+	/**
+	* 车辆照片地址
+	*/
+	private String carUrl;
+
+	/**
+	* 司机id
+	*/
+	private Long driverId;
+
+	/**
+	* 司机姓名
+	*/
+	private String driverName;
+
+	/**
+	* 司机手机号码
+	*/
+	private String driverPhone;
+
+	/**
+	* 排序
+	*/
+	private Integer sort;
+
+
+	/**
+	* 状态 0:停用, 1:启用
+	*/
+	private Integer status;
+
+
+
+
+
+
+}
