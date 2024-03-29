@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: rfms-new
+    name: rfms-appointment
   cloud:
     nacos:
       username: nacos
@@ -22,6 +22,6 @@ spring:
 
 rabbit:
   ip: 182.151.27.114
-  host: 5672
+  post: 5672
   user: admin
   psw: 123456

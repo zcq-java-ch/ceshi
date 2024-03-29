@@ -9,5 +9,5 @@ auth:
     - /sys/auth/third
     - /sys/third/callback/**
     - /sys/third/render/**
-    - /upload/**
+    - /sys/file/upload
     - /

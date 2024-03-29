@@ -90,7 +90,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     /**
      * 插入主表单以及附属信息
      *
-     * @param vo
+     * @param vo 主单
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -171,7 +171,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      * 根据id获取详细表单信息
      *
      * @param id id
-     * @return
+     * @return 主单表
      */
     @Override
     public TAppointmentVO getDetailById(Long id) {

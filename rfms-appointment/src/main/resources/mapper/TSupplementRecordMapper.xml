@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.appointment.dao.TSupplementRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.appointment.pojo.entity.TSupplementRecord">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="sort" column="sort" jdbcType="INTEGER"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="siteId" column="site_id" jdbcType="BIGINT"/>
+            <result property="accessType" column="access_type" jdbcType="VARCHAR"/>
+            <result property="channel" column="channel" jdbcType="VARCHAR"/>
+            <result property="supplementType" column="supplement_type" jdbcType="VARCHAR"/>
+            <result property="supplementTime" column="supplement_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="OTHER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,sort,version,
+        status,deleted,creator,
+        create_time,updater,update_time,
+        site_id,access_type,channel,
+        supplement_type,supplement_time,remark
+    </sql>
+</mapper>
