@@ -1,9 +1,9 @@
 server:
-  port: 9090
+  port: 8099
 
 spring:
   application:
-    name: rfms-system
+    name: rfms-new
   cloud:
     nacos:
       username: nacos
@@ -20,11 +20,8 @@ spring:
       - optional:nacos:common.yaml
 
 
-storage:
-  enabled: true
-  config:
-    # 存储类型：local、aliyun、tencent、qiniu、huawei、minio
-    type: local
-    domain: http://localhost:8080
-  local:
-    path: D://upload
+rabbit:
+  ip: 182.151.27.114
+  host: 5672
+  user: admin
+  psw: 123456

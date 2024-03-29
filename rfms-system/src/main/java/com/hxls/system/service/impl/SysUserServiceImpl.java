@@ -11,6 +11,7 @@ import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.cache.TokenStoreCache;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
@@ -143,10 +144,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     }
 
     @Override
-    public void updateLoginInfo(SysUserBaseVO vo) {
+    public void updateLoginInfo(SysUserBaseVO vo, UserDetail LoginUser) {
         SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
         // 设置登录用户ID
-        entity.setId(SecurityUser.getUserId());
+        entity.setId(LoginUser.getId());
 
         // 判断手机号是否存在
         SysUserEntity user = baseMapper.getByMobile(entity.getMobile());

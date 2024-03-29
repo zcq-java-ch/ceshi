@@ -1,6 +1,9 @@
 package com.hxls.api.module.system;
 
+
+
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * 存储服务API
@@ -50,4 +53,7 @@ public interface StorageApi {
      * @return 返回http地址
      */
     String upload(InputStream inputStream, String path);
+
+
+
 }

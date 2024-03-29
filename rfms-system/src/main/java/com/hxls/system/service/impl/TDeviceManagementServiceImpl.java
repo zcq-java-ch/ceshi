@@ -50,8 +50,7 @@ public class TDeviceManagementServiceImpl extends BaseServiceImpl<TDeviceManagem
     @Override
     public void save(TDeviceManagementVO vo) {
         TDeviceManagementEntity entity = TDeviceManagementConvert.INSTANCE.convert(vo);
-
-        baseMapper.insert(entity);
+         baseMapper.insert(entity);
     }
 
     @Override
@@ -66,5 +65,9 @@ public class TDeviceManagementServiceImpl extends BaseServiceImpl<TDeviceManagem
     public void delete(List<Long> idList) {
         removeByIds(idList);
     }
+
+
+
+
 
 }

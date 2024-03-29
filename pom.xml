@@ -19,7 +19,7 @@
 	    <module>rfms-framework</module>
 		<module>rfms-api</module>
 		<module>rfms-module</module>
-		<module>rfms-new</module>
+		<module>rfms-appointment</module>
 		<module>rfms-system</module>
         <module>rfms-gateway</module>
     </modules>

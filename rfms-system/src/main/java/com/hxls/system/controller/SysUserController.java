@@ -79,11 +79,9 @@ public class SysUserController {
     @Operation(summary = "登录用户")
     public Result<SysUserVO> info() {
         SysUserVO user = SysUserConvert.INSTANCE.convert(SecurityUser.getUser());
-
         if (user == null){
             throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
-
         // 用户岗位列表
         List<Long> postIdList = sysUserPostService.getPostIdList(user.getId());
         user.setPostIdList(postIdList);
@@ -104,7 +102,11 @@ public class SysUserController {
     @Operation(summary = "修改登录用户信息")
     @OperateLog(type = OperateTypeEnum.UPDATE)
     public Result<String> loginInfo(@RequestBody @Valid SysUserBaseVO vo) {
-        sysUserService.updateLoginInfo(vo);
+        UserDetail user = SecurityUser.getUser();
+        if (user == null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        sysUserService.updateLoginInfo(vo,user);
         return Result.ok();
     }
 
@@ -117,7 +119,6 @@ public class SysUserController {
         if (!passwordEncoder.matches(vo.getPassword(), user.getPassword())) {
             return Result.error("原密码不正确");
         }
-
         // 修改密码
         sysUserService.updatePassword(user.getId(), passwordEncoder.encode(vo.getNewPassword()));
 

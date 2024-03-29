@@ -1,5 +1,0 @@
-auth:
-  ignore_urls:
-    - /upload/**
-    - /car/listByCarNumber
-    - /**
