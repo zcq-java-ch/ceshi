@@ -9,6 +9,7 @@ import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
+import com.hxls.system.vo.MainUserVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserPasswordVO;
 import com.hxls.system.vo.SysUserVO;
@@ -195,5 +196,14 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:export')")
     public void export() {
         sysUserService.export();
+    }
+
+
+    @GetMapping("queryByMainUsers")
+    @Operation(summary = "主数据人员下拉数据")
+    @PreAuthorize("hasAuthority('sys:user:page')")
+    public Result<List<MainUserVO>> queryByMainUsers() {
+        List<MainUserVO> userVOS= sysUserService.queryByMainUsers();
+        return Result.ok(userVOS);
     }
 }

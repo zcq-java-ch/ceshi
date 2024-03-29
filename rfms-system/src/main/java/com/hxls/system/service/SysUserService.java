@@ -5,6 +5,7 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
+import com.hxls.system.vo.MainUserVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.framework.common.utils.PageResult;
@@ -57,4 +58,21 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * 导出用户信息表格
      */
     void export();
+
+
+    /**
+    * @Author zhaohong
+    * @Description  主数据密钥登录
+    * @Date 16:15 2024/3/29
+    **/
+    void cardLogin();
+
+
+    /**
+    * @Author zhaohong
+    * @Description 下拉获取主数据员工数据
+    * @Date 16:35 2024/3/29
+    **/
+
+    List<MainUserVO> queryByMainUsers();
 }
