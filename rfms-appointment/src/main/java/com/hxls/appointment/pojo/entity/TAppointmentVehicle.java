@@ -30,6 +30,11 @@ public class TAppointmentVehicle extends BaseEntity {
     private String plateNumber;
 
     /**
+     * 送货日期
+     */
+    private String deliveryDate;
+
+    /**
      * 乘坐人
      */
     private String passenger;

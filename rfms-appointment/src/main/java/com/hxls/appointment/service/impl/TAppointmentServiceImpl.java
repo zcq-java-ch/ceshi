@@ -214,13 +214,11 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         if (ObjectUtil.isNull(user)) {
             throw new ServerException("请登陆");
         }
-
         Set<String> manageStation = user.getManageStation();
         LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
         wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
 
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
-
         return new PageResult<>(TAppointmentConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
 
     }
@@ -231,6 +229,19 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //修改主表的信息
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
         updateById(entity);
+    }
+
+    @Override
+    public List<TAppointmentPersonnelVO> getListById(Long id) {
+        List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id));
+        return TAppointmentPersonnelConvert.INSTANCE.convertList(list);
+
+    }
+
+    @Override
+    public List<TAppointmentVehicleVO> getVehicleListById(Long id) {
+        List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId , id));
+        return TAppointmentVehicleConvert.INSTANCE.convertList(list);
     }
 
 }

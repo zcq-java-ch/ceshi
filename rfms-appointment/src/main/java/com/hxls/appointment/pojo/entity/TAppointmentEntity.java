@@ -26,6 +26,8 @@ public class TAppointmentEntity extends BaseEntity {
 
 	private Integer supplierSubclass;
 
+
+	private String supplierName;
 	/**
 	* 提交人
 	*/

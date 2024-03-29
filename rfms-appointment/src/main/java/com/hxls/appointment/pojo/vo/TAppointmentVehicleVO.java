@@ -96,5 +96,10 @@ public class TAppointmentVehicleVO implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 送货日期
+     */
+    private String deliveryDate;
+
 
 }

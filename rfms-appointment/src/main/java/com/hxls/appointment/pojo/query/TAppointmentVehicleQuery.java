@@ -46,4 +46,9 @@ public class TAppointmentVehicleQuery extends Query {
     @Schema(description = "审核状态（数据字典）")
     private String reviewStatus;
 
+    /**
+     * 送货日期
+     */
+    private String deliveryDate;
+
 }

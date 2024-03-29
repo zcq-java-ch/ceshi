@@ -24,6 +24,9 @@ public class TAppointmentQuery extends Query {
     @Schema(description = "供应商小类（ 0：人  ； 1：车 ），选择供应商的时候选择")
     private Integer supplierSubclass;
 
+    @Schema(description = "供应商名称")
+    private String supplierName;
+
     @Schema(description = "提交人")
     private Long submitter;
 

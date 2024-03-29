@@ -28,6 +28,13 @@ public class TAppointmentVO implements Serializable {
 	@Schema(description = "预约类型（数据字典）")
 	private String appointmentType;
 
+	@Schema(description = "供应商小类")
+	private Integer supplierSubclass;
+
+	@Schema(description = "供应商名称")
+	private String supplierName;
+
+
 	@Schema(description = "提交人")
 	private Long submitter;
 

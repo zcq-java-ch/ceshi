@@ -2,7 +2,9 @@ package com.hxls.appointment.service;
 
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
+import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
+import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 
@@ -61,4 +63,18 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param vo
      */
     void updateByAudit(TAppointmentVO vo);
+
+    /**
+     * 根据主单查看详情
+     * @param id
+     * @return
+     */
+    List<TAppointmentPersonnelVO> getListById(Long id);
+
+    /**
+     * 通过id查询车辆详情
+     * @param id
+     * @return
+     */
+    List<TAppointmentVehicleVO> getVehicleListById(Long id);
 }

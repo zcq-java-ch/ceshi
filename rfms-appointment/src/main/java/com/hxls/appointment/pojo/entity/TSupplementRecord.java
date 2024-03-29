@@ -52,6 +52,6 @@ public class TSupplementRecord extends BaseEntity {
     /**
      * 表单信息
      */
-    private Object remark;
+    private Object remark1;
 
 }
