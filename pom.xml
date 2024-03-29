@@ -22,6 +22,7 @@
 		<module>rfms-new</module>
 		<module>rfms-system</module>
         <module>rfms-gateway</module>
+        <module>rfms-datasection</module>
     </modules>
 
     <properties>
