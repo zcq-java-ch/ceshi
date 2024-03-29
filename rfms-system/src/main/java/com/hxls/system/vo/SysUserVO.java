@@ -133,4 +133,24 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "车牌号")
     private String licensePlate;
 
+    @Schema(description = "车辆照片")
+    private String imageUrl;
+
+    @Schema(description = "排放标准（数据字典）")
+    private String emissionStandard;
+
+    @Schema(description = "车辆类型（数据字典）")
+    private String carType;
+
+    @Schema(description = "三方关联id（数据字典）")
+    private String openId;
+
+
+    @Schema(description = "排序")
+    private Integer sort;
+
+
+
+
+
 }

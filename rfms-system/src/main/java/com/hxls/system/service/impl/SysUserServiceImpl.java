@@ -1,6 +1,10 @@
 package com.hxls.system.service.impl;
 
+import cn.hutool.core.lang.TypeReference;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fhs.trans.service.impl.TransService;
 import com.hxls.framework.common.constant.Constant;
@@ -13,6 +17,7 @@ import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.cache.TokenStoreCache;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
+import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.entity.SysUserEntity;
@@ -20,12 +25,13 @@ import com.hxls.system.enums.SuperAdminEnum;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
+import com.hxls.system.vo.MainUserVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserExcelVO;
 import com.hxls.system.vo.SysUserVO;
+import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import com.hxls.framework.security.user.SecurityUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +56,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     private final SysOrgService sysOrgService;
     private final TokenStoreCache tokenStoreCache;
     private final TransService transService;
+    private final MainPlatformCache mainPlatformCache;
 
     @Override
     public PageResult<SysUserVO> page(SysUserQuery query) {
@@ -238,6 +245,80 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         transService.transBatch(userExcelVOS);
         // 写到浏览器打开
         ExcelUtils.excelExport(SysUserExcelVO.class, "system_user_excel" + DateUtils.format(new Date()), null, userExcelVOS);
+    }
+
+    @Override
+    public void cardLogin() {
+        //请求小基础数据 1、请求登录接口，获取返回的token   2、根据token去请求小基础组织数据
+        OkHttpClient client = new OkHttpClient();
+        String jsonBody = "{\"idCard\":\"rfms\"}";
+        // 创建RequestBody实例
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonBody);
+
+        // 构建请求
+        Request request = new Request.Builder()
+                .url("http://182.150.57.78:9096/MainPlatform/userLogin/cardLogin")
+                .post(body) // 设置POST方法
+                .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
+                .build();
+
+        // 发送请求并处理响应
+        try {
+            Response firstResponse = client.newCall(request).execute();
+
+            if (firstResponse.isSuccessful()) {
+                // 请求成功，处理响应数据
+                String responseBody = firstResponse.body().string();
+                // 解析响应体为Map，这里假设JSON结构是标准的
+                JSONObject json1 = new JSONObject(responseBody);
+                JSONObject json2 = new JSONObject(json1.get("data"));
+                // 从响应中提取accessToken
+                String accessToken = json2.get("accessToken").toString();
+                //将accessToken存到缓存中，有效期一个半小时
+                mainPlatformCache.saveAccessToken(accessToken);
+            }
+
+        }catch (Exception e) {
+            // 网络异常处理
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public List<MainUserVO> queryByMainUsers() {
+        OkHttpClient client = new OkHttpClient();
+        //获取mainAccessToken
+        String accessToken = mainPlatformCache.getAccessToken();
+        if(!StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
+            cardLogin();
+            //更新accessToken
+            accessToken = mainPlatformCache.getAccessToken();
+        }
+
+        String secondRequestUrl = "http://182.150.57.78:9096/MainPlatform/travel/employee/queryList";
+        RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), "");
+        Request secondRequest = new Request.Builder()
+                .url(secondRequestUrl)
+                .post(secondRequestBody)
+                .addHeader("access-token", accessToken) // 将accessToken放入请求头
+                .build();
+
+
+        try {
+            Response secondResponse = client.newCall(secondRequest).execute();
+            if (secondResponse.isSuccessful()) {
+                JSONObject rel1 = new JSONObject(secondResponse.body().string());
+                List<MainUserVO> mainUserVOS = JSONUtil.toBean(rel1.get("data").toString(), new TypeReference<List<MainUserVO>>() {}, true);
+                return mainUserVOS;
+            }
+
+        }catch (Exception e) {
+            // 网络异常处理
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }

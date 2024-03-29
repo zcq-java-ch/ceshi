@@ -63,6 +63,8 @@ public class UserDetail implements UserDetails {
      */
     private Set<String> authoritySet;
 
+    Set<String> manageStation;
+
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -158,4 +158,9 @@ public class SysUserEntity extends BaseEntity {
      * 三方关联id（数据字典）
      */
     private String openId;
+
+    /**
+    * 排序
+    **/
+    private Integer sort;
 }
