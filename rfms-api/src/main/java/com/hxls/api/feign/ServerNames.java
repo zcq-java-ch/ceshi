@@ -12,4 +12,9 @@ public interface ServerNames {
      */
     String SYSTEM_SERVER_NAME = "rfms-system";
 
+    /**
+     * rfms-appointment 服务名
+     */
+    String APPOINTMENT_SERVER_NAME = "rfms-appointment";
+
 }

@@ -1,14 +1,15 @@
 package com.hxls.appointment.controller;
 
-import cn.hutool.json.JSONObject;
-import com.hxls.api.dto.appointment.EstablishRouterDTO;
-import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.api.dto.StorageDTO;
+import com.hxls.api.feign.system.StorageFeign;
 import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.Result;
+import org.springframework.data.repository.cdi.Eager;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,7 +27,7 @@ public class TestController {
 
     private final TAppointmentDao dao;
 
-    private final AppointmentFeign feign;
+    private final StorageFeign feign;
 
     @PostMapping("listByCarNumber")
     public Result<List<TVehicleVO>> listByCarNumber(@RequestBody List<String> data){
@@ -36,8 +37,14 @@ public class TestController {
     }
 
 
-    @GetMapping("/test")
-    public JSONObject test() throws IOException {
-      return   feign.establishRouter(new EstablishRouterDTO().setRouterName("11").setQueueName("22")) ;
+    @PostMapping("test")
+    public Result<StorageDTO> save(@RequestBody MultipartFile file){
+
+        try {
+            return Result.ok(  feign.upload(file) );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 }

@@ -63,7 +63,7 @@ public class UserDetail implements UserDetails {
      */
     private Set<String> authoritySet;
 
-    Set<String> manageStation;
+    private Set<String> manageStation;
 
     @Override
     @JsonIgnore

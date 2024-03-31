@@ -1,5 +1,8 @@
 package com.hxls.system.controller;
 
+import com.hxls.api.dto.AppointmentDTO;
+import com.hxls.api.dto.StorageDTO;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.service.SysAuthService;
 import com.hxls.system.service.SysCaptchaService;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class SysAuthController {
     private final SysCaptchaService sysCaptchaService;
     private final SysAuthService sysAuthService;
+    private final AppointmentFeign feign;
 
     @GetMapping("captcha")
     @Operation(summary = "验证码")
