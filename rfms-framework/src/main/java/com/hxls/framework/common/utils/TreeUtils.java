@@ -56,16 +56,34 @@ public class TreeUtils {
         }
 
         for (T node : nodeMap.values()) {
-            T parent = nodeMap.get(node.getPid());
-            if (parent != null && !(node.getId().equals(parent.getId()))) {
-                parent.getChildren().add(node);
-                continue;
-            }
-
+            // 设置当前节点的ppid
+            setPpidRecursively(node, nodeMap);
             result.add(node);
+
         }
 
         return result;
+    }
+
+
+    /**
+     * 递归设置节点的ppid
+     */
+    private static <T extends TreeNode<T>> void setPpidRecursively(T node, Map<Long, T> nodeMap) {
+        if (node.getPid() != null) {
+            T parent = nodeMap.get(node.getPid());
+            if (parent != null) {
+                // 设置当前节点的ppid为其父节点的id
+                node.setPpid("p"+parent.getId());
+                // 如果父节点有ppid，则设置当前节点的ppid为其父节点的ppid
+                if (parent.getPpid() != null && parent.getPpid().length() > 1) {
+                    node.setPpid(parent.getPpid());
+                }
+            } else {
+                // 如果找不到父节点，设置ppid为null
+                node.setPpid(null);
+            }
+        }
     }
 
 }
