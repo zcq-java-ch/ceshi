@@ -2,6 +2,7 @@ package com.hxls.datasection.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hxls.framework.common.utils.DateUtils;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.baomidou.mybatisplus.annotation.*;
@@ -45,6 +46,13 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	* 出入通道名字
 	*/
 	private String channelName;
+
+	@Schema(description = "设备ID")
+	private Long deviceId;
+
+	@Schema(description = "设备名字")
+	private String deviceName;
+
 
 	/**
 	* 记录时间

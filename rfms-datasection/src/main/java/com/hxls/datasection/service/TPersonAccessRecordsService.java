@@ -23,4 +23,6 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
     void update(TPersonAccessRecordsVO vo);
 
     void delete(List<Long> idList);
+
+    PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query);
 }

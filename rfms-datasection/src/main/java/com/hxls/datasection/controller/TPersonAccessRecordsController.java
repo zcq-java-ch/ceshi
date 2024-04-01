@@ -19,6 +19,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -88,10 +93,13 @@ public class TPersonAccessRecordsController {
 
 
     @GetMapping("/pageUnidirectionalTpersonAccessRecords")
-    @Operation(summary = "分页")
+    @Operation(summary = "查询单向通行记录")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
     public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query){
-        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query);
+
+        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query);
+        List<TPersonAccessRecordsVO> list = page.getList();
+
 
         return Result.ok(page);
     }

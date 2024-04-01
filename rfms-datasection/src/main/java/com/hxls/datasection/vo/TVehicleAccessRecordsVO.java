@@ -36,6 +36,12 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "出入通道名字")
 	private String channelName;
 
+	@Schema(description = "设备ID")
+	private Long deviceId;
+
+	@Schema(description = "设备名字")
+	private String deviceName;
+
 	@Schema(description = "记录时间")
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date recordTime;

@@ -1,5 +1,6 @@
 package com.hxls.datasection.vo;
 
+import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -8,6 +9,7 @@ import com.hxls.framework.common.utils.DateUtils;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
 * 人员出入记录表
@@ -32,11 +34,17 @@ public class TPersonAccessRecordsVO implements Serializable {
 	@Schema(description = "出入类型（数据字典）")
 	private String accessType;
 
-	@Schema(description = "出入通道ID")
+	@Schema(description = "出入通道区域ID")
 	private Long channelId;
 
-	@Schema(description = "出入通道名字")
+	@Schema(description = "出入通道区域名字")
 	private String channelName;
+
+	@Schema(description = "设备ID")
+	private Long deviceId;
+
+	@Schema(description = "设备名字")
+	private String deviceName;
 
 	@Schema(description = "记录时间")
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
@@ -102,5 +110,7 @@ public class TPersonAccessRecordsVO implements Serializable {
 	private Date updateTime;
 
 	private String directionType;
+
+	private List<TPersonAccessRecordsEntity> todayDetails;
 
 }
