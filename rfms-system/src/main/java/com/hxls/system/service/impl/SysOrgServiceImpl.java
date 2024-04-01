@@ -7,6 +7,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
@@ -245,5 +246,19 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         }
         //根据小基础数据添加未同步的组织数据
 
+    }
+
+    @Override
+    public SysOrgEntity getByCode(String pcode) {
+        LambdaQueryWrapper<SysOrgEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getCode, pcode);
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
+        List<SysOrgEntity> sysOrgEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+        if(CollectionUtils.isNotEmpty(sysOrgEntities)){
+            return sysOrgEntities.get(0);
+        }else {
+            return null;
+        }
     }
 }

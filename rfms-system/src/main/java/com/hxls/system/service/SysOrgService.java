@@ -38,4 +38,6 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 	 * @param id   机构ID
 	 */
 	List<Long> getSubOrgIdList(Long id);
+
+    SysOrgEntity getByCode(String pcode);
 }

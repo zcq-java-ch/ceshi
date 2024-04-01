@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 public class SysOrgEntity extends BaseEntity {
 
     /**
-     * 单位类型（1：公司 2：部门）
+     * 单位类型（1：公司 2：部门 3: 站点 来自字典）
      */
     private Integer property;
 
@@ -67,4 +67,28 @@ public class SysOrgEntity extends BaseEntity {
      */
     private Integer status;
 
+    /**
+     * 站点地址（中文地址）
+     * */
+    private String siteLocation;
+
+    /**
+     * 站点地址经度
+     * */
+    private String siteLocationLon;
+
+    /**
+     * 站点地址纬度
+     * */
+    private String siteLocationLat;
+
+    /**
+     * 站点管理员(多个)
+     * */
+    private String siteAdminIds;
+
+    /**
+     * 站点管理员名字（多个）
+     * */
+    private String siteAdminNames;
 }

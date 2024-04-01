@@ -1,5 +1,6 @@
 package com.hxls.system.controller;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -61,8 +62,11 @@ public class SysOrgController {
 
         // 获取上级机构名称
         if (entity.getPcode() != null) {
-            SysOrgEntity parentEntity = sysOrgService.getById(entity.getPcode());
-            vo.setPname(parentEntity.getName());
+//            SysOrgEntity parentEntity = sysOrgService.getById(entity.getPcode());
+            SysOrgEntity parentEntity = sysOrgService.getByCode(entity.getPcode());
+            if (ObjectUtils.isNotEmpty(parentEntity)){
+                vo.setPname(parentEntity.getName());
+            }
         }
 
         return Result.ok(vo);

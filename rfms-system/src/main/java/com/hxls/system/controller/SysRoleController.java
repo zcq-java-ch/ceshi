@@ -45,7 +45,7 @@ public class SysRoleController {
 
     @GetMapping("page")
     @Operation(summary = "分页")
-    @PreAuthorize("hasAuthority('sys:role:page')")
+//    @PreAuthorize("hasAuthority('sys:role:page')")
     public Result<PageResult<SysRoleVO>> page(@ParameterObject @Valid SysRoleQuery query) {
         PageResult<SysRoleVO> page = sysRoleService.page(query);
 
