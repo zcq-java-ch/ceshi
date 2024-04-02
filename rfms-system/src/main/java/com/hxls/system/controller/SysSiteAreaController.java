@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -59,30 +60,44 @@ public class SysSiteAreaController {
     @GetMapping("/queryAreaBySite/{id}")
     @Operation(summary = "信息")
 //    @PreAuthorize("hasAuthority('spd:area:info')")
-    public Result<SysSiteAreaVO> get(@PathVariable("id") Long id){
-        SysSiteAreaEntity entity = sysSiteAreaService.getById(id);
-        SysSiteAreaVO convert = SysSiteAreaConvert.INSTANCE.convert(entity);
-        String faceInCode = entity.getFaceInCode();
-        if (StringUtils.isNotEmpty(faceInCode)){
-            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceInCode);
-            convert.setFaceInCodeAndDevices(objects);
+    public Result<List<SysSiteAreaVO>> get(@PathVariable("id") Long siteId){
+        LambdaQueryWrapper<SysSiteAreaEntity> sysSiteAreaEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getSiteId, siteId);
+        sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getStatus, 1);
+        sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getDeleted, 0);
+        List<SysSiteAreaEntity> sysSiteAreaEntityList = sysSiteAreaService.list(sysSiteAreaEntityLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(sysSiteAreaEntityList)){
+            List<SysSiteAreaVO> returnList = new ArrayList<>();
+
+            for (int i = 0; i < sysSiteAreaEntityList.size(); i++) {
+                SysSiteAreaEntity entity = sysSiteAreaService.getById(sysSiteAreaEntityList.get(i).getId());
+                SysSiteAreaVO convert = SysSiteAreaConvert.INSTANCE.convert(entity);
+                String faceInCode = entity.getFaceInCode();
+                if (StringUtils.isNotEmpty(faceInCode)){
+                    JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceInCode);
+                    convert.setFaceInCodeAndDevices(objects);
+                }
+                String faceOutCode = entity.getFaceOutCode();
+                if (StringUtils.isNotEmpty(faceOutCode)){
+                    JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceOutCode);
+                    convert.setFaceOutCodeAndDevices(objects);
+                }
+                String carInCode = entity.getCarIntCode();
+                if (StringUtils.isNotEmpty(carInCode)){
+                    JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carInCode);
+                    convert.setCarIntCodeAndDevices(objects);
+                }
+                String carOutCode = entity.getCarOutCode();
+                if (StringUtils.isNotEmpty(carOutCode)){
+                    JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carOutCode);
+                    convert.setFaceOutCodeAndDevices(objects);
+                }
+                returnList.add(convert);
+            }
+            return Result.ok(returnList);
+        }else {
+            return Result.ok();
         }
-        String faceOutCode = entity.getFaceOutCode();
-        if (StringUtils.isNotEmpty(faceOutCode)){
-            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceOutCode);
-            convert.setFaceOutCodeAndDevices(objects);
-        }
-        String carInCode = entity.getCarIntCode();
-        if (StringUtils.isNotEmpty(carInCode)){
-            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carInCode);
-            convert.setCarIntCodeAndDevices(objects);
-        }
-        String carOutCode = entity.getCarOutCode();
-        if (StringUtils.isNotEmpty(carOutCode)){
-            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carOutCode);
-            convert.setFaceOutCodeAndDevices(objects);
-        }
-        return Result.ok(convert);
     }
 
     @PostMapping("/saveSiteArea")

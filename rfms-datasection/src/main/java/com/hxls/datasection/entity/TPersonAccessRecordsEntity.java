@@ -47,12 +47,9 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	*/
 	private String channelName;
 
-	@Schema(description = "设备ID")
 	private Long deviceId;
 
-	@Schema(description = "设备名字")
 	private String deviceName;
-
 
 	/**
 	* 记录时间
