@@ -1,5 +1,6 @@
 package com.hxls.system.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -54,4 +55,7 @@ public class SysMenuVO extends TreeNode<SysMenuVO> {
 
     @Schema(description = "上级菜单名称")
     private String parentName;
+
+    @TableField(exist = false)
+    private Long ppid;
 }

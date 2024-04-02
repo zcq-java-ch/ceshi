@@ -1,5 +1,6 @@
 package com.hxls.system.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -47,5 +48,8 @@ public class SysMenuEntity extends BaseEntity {
      * 排序
      */
     private Integer sort;
+
+    @TableField(exist = false)
+    private Long ppid;
 
 }

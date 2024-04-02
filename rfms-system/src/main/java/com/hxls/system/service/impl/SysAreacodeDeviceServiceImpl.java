@@ -115,7 +115,11 @@ public class SysAreacodeDeviceServiceImpl extends BaseServiceImpl<SysAreacodeDev
 
         // 更新数据库记录
         try {
-            entities.forEach(this::updateById);
+//            entities.forEach(this::updateById);
+            for (int i = 0; i < entities.size(); i++) {
+                SysAreacodeDeviceEntity sysAreacodeDeviceEntity = entities.get(i);
+                baseMapper.deleteById(sysAreacodeDeviceEntity);
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
