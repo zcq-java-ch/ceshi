@@ -8,6 +8,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @AllArgsConstructor
 public class RabbitMqManager {
@@ -20,8 +23,10 @@ public class RabbitMqManager {
         DirectExchange exchange = new DirectExchange(exchangeName, true, false);
         rabbitAdmin.declareExchange(exchange);
 
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-message-ttl", 60000); // 60 seconds //60s删除
         // 声明队列
-        Queue queue = new Queue(queueName, true, false, false);
+        Queue queue = new Queue(queueName, true, false, false,args);
         rabbitAdmin.declareQueue(queue);
 
         // 绑定队列到交换机

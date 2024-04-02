@@ -26,6 +26,12 @@ public class TreeNode<T> implements Serializable {
      */
     @Schema(description = "上级ID")
     private Long pid;
+
+    /**
+     * 最上级ID
+     */
+    @Schema(description = "最上级ID")
+    private String ppid;
     /**
      * 子节点列表
      */

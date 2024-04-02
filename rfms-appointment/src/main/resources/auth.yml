@@ -3,3 +3,4 @@ auth:
     - /upload/**
     - /car/listByCarNumber
     - /api/**
+    - /car/test
