@@ -78,6 +78,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         params.put("username", query.getUsername());
         params.put("mobile", query.getMobile());
         params.put("gender", query.getGender());
+        params.put("userType", query.getUserType());
+        params.put("supervisor", query.getSupervisor());
+        params.put("licensePlate", query.getLicensePlate());
+        params.put("code", query.getCode());
+        params.put("status", query.getStatus());
+        params.put("realName", query.getRealName());
 
         // 数据权限
         params.put(Constant.DATA_SCOPE, getDataScope("t1", null));

@@ -87,6 +87,9 @@ public class SysUserVO implements Serializable, TransPojo {
     @NotBlank(message = "姓名不能为空")
     private String realName;
 
+    @Schema(description = "代班负责人")
+    private String  supervisor;
+
     @Schema(description = "头像")
     private String avatar;
 

@@ -102,6 +102,12 @@ public class SysUserEntity extends BaseEntity {
      * 姓名
      */
     private String realName;
+
+    /**
+     * 代班负责人
+     */
+    private String  supervisor;
+
     /**
      * 头像
      */
