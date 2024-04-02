@@ -9,7 +9,7 @@ import com.hxls.framework.mybatis.entity.BaseEntity;
 /**
  * 设备管理表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-15
  */
 @EqualsAndHashCode(callSuper=false)
@@ -31,6 +31,32 @@ public class TDeviceManagementEntity extends BaseEntity {
 	* 设备序列号
 	*/
 	private String deviceSn;
+
+	/**
+	 * 进出类型（数据字典）
+	 */
+	private String type;
+
+	/**
+	 * 主机ip
+	 */
+	private String masterIp;
+
+	/**
+	 * 主机序列号
+	 */
+	private String masterSn;
+
+	/**
+	 * 主机账号
+	 */
+	private String masterAccount;
+
+	/**
+	 * 主机密码
+	 */
+	private String masterPassword;
+
 
 	/**
 	* 设备类型（数据字典）

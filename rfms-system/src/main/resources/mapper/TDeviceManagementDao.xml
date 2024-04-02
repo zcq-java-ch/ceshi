@@ -22,6 +22,11 @@
         <result property="createTime" column="create_time"/>
         <result property="updater" column="updater"/>
         <result property="updateTime" column="update_time"/>
+        <result property="type" column="type"/>
+        <result property="masterIp" column="master_ip"/>
+        <result property="masterSn" column="master_sn"/>
+        <result property="masterAccount" column="master_account"/>
+        <result property="masterPassword" column="master_password"/>
     </resultMap>
 
 </mapper>

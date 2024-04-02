@@ -10,7 +10,7 @@ import java.util.Date;
 /**
 * 设备管理表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-15
 */
 @Data
@@ -73,6 +73,21 @@ public class TDeviceManagementVO implements Serializable {
 	@Schema(description = "更新时间")
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date updateTime;
+
+	@Schema(description = "进出类型（数据字典）")
+	private String type;
+
+	@Schema(description = "主机ip")
+	private String masterIp;
+
+	@Schema(description = "主机序列号")
+	private String masterSn;
+
+	@Schema(description = "主机账号")
+	private String masterAccount;
+
+	@Schema(description = "主机密码")
+	private String masterPassword;
 
 
 }
