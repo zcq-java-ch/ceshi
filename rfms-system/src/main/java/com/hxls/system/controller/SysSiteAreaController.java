@@ -4,6 +4,7 @@ import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.framework.common.utils.PageResult;
@@ -90,7 +91,7 @@ public class SysSiteAreaController {
                 String carOutCode = entity.getCarOutCode();
                 if (StringUtils.isNotEmpty(carOutCode)){
                     JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carOutCode);
-                    convert.setFaceOutCodeAndDevices(objects);
+                    convert.setCarOutCodeAndDevices(objects);
                 }
                 returnList.add(convert);
             }
@@ -151,7 +152,9 @@ public class SysSiteAreaController {
     @Operation(summary = "绑定检查")
     @OperateLog(type = OperateTypeEnum.INSERT)
 //    @PreAuthorize("hasAuthority('spd:area:save')")
-    public Result<String> bindCheckDeviceSiteArea(@RequestBody List<Long> checkBind) {
+    public Result<String> bindCheckDeviceSiteArea(@RequestBody JSONObject params) {
+        JSONArray checkBind = params.getJSONArray("checkBind");
+        JSONArray areaCodes = params.getJSONArray("areaCodes");
 
         boolean hasDuplicates = checkDuplicates(checkBind);
         if (hasDuplicates){
@@ -164,6 +167,7 @@ public class SysSiteAreaController {
             sysAreacodeDeviceEntity.eq(SysAreacodeDeviceEntity::getDeviceId, checkBind.get(i));
             sysAreacodeDeviceEntity.eq(SysAreacodeDeviceEntity::getStatus, 1);
             sysAreacodeDeviceEntity.eq(SysAreacodeDeviceEntity::getDeleted, 0);
+            sysAreacodeDeviceEntity.notIn(CollectionUtils.isNotEmpty(areaCodes), SysAreacodeDeviceEntity::getAreaDeviceCode, areaCodes.toArray());
             long count = sysAreacodeDeviceService.count(sysAreacodeDeviceEntity);
             if (count > 0){
                 return Result.error(checkBind.get(i)+":该设备已被绑定！");
@@ -171,9 +175,10 @@ public class SysSiteAreaController {
         }
         return Result.ok();
     }
-    public static boolean checkDuplicates(List<Long> list) {
+    public static boolean checkDuplicates(JSONArray list) {
         HashSet<Long> set = new HashSet<>();
-        for (Long element : list) {
+        for (int i = 0; i < list.size(); i++) {
+            Long element = list.getLong(i);
             if (!set.add(element)) {
                 // 如果元素已经存在于集合中，则说明存在重复元素
                 return true;
@@ -184,13 +189,11 @@ public class SysSiteAreaController {
     }
 
 
-    @DeleteMapping("/delSiteArea")
+    @PostMapping("/delSiteArea")
     @Operation(summary = "删除")
     @OperateLog(type = OperateTypeEnum.DELETE)
 //    @PreAuthorize("hasAuthority('spd:area:delete')")
     public Result<String> delete(@RequestBody List<Long> idList){
-        sysSiteAreaService.delete(idList);
-
         try{
             // 删除中间表
             for (int i = 0; i < idList.size(); i++) {
@@ -204,7 +207,7 @@ public class SysSiteAreaController {
                 sysAreacodeDeviceService.deleteDataByCode(carIntCode);
                 sysAreacodeDeviceService.deleteDataByCode(carOutCode);
             }
-
+            sysSiteAreaService.delete(idList);
             return Result.ok();
         }catch (Exception e){
             e.printStackTrace();
