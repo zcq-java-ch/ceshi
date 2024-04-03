@@ -2,7 +2,9 @@ package com.hxls.rabbitmq.demoExchange;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.hxls.rabbitmq.domain.MessageSendDto;
+import com.hxls.rabbitmq.product.MqProductor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,10 +21,12 @@ import java.util.UUID;
 @RestController
 public class SendDemoMessageController {
 
-    public static final String ROUTING_FACE = "_ROUTING_FACE";
+    public static final String ROUTING_FACE = "_ROUTING_FACE_TOAGENT";
     @Autowired
     RabbitTemplate rabbitTemplate ;
 
+    @Autowired
+    MqProductor mqProductor;
     // 人脸
     @GetMapping("/sendTopicFaceMessage")
     public String sendTopicMessage1() throws InterruptedException {
@@ -81,8 +85,9 @@ public class SendDemoMessageController {
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setExpiration("10000"); // 设置 TTL 为 10 秒
         Message message = new Message(map.toString().getBytes(), messageProperties);
-        rabbitTemplate.convertAndSend(messageData.get("stationtopic").toString()+"_EXCHANGE", messageData.get("stationtopic").toString()+ ROUTING_FACE, map);
-
+        String exchange = messageData.get("stationtopic").toString()+"_EXCHANGE";
+        String routingKey = messageData.get("stationtopic").toString()+ ROUTING_FACE;
+        mqProductor.sendMessage(exchange, routingKey, map);
         return "ok";
     }
 

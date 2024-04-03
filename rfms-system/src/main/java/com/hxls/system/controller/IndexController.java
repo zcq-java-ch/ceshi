@@ -34,7 +34,7 @@ public class IndexController {
         System.out.println("接收到的ip为 ："+ip);
 
         try {
-            AppointmentDTO establish = feign.establish(new AppointmentDTO().setExchangeName("jingcheng").setQueueName("jingcheng").setIp(ip));
+            AppointmentDTO establish = feign.establish(new AppointmentDTO().setExchangeName("XICHANG").setQueueName("XICHANG").setIp(ip));
             if (establish.getResult()){
                 System.out.println("队列创建成功");
                 redisCache.set( ip , "在线" ,60*3);
@@ -42,7 +42,7 @@ public class IndexController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return Result.ok("jingcheng");
+        return Result.ok("XICHANG");
     }
 
 
