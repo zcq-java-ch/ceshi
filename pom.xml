@@ -235,6 +235,12 @@
                 <artifactId>bcprov-jdk15to18</artifactId>
                 <version>${bouncycastle.version}</version>
             </dependency>
+            <!--rabbitmq-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+                <version>3.1.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
