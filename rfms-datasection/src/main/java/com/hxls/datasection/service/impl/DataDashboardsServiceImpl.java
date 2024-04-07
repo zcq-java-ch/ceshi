@@ -130,4 +130,62 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         jsonObject.put("detailsOfExternalReservationStaff", objects); // 外部预约员明细
         return jsonObject;
     }
+
+    /**
+     * 基本信息部分
+     * */
+    @Override
+    public JSONObject basicInformationSection() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("numberOfSites", "10"); // 站点数量
+        jsonObject.put("vehicularAccess", "10"); // 车辆通道
+        jsonObject.put("personnelAccess", "10"); // 人员通道
+        jsonObject.put("licensePlateRecognitionOnline", "10"); // 车牌识别（在线）
+        jsonObject.put("licensePlateRecognitionOffline", "10"); // 车牌识别（离线）
+        jsonObject.put("faceRecognitionOnline", "10"); // 人脸识别（在线）
+        jsonObject.put("faceRecognitionOffline", "10"); // 人脸识别（离线）
+
+        return jsonObject;
+    }
+
+    /**
+     * 实名制信息部分
+     * */
+    @Override
+    public JSONObject realNameInformationSection() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("numberOfFactoryStation", "10"); // 厂站实时总人数
+        jsonObject.put("numberOfPeopleReadyToMix", "10"); // 预拌人数
+        jsonObject.put("preMadeNumberOfPeople", "10"); // 预制人数
+        jsonObject.put("numberOfPipePiles", "10"); // 管桩人数
+        jsonObject.put("numberOfResources", "10"); // 资源人数
+        jsonObject.put("numberOfPeopleInTheSupplyChain", "10"); // 供应链人数
+        jsonObject.put("numberOfEngineers", "10"); // 工程人数
+        jsonObject.put("numberOfCarStation", "10"); // 厂站实时车辆总数
+        jsonObject.put("numberOfPassengerCars", "10"); // 小客车数量
+        jsonObject.put("numberOfFreightTrucks", "10"); // 货运车数量
+        jsonObject.put("numberOfResidents", "10"); // 派驻人数
+        jsonObject.put("numberOfExternalAppointments", "10"); // 外部预约人数
+        return jsonObject;
+    }
+
+    /**
+     * 地图部分
+     * */
+    @Override
+    public JSONObject mapSection() {
+
+        JSONArray locationArrays = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("siteName", "崇州站"); // 站点名称
+        jsonObject.put("longitudeOfTheSite", "10"); // 站点经度
+        jsonObject.put("siteLatitude", "10"); // 站点纬度
+        jsonObject.put("numberOfPeopleAtTheSite", "10"); // 站点人数
+        jsonObject.put("numberOfStops", "10"); // 站点车数
+        locationArrays.add(jsonObject);
+
+        JSONObject jsonObjectReturn = new JSONObject();
+        jsonObjectReturn.put("sitelocation", locationArrays);
+        return jsonObjectReturn;
+    }
 }

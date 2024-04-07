@@ -20,4 +20,10 @@ public interface DataDashboardsService{
     JSONObject vehicleAccessDetails(Long stationId);
 
     JSONObject breakdownOfExternalAppointments(Long stationId);
+
+    JSONObject basicInformationSection();
+
+    JSONObject realNameInformationSection();
+
+    JSONObject mapSection();
 }

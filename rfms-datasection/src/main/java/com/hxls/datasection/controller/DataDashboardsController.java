@@ -49,4 +49,22 @@ public class DataDashboardsController {
 
         return Result.ok(jsonObject);
     }
+
+    @GetMapping("/companyKanban")
+    @Operation(summary = "数据看板-公司看板")
+//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
+    public Result<JSONObject> companyKanban(){
+        JSONObject jsonObject = new JSONObject();
+        // 1. 基本信息部分
+        JSONObject jsonper = dataDashboardsService.basicInformationSection();
+        jsonObject.put("basicInformationSection", jsonper);
+        // 2. 实名制信息部分
+        JSONObject jsonveh = dataDashboardsService.realNameInformationSection();
+        jsonObject.put("realNameInformationSection", jsonveh);
+        // 3. 地图部分
+        JSONObject jsonsite = dataDashboardsService.mapSection();
+        jsonObject.put("mapSection", jsonsite);
+
+        return Result.ok(jsonObject);
+    }
 }
