@@ -44,18 +44,18 @@ public class SynMessageDataContorller {
     /**
      * 接收客户端传来的车辆道闸记录
      * */
-    @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud()}")
-    public void receiveCarDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
-        MessageProperties properties = message.getMessageProperties();
-//        long tag = properties.getDeliveryTag();
-//        log.info("简单模式的消费者收到:{}",s);
-        System.out.println("接收到来自客户端的人脸识别历史数据:"+s);
-        MessageSendDto student = JSONObject.parseObject(s, MessageSendDto.class);
-//        log.info(student.toString());
-        System.out.println("student.toString()"+student.toString());
-        //手动回执，不批量签收,回执后才能处理下一批消息
-//        c.basicAck(tag,false);
-//        System.out.println("正常进入人脸设备  : " + o);
-    }
+//    @RabbitHandler
+//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud()}")
+//    public void receiveCarDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
+//        MessageProperties properties = message.getMessageProperties();
+////        long tag = properties.getDeliveryTag();
+////        log.info("简单模式的消费者收到:{}",s);
+//        System.out.println("接收到来自客户端的人脸识别历史数据:"+s);
+//        MessageSendDto student = JSONObject.parseObject(s, MessageSendDto.class);
+////        log.info(student.toString());
+//        System.out.println("student.toString()"+student.toString());
+//        //手动回执，不批量签收,回执后才能处理下一批消息
+////        c.basicAck(tag,false);
+////        System.out.println("正常进入人脸设备  : " + o);
+//    }
 }
