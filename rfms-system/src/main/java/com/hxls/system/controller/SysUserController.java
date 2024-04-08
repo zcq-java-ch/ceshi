@@ -1,11 +1,15 @@
 package com.hxls.system.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
+import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
@@ -17,11 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import com.hxls.framework.common.utils.PageResult;
-import com.hxls.framework.common.utils.Result;
-import com.hxls.framework.security.user.SecurityUser;
-import com.hxls.framework.security.user.UserDetail;
-import com.hxls.system.convert.SysUserConvert;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -205,5 +204,14 @@ public class SysUserController {
     public Result<List<MainUserVO>> queryByMainUsers() {
         List<MainUserVO> userVOS= sysUserService.queryByMainUsers();
         return Result.ok(userVOS);
+    }
+
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('sys:user:update')")
+    public Result<String> updateStatus(@RequestBody List<SysUserVO> list) {
+        sysUserService.updateStatus(list);
+        return Result.ok();
     }
 }

@@ -327,4 +327,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         return null;
     }
 
+    @Override
+    public void updateStatus(List<SysUserVO> list) {
+        for (SysUserVO vo : list) {
+            SysUserEntity entity = new SysUserEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            // 更新实体
+            this.updateById(entity);
+        }
+    }
+
 }
