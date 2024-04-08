@@ -6,7 +6,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.hxls.api.dto.AppointmentDTO;
+import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;
