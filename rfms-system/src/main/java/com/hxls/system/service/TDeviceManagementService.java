@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 设备管理表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-15
  */
 public interface TDeviceManagementService extends BaseService<TDeviceManagementEntity> {
@@ -23,4 +23,6 @@ public interface TDeviceManagementService extends BaseService<TDeviceManagementE
     void update(TDeviceManagementVO vo);
 
     void delete(List<Long> idList);
+
+    void updateStatus(List<TDeviceManagementVO> list);
 }

@@ -1,6 +1,7 @@
 package com.hxls.system.controller;
 
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.system.vo.TVehicleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -90,5 +91,14 @@ public class TDeviceManagementController {
         //接收心跳 -- 放入缓存
         redisCache.set(ip,"在线",20);
 
+    }
+
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('system:device:update')")
+    public Result<String> updateStatus(@RequestBody List<TDeviceManagementVO> list) {
+        tDeviceManagementService.updateStatus(list);
+        return Result.ok();
     }
 }
