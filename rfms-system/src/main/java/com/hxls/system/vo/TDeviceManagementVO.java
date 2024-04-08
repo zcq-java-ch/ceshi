@@ -24,6 +24,9 @@ public class TDeviceManagementVO implements Serializable {
 	@Schema(description = "所属站点ID")
 	private Long siteId;
 
+	@Schema(description = "所属站点编码")
+	private String siteCode;
+
 	@Schema(description = "设备名称")
 	private String deviceName;
 
@@ -35,6 +38,9 @@ public class TDeviceManagementVO implements Serializable {
 
 	@Schema(description = "所属厂家")
 	private Long manufacturerId;
+
+	@Schema(description = "所属厂家编码")
+	private String manufacturerCode;
 
 	@Schema(description = "连接方式（数据字典）")
 	private String connectionType;

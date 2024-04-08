@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.system.entity.SysAreacodeDeviceEntity;
+import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.query.SysAreacodeDeviceQuery;
 import com.hxls.system.vo.SysAreacodeDeviceVO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 区域通道随机码与设备中间表
@@ -35,4 +35,10 @@ public interface SysAreacodeDeviceService extends BaseService<SysAreacodeDeviceE
      * 通过区域随机码删除中间表数据
      * */
     boolean deleteDataByCode(String areaCode);
+
+
+    /**
+     * 通过设备id找到唯一的关联的通道数据
+     * */
+    SysSiteAreaEntity queryChannelByDeviceId(Long deviceId);
 }

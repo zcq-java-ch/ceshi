@@ -23,6 +23,11 @@ public class TDeviceManagementEntity extends BaseEntity {
 	private Long siteId;
 
 	/**
+	 * 所属站点编码
+	 */
+	private String siteCode;
+
+	/**
 	* 设备名称
 	*/
 	private String deviceName;
@@ -67,6 +72,11 @@ public class TDeviceManagementEntity extends BaseEntity {
 	* 所属厂家
 	*/
 	private Long manufacturerId;
+
+	/**
+	 * 所属厂家编码
+	 */
+	private String manufacturerCode;
 
 	/**
 	* 连接方式（数据字典）

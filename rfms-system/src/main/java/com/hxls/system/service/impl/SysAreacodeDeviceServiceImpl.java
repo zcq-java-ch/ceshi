@@ -1,8 +1,8 @@
 package com.hxls.system.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -12,15 +12,15 @@ import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.SysAreacodeDeviceConvert;
 import com.hxls.system.dao.SysAreacodeDeviceDao;
+import com.hxls.system.dao.SysSiteAreaDao;
 import com.hxls.system.dao.TDeviceManagementDao;
 import com.hxls.system.entity.SysAreacodeDeviceEntity;
+import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.query.SysAreacodeDeviceQuery;
 import com.hxls.system.service.SysAreacodeDeviceService;
 import com.hxls.system.vo.SysAreacodeDeviceVO;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +37,8 @@ import java.util.List;
 public class SysAreacodeDeviceServiceImpl extends BaseServiceImpl<SysAreacodeDeviceDao, SysAreacodeDeviceEntity> implements SysAreacodeDeviceService {
 
     private final TDeviceManagementDao tDeviceManagementDao;
+
+    private final SysSiteAreaDao sysSiteAreaDao;
     @Override
     public PageResult<SysAreacodeDeviceVO> page(SysAreacodeDeviceQuery query) {
         IPage<SysAreacodeDeviceEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
@@ -125,5 +127,42 @@ public class SysAreacodeDeviceServiceImpl extends BaseServiceImpl<SysAreacodeDev
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public SysSiteAreaEntity queryChannelByDeviceId(Long deviceId) {
+
+        SysSiteAreaEntity sysSiteAreaEntity = new SysSiteAreaEntity();
+
+        LambdaQueryWrapper<SysAreacodeDeviceEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysAreacodeDeviceEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysAreacodeDeviceEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(SysAreacodeDeviceEntity::getDeviceId, deviceId);
+        List<SysAreacodeDeviceEntity> sysAreacodeDeviceEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+
+        if (CollectionUtils.isNotEmpty(sysAreacodeDeviceEntities)){
+            JSONArray objectsArray = new JSONArray();
+            SysAreacodeDeviceEntity sysAreacodeDeviceEntity1 = sysAreacodeDeviceEntities.get(0);
+            String areaDeviceCode = sysAreacodeDeviceEntity1.getAreaDeviceCode();
+            LambdaQueryWrapper<SysSiteAreaEntity> sysSiteAreaEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getStatus, 1)
+                    .eq(SysSiteAreaEntity::getDeleted, 0)
+                    .and(wrapper -> wrapper
+                            .eq(SysSiteAreaEntity::getCarIntCode, areaDeviceCode)
+                            .or()
+                            .eq(SysSiteAreaEntity::getCarOutCode, areaDeviceCode)
+                            .or()
+                            .eq(SysSiteAreaEntity::getFaceInCode, areaDeviceCode)
+                            .or()
+                            .eq(SysSiteAreaEntity::getFaceOutCode, areaDeviceCode)
+                    );
+            List<SysSiteAreaEntity> sysAreacodeDeviceEntities1 = sysSiteAreaDao.selectList(sysSiteAreaEntityLambdaQueryWrapper);
+
+            if (CollectionUtil.isNotEmpty(sysAreacodeDeviceEntities1)){
+                sysSiteAreaEntity = sysAreacodeDeviceEntities1.get(0);
+            }
+        }else {
+        }
+        return sysSiteAreaEntity;
     }
 }
