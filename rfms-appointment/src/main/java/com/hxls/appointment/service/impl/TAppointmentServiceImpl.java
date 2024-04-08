@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
 import com.hxls.appointment.convert.TAppointmentVehicleConvert;
@@ -19,6 +21,7 @@ import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -27,12 +30,14 @@ import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * 预约信息表
@@ -65,7 +70,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             Long submitter = tAppointmentVO.getSubmitter();
             TAppointmentPersonnel one = tAppointmentPersonnelService.getOne(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id)
                     .eq(TAppointmentPersonnel::getUserId, submitter));
-            tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
+            if (ObjectUtil.isNotNull(one)){
+                tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
+                tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
+            }
         }
 
         return new PageResult<>(tAppointmentVOS, page.getTotal());
@@ -73,6 +81,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     private LambdaQueryWrapper<TAppointmentEntity> getWrapper(TAppointmentQuery query) {
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
+        List<String> list = Stream.of("3", "4", "5").toList();
+        wrapper.in(query.getOther() ,TAppointmentEntity::getAppointmentType , list );
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
         wrapper.eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId());
@@ -84,6 +94,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
+        wrapper.eq(query.getCreator() != null , TAppointmentEntity::getCreator ,query.getCreator());
+
         return wrapper;
     }
 
@@ -217,9 +229,23 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         Set<String> manageStation = user.getManageStation();
         LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
         wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
-
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
-        return new PageResult<>(TAppointmentConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
+        List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
+        for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
+            List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
+                    .eq(TAppointmentPersonnel::getAppointmentId,tAppointmentVO.getId()));
+            if (CollectionUtils.isNotEmpty(list)){
+                for (TAppointmentPersonnel tAppointmentPersonnel : list) {
+                    if (tAppointmentVO.getSubmitter().equals(tAppointmentPersonnel.getUserId())){
+                        tAppointmentVO.setSubmitterName(tAppointmentPersonnel.getExternalPersonnel());
+                        break;
+                    }
+                }
+                tAppointmentVO.setPersonnelList(TAppointmentPersonnelConvert.INSTANCE.convertList(list) );
+            }
+
+        }
+        return new PageResult<>(tAppointmentVOS, page.getTotal());
 
     }
 
@@ -242,6 +268,43 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public List<TAppointmentVehicleVO> getVehicleListById(Long id) {
         List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId , id));
         return TAppointmentVehicleConvert.INSTANCE.convertList(list);
+    }
+
+
+    @Override
+    public PageResult<TAppointmentVO> pageBoard(AppointmentDTO data) {
+
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(StringUtils.isNotEmpty(data.getAppointmentType()), TAppointmentEntity::getAppointmentType, data.getAppointmentType());
+        wrapper.eq(data.getSiteId() != null, TAppointmentEntity::getSiteId, data.getSiteId());
+        wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
+        Page<TAppointmentEntity> page = new Page<>(data.getPage(), data.getLimit());
+
+        IPage<TAppointmentEntity> tAppointmentEntityPage = page(page, wrapper);
+
+        List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(tAppointmentEntityPage.getRecords());
+        //这里需要做一个处理，回显提交人
+        for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
+            Long id = tAppointmentVO.getId();
+            Long submitter = tAppointmentVO.getSubmitter();
+            TAppointmentPersonnel one = tAppointmentPersonnelService.getOne(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id)
+                    .eq(TAppointmentPersonnel::getUserId, submitter));
+            if (ObjectUtil.isNotNull(one)){
+                tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
+                tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
+            }
+        }
+
+        return new PageResult<>(tAppointmentVOS, tAppointmentEntityPage.getTotal());
+    }
+
+    @Override
+    public void delAppointment(Long id) {
+        TAppointmentEntity byId = getById(id);
+        if (ObjectUtil.isNotNull(byId)){
+            byId.setStatus(Constant.ZERO);
+            updateById(byId);
+        }
     }
 
 }

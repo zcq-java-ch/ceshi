@@ -1,9 +1,6 @@
-package com.hxls.appointment.pojo.vo;
+package com.hxls.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
-import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
-import com.hxls.framework.common.utils.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -54,15 +51,15 @@ public class TAppointmentVO implements Serializable {
 	private String purpose;
 
 	@Schema(description = "预约访问开始时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date startTime;
 
 	@Schema(description = "预约访问结束时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date endTime;
 
 	@Schema(description = "审核时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date reviewTime;
 
 	@Schema(description = "审核结果")
@@ -87,7 +84,7 @@ public class TAppointmentVO implements Serializable {
 	private Long creator;
 
 	@Schema(description = "创建时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date createTime;
 
 
@@ -96,7 +93,7 @@ public class TAppointmentVO implements Serializable {
 
 
 	@Schema(description = "更新时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@JsonFormat(pattern ="yyyy-MM-dd HH:mm:ss")
 	private Date updateTime;
 
 
@@ -110,7 +107,10 @@ public class TAppointmentVO implements Serializable {
 	@Schema(description = "提交人信息")
 	private TAppointmentPersonnelVO submitPeople;
 
-	private Boolean person = false;
-	private Boolean vehicle = false;
+	@Schema(description = "总人数")
+	private Integer sumPeople;
+
+	@Schema(description = "总车数")
+	private Integer sumVehicle;
 
 }

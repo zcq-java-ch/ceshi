@@ -44,6 +44,16 @@ public class RecordSupplementController {
         return Result.ok();
     }
 
+
+
+    @GetMapping("{id}")
+    @Operation(summary = "信息")
+    @PreAuthorize("hasAuthority('record:appointment:info')")
+    public Result<TSupplementRecordVO> get(@PathVariable("id") Long id){
+        TSupplementRecordVO vo = service.getDetailById(id);
+        return Result.ok(vo);
+    }
+
     @PutMapping
     @Operation(summary = "修改")
     @OperateLog(type = OperateTypeEnum.UPDATE)

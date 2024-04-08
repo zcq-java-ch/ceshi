@@ -49,4 +49,9 @@ public interface Constant {
      */
     String PGSQL_DRIVER = "org.postgresql.Driver";
 
+    /**
+     * 数字 0
+     */
+    Integer ZERO = 0;
+
 }

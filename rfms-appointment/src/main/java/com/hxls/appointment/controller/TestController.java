@@ -40,9 +40,11 @@ public class TestController {
     }
 
     @GetMapping("test")
-    public void save(@RequestParam String router){
+    public void save(@RequestParam String router , @RequestParam String carNumber){
         RabbitInfoVO rabbitInfoVO = new RabbitInfoVO();
         rabbitInfoVO.setType("8");
+        rabbitInfoVO.setCarPlateNumber(carNumber);
+        rabbitInfoVO.setInstructionType(1);
         rabbitMQTemplate.convertAndSend(router ,router, JsonUtils.toJsonString(rabbitInfoVO));
     }
 
