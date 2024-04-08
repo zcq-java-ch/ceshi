@@ -83,5 +83,11 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * 查询预约看板数据
      * @param data
      */
-    List<TAppointmentVO>  pageBoard(AppointmentDTO data);
+    PageResult<TAppointmentVO>  pageBoard(AppointmentDTO data);
+
+    /**
+     * 逻辑删除预约看板数据
+     * @param id
+     */
+    void delAppointment(Long id);
 }

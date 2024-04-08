@@ -84,9 +84,14 @@ public class AppointmentApiController {
 
     @PostMapping("board")
     @Operation(summary = "获取安防看板")
-    public Result<List<TAppointmentVO>> board(@RequestBody AppointmentDTO data ){
-        List<TAppointmentVO>  result = tAppointmentService.pageBoard(data);
-        return Result.ok(result);
+    public PageResult<TAppointmentVO> board(@RequestBody AppointmentDTO data ){
+        PageResult<TAppointmentVO>  result = tAppointmentService.pageBoard(data);
+        return result;
+    }
+
+    @GetMapping(value = "del")
+    public void delAppointment(@RequestParam  Long id){
+        tAppointmentService.delAppointment(id);
     }
 
 
