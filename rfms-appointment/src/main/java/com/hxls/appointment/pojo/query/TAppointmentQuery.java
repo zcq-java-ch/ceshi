@@ -54,4 +54,11 @@ public class TAppointmentQuery extends Query {
 
     private Long id;
 
+    private Long creator;
+
+    /**
+     * 是否由小程序查询外部预约
+     */
+    private Boolean other = false ;
+
 }

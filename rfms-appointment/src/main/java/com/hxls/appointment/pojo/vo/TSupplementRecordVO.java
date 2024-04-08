@@ -60,7 +60,9 @@ public class TSupplementRecordVO implements Serializable {
      * 表单信息
      */
     @Schema(description = "表单信息")
-    private List<TAppointmentPersonnelVO> remark;
+    private List<TAppointmentPersonnelVO> remark1;
+
+    private Boolean person = false;
 
 
     @Schema(description = "创建者")

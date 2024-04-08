@@ -1,7 +1,5 @@
 package com.hxls.system.controller;
 
-import com.hxls.api.dto.AppointmentDTO;
-import com.hxls.api.dto.StorageDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.service.SysAuthService;

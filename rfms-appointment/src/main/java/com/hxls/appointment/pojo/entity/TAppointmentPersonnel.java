@@ -3,6 +3,7 @@ package com.hxls.appointment.pojo.entity;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import com.hxls.framework.mybatis.entity.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -35,6 +36,11 @@ public class TAppointmentPersonnel extends BaseEntity {
      * 组织名字
      */
     private String orgName;
+
+    /**
+     * 外部人员名称
+     */
+    private String externalPersonnel;
 
     /**
      * 带班负责人id

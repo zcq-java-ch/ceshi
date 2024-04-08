@@ -1,8 +1,11 @@
 package com.hxls.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -12,7 +15,6 @@ import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.vo.TVehicleVO;
 import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.service.TVehicleService;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,12 +74,42 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
      */
     @Override
     public List<TVehicleVO> getByLicensePlates(List<String> data) {
-
         List<TVehicleEntity> list = this.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getLicensePlate , data));
-
         return  TVehicleConvert.INSTANCE.convertList(list);
     }
 
+    /**
+     * 通过车牌号去设置绑定与解绑
+     *
+     * @param licensePlates 车牌号
+     * @param userId 登陆人员id
+     */
+    @Override
+    public void setByLicensePlates(String licensePlates, Long userId) {
 
+        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate ,licensePlates ));
+        if (ObjectUtil.isNull(one)){
+            throw new ServerException(ErrorCode.NOT_FOUND.getMsg());
+        }
+        //修改默认司机
+        one.setDriverId(userId);
 
+        updateById(one);
+    }
+
+    /**
+     * 通过车牌号去设置绑定与解绑
+     *
+     * @param licensePlates 车牌号
+     * @param userId 登陆人员id
+     */
+    @Override
+    public String getVehicleByLicensePlates(String licensePlates, Long userId) {
+        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate,licensePlates)
+                .eq(TVehicleEntity::getDriverId,userId));
+        if (ObjectUtil.isNull(one)){
+            return  "绑定车辆";
+        }
+        return "解绑车辆";
+    }
 }

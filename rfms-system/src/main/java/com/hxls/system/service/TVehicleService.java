@@ -32,4 +32,13 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
     List<TVehicleVO> getByLicensePlates(List<String> data);
 
 
+    /**
+     * 通过车牌号去设置绑定与解绑
+     *
+     * @param licensePlates 车牌号
+     * @param userId 登陆人员id
+     */
+    void setByLicensePlates(String licensePlates, Long userId);
+
+    String getVehicleByLicensePlates(String licensePlates, Long userId);
 }

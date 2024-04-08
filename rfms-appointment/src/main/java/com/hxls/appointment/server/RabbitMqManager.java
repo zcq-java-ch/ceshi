@@ -15,7 +15,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class RabbitMqManager {
 
-
     private final RabbitAdmin rabbitAdmin;
 
     public void declareExchangeAndQueue(String exchangeName, String queueName) {
@@ -33,4 +32,9 @@ public class RabbitMqManager {
         Binding binding = BindingBuilder.bind(queue).to(exchange).with(queueName);
         rabbitAdmin.declareBinding(binding);
     }
+
+
+
+
+
 }

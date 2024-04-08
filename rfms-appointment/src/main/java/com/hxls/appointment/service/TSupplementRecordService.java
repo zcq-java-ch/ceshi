@@ -39,4 +39,11 @@ public interface TSupplementRecordService extends BaseService<TSupplementRecord>
      * @param idList
      */
     void delete(List<Long> idList);
+
+    /**
+     * 查看详情
+     * @param id
+     * @return
+     */
+    TSupplementRecordVO getDetailById(Long id);
 }

@@ -1,6 +1,7 @@
 package com.hxls.system.controller;
 
-import com.hxls.api.dto.AppointmentDTO;
+
+import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;

@@ -1,16 +1,25 @@
 package com.hxls.appointment.controller.api;
 
-import com.hxls.api.dto.AppointmentDTO;
-import com.hxls.appointment.server.MqServer;
+
+import com.hxls.api.dto.appointment.AppointmentDTO;
+import com.hxls.appointment.pojo.query.TAppointmentQuery;
+import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.server.RabbitMqManager;
+import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.Result;
+import com.hxls.framework.operatelog.annotations.OperateLog;
+import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/appointment")
@@ -20,6 +29,7 @@ public class AppointmentApiController {
 
     private final RabbitMqManager rabbitMqManager;
     private final RedisCache redisCache;
+    private final TAppointmentService tAppointmentService;
 
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
@@ -32,6 +42,51 @@ public class AppointmentApiController {
         }
 
         return data;
+    }
+
+
+    @PostMapping
+    @Operation(summary = "保存")
+    @OperateLog(type = OperateTypeEnum.INSERT)
+    public Result<String> save(@RequestBody TAppointmentVO vo){
+        tAppointmentService.save(vo);
+        return Result.ok();
+    }
+
+
+
+    @GetMapping("page")
+    @Operation(summary = "分页")
+    public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+        //查询外部预约
+        query.setOther(true);
+        PageResult<TAppointmentVO> page = tAppointmentService.page(query);
+        return Result.ok(page);
+    }
+
+
+    @PutMapping
+    @Operation(summary = "修改")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    public Result<String> update(@RequestBody @Valid TAppointmentVO vo){
+        tAppointmentService.update(vo);
+        return Result.ok();
+    }
+
+
+    @GetMapping("{id}")
+    @Operation(summary = "信息")
+    public Result<TAppointmentVO> get(@PathVariable("id") Long id){
+        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        return Result.ok(vo);
+    }
+
+
+    @PostMapping("board")
+    @Operation(summary = "获取安防看板")
+    public Result<List<TAppointmentVO>> board(@RequestBody AppointmentDTO data ){
+        List<TAppointmentVO>  result = tAppointmentService.pageBoard(data);
+        return Result.ok(result);
     }
 
 
