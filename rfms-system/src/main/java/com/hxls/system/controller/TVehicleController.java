@@ -3,6 +3,7 @@ package com.hxls.system.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.system.vo.TDeviceManagementVO;
 import io.swagger.v3.oas.annotations.Operation;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -119,6 +120,15 @@ public class TVehicleController {
         Long userId = SecurityUser.getUserId();
         String vehicleByLicensePlates = tVehicleService.getVehicleByLicensePlates(licensePlates, userId);
         return Result.ok(vehicleByLicensePlates);
+    }
+
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('system:vehicle:update')")
+    public Result<String> updateStatus(@RequestBody List<TVehicleVO> list) {
+        tVehicleService.updateStatus(list);
+        return Result.ok();
     }
 
 }

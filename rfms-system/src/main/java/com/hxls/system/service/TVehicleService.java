@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 通用车辆管理表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-15
  */
 public interface TVehicleService extends BaseService<TVehicleEntity> {
@@ -41,4 +41,6 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
     void setByLicensePlates(String licensePlates, Long userId);
 
     String getVehicleByLicensePlates(String licensePlates, Long userId);
+
+    void updateStatus(List<TVehicleVO> list);
 }

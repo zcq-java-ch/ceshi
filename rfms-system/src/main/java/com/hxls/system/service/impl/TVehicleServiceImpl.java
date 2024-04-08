@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.system.entity.TDeviceManagementEntity;
+import com.hxls.system.vo.TDeviceManagementVO;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -111,5 +113,18 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             return  "绑定车辆";
         }
         return "解绑车辆";
+    }
+
+    @Override
+    public void updateStatus(List<TVehicleVO> list) {
+        for (TVehicleVO vo : list) {
+            TVehicleEntity entity = new TVehicleEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            // 更新实体
+            this.updateById(entity);
+        }
     }
 }
