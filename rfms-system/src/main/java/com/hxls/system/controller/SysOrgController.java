@@ -5,6 +5,7 @@ import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.SysUserQuery;
@@ -111,5 +112,13 @@ public class SysOrgController {
         return Result.ok();
     }
 
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('sys:org:update')")
+    public Result<String> updateStatus(@RequestBody List<SysOrgVO> list) {
+        sysOrgService.updateStatus(list);
+        return Result.ok();
+    }
 
 }

@@ -82,4 +82,7 @@ public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
     @Schema(description = "站点管理员名字（多个）")
     private String siteAdminNames;
 
+    @Schema(description = "状态 0:正常, 1:删除")
+    private Integer deleted;
+
 }
