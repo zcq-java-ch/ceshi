@@ -43,4 +43,8 @@ public class SysRoleEntity extends BaseEntity {
      * 租户ID
      */
     private Long tenantId;
+    /**
+     * 状态 0:停用, 1:启用
+     */
+    private Integer status;
 }

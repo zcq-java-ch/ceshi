@@ -125,4 +125,18 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         idList.forEach(sysUserTokenService::updateCacheAuthByRoleId);
     }
 
+
+    @Override
+    public void updateStatus(List<SysRoleVO> list) {
+        for (SysRoleVO vo : list) {
+            SysRoleEntity entity = new SysRoleEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            // 更新实体
+            this.updateById(entity);
+        }
+    }
+
 }
