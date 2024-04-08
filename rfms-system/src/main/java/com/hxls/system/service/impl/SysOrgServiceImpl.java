@@ -54,6 +54,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
     private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query){
         LambdaQueryWrapper<SysOrgEntity> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(SysOrgEntity::getDeleted, 0);
         wrapper.eq(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
         wrapper.eq(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
@@ -259,6 +260,22 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             return sysOrgEntities.get(0);
         }else {
             return null;
+        }
+    }
+
+    @Override
+    public void updateStatus(List<SysOrgVO> list) {
+        for (SysOrgVO vo : list) {
+            SysOrgEntity entity = new SysOrgEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            if(vo.getDeleted() != null ){
+                entity.setDeleted(vo.getDeleted());
+            }
+            // 更新实体
+            this.updateById(entity);
         }
     }
 }

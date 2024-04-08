@@ -1,18 +1,17 @@
 package com.hxls.system.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.TDeviceManagementConvert;
+import com.hxls.system.dao.TDeviceManagementDao;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.query.TDeviceManagementQuery;
-import com.hxls.system.vo.TDeviceManagementVO;
-import com.hxls.system.dao.TDeviceManagementDao;
 import com.hxls.system.service.TDeviceManagementService;
-import org.apache.commons.lang3.ArrayUtils;
+import com.hxls.system.vo.TDeviceManagementVO;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,8 +65,18 @@ public class TDeviceManagementServiceImpl extends BaseServiceImpl<TDeviceManagem
         removeByIds(idList);
     }
 
-
-
+    @Override
+    public void updateStatus(List<TDeviceManagementVO> list) {
+        for (TDeviceManagementVO vo : list) {
+            TDeviceManagementEntity entity = new TDeviceManagementEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            // 更新实体
+            this.updateById(entity);
+        }
+    }
 
 
 }

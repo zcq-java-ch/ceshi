@@ -40,4 +40,7 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 	List<Long> getSubOrgIdList(Long id);
 
     SysOrgEntity getByCode(String pcode);
+
+
+	void updateStatus(List<SysOrgVO> list);
 }

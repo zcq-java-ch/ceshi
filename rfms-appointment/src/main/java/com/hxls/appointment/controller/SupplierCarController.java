@@ -56,7 +56,6 @@ public class SupplierCarController {
     @PreAuthorize("hasAuthority('supplierCar:appointment:update')")
     public Result<String> update(@RequestBody @Valid TAppointmentVO vo){
         tAppointmentService.update(vo);
-
         return Result.ok();
     }
 

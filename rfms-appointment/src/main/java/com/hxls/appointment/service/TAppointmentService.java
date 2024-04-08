@@ -1,5 +1,6 @@
 package com.hxls.appointment.service;
 
+import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
@@ -77,4 +78,16 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @return
      */
     List<TAppointmentVehicleVO> getVehicleListById(Long id);
+
+    /**
+     * 查询预约看板数据
+     * @param data
+     */
+    PageResult<TAppointmentVO>  pageBoard(AppointmentDTO data);
+
+    /**
+     * 逻辑删除预约看板数据
+     * @param id
+     */
+    void delAppointment(Long id);
 }

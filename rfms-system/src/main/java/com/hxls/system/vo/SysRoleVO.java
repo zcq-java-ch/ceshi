@@ -48,4 +48,8 @@ public class SysRoleVO implements Serializable {
     @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
     private Date createTime;
 
+    @Schema(description = "状态 0:停用, 1:启用")
+    private Integer status;
+
+
 }

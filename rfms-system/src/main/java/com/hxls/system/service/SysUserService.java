@@ -6,6 +6,7 @@ import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.vo.MainUserVO;
+import com.hxls.system.vo.SysOrgVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.framework.common.utils.PageResult;
@@ -75,4 +76,6 @@ public interface SysUserService extends BaseService<SysUserEntity> {
     **/
 
     List<MainUserVO> queryByMainUsers();
+
+    void updateStatus(List<SysUserVO> list);
 }

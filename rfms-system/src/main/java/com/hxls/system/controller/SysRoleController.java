@@ -1,8 +1,12 @@
 package com.hxls.system.controller;
 
 import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
+import com.hxls.system.convert.SysRoleConvert;
 import com.hxls.system.entity.SysRoleEntity;
 import com.hxls.system.query.SysRoleQuery;
 import com.hxls.system.query.SysRoleUserQuery;
@@ -15,10 +19,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import com.hxls.framework.common.utils.Result;
-import com.hxls.framework.security.user.SecurityUser;
-import com.hxls.framework.security.user.UserDetail;
-import com.hxls.system.convert.SysRoleConvert;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -157,6 +157,15 @@ public class SysRoleController {
     public Result<String> userSave(@PathVariable("roleId") Long roleId, @RequestBody List<Long> userIdList) {
         sysUserRoleService.saveUserList(roleId, userIdList);
 
+        return Result.ok();
+    }
+
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('sys:role:update')")
+    public Result<String> updateStatus(@RequestBody List<SysRoleVO> list) {
+        sysRoleService.updateStatus(list);
         return Result.ok();
     }
 }

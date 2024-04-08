@@ -1,35 +1,31 @@
 package com.hxls.datasection.controller;
 
+import cn.hutool.db.PageResult;
 import com.alibaba.fastjson.JSONObject;
-import com.hxls.datasection.query.TPersonAccessRecordsQuery;
+import com.hxls.api.dto.appointment.AppointmentDTO;
+import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.api.vo.TAppointmentVO;
 import com.hxls.datasection.service.DataDashboardsService;
-import com.hxls.datasection.service.TPersonAccessRecordsService;
-import com.hxls.datasection.vo.TPersonAccessRecordsVO;
-import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("datasection/dataDashboards")
-@Tag(name="数据看板")
+@Tag(name = "数据看板")
 @AllArgsConstructor
 public class DataDashboardsController {
     private final DataDashboardsService dataDashboardsService;
+    private final AppointmentFeign appointmentFeign;
+
     @GetMapping("/factoryStationKanban")
     @Operation(summary = "数据看板-厂站看板")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
-    public Result<JSONObject> factoryStationKanban(@RequestParam("stationId") Long stationId){
+    public Result<JSONObject> factoryStationKanban(@RequestParam("stationId") Long stationId) {
         // 通过站点查询数据
-
         JSONObject jsonObject = new JSONObject();
         // 1. 人员信息部分
         JSONObject jsonper = dataDashboardsService.personnelInformationSection(stationId);
@@ -53,7 +49,7 @@ public class DataDashboardsController {
     @GetMapping("/companyKanban")
     @Operation(summary = "数据看板-公司看板")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
-    public Result<JSONObject> companyKanban(){
+    public Result<JSONObject> companyKanban() {
         JSONObject jsonObject = new JSONObject();
         // 1. 基本信息部分
         JSONObject jsonper = dataDashboardsService.basicInformationSection();
@@ -67,4 +63,44 @@ public class DataDashboardsController {
 
         return Result.ok(jsonObject);
     }
+
+    @PostMapping("/guard")
+    @Operation(summary = "数据看板-安保看板")
+    @PreAuthorize("hasAuthority('datasection:guard:page')")
+    public Result<PageResult<TAppointmentVO>> guardPage(@RequestBody  AppointmentDTO data) {
+        PageResult<TAppointmentVO> board = appointmentFeign.board(data);
+        return Result.ok(board);
+    }
+
+    @GetMapping("/guardInformation")
+    @Operation(summary = "数据看板-安保看板-获取详情")
+    @PreAuthorize("hasAuthority('datasection:guard:info')")
+    public cn.hutool.json.JSONObject guardInformation(@RequestParam  Long id) {
+        return appointmentFeign.guardInformation(id);
+    }
+
+    @PostMapping("/appointment")
+    @Operation(summary = "数据看板-预约看板")
+    @PreAuthorize("hasAuthority('datasection:appointment:page')")
+    public Result<PageResult<TAppointmentVO>> appointmentPage(@RequestBody AppointmentDTO data) {
+        PageResult<TAppointmentVO> board = appointmentFeign.board(data);
+        return Result.ok(board);
+    }
+
+    @GetMapping("appointmentInformation")
+    @Operation(summary = "数据看板-预约看板-获取详情")
+    @PreAuthorize("hasAuthority('datasection:appointment:info')")
+    public cn.hutool.json.JSONObject appointmentInformation(@RequestParam  Long id) {
+        return appointmentFeign.guardInformation(id);
+    }
+
+    @GetMapping("/delAppointment")
+    @Operation(summary = "数据看板-删除预约")
+    @PreAuthorize("hasAuthority('datasection:appointment:del')")
+    public Result<Void> delAppointment(@RequestParam Long id) {
+        appointmentFeign.delAppointment(id);
+        return Result.ok();
+    }
+
+
 }

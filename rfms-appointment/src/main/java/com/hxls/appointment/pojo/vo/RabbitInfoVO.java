@@ -53,7 +53,6 @@ public class RabbitInfoVO implements Serializable {
      */
     private String carPlateNumber;
 
-
     /**
      * 设备信息
      */
