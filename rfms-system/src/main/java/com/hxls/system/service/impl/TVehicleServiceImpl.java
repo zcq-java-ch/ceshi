@@ -1,22 +1,20 @@
 package com.hxls.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
-import com.hxls.system.entity.TDeviceManagementEntity;
-import com.hxls.system.vo.TDeviceManagementVO;
-import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.TVehicleConvert;
+import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
-import com.hxls.system.vo.TVehicleVO;
-import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.service.TVehicleService;
+import com.hxls.system.vo.TVehicleVO;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

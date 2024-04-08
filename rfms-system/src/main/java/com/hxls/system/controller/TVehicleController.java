@@ -1,26 +1,23 @@
 package com.hxls.system.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.hxls.framework.security.user.SecurityUser;
-import com.hxls.system.vo.TDeviceManagementVO;
-import io.swagger.v3.oas.annotations.Operation;
-import com.hxls.framework.operatelog.annotations.OperateLog;
-import com.hxls.framework.operatelog.enums.OperateTypeEnum;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.framework.operatelog.annotations.OperateLog;
+import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.entity.TVehicleEntity;
-import com.hxls.system.service.TVehicleService;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.service.TVehicleService;
 import com.hxls.system.vo.TVehicleVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 /**

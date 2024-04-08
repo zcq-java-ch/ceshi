@@ -2,8 +2,8 @@ package com.hxls.system.service;
 
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
-import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.entity.TVehicleEntity;
+import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.vo.TVehicleVO;
 
 import java.util.List;
