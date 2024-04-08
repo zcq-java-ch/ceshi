@@ -1,18 +1,17 @@
 package com.hxls.system.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.TVehicleConvert;
+import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
-import com.hxls.system.vo.TVehicleVO;
-import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.service.TVehicleService;
-import org.apache.commons.lang3.ArrayUtils;
+import com.hxls.system.vo.TVehicleVO;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,6 +77,18 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         return  TVehicleConvert.INSTANCE.convertList(list);
     }
 
+    @Override
+    public void updateStatus(List<TVehicleVO> list) {
+        for (TVehicleVO vo : list) {
+            TVehicleEntity entity = new TVehicleEntity();
+            entity.setId(vo.getId());
+            if(vo.getStatus() != null ){
+                entity.setStatus(vo.getStatus());
+            }
+            // 更新实体
+            this.updateById(entity);
+        }
+    }
 
 
 }

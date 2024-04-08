@@ -1,6 +1,7 @@
 package com.hxls.system.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.hxls.system.vo.SysRoleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -88,6 +89,15 @@ public class TVehicleController {
     public Result<List<TVehicleVO>> getByLicensePlates(@RequestBody List<String> data){
        return Result.ok( tVehicleService.getByLicensePlates(data));
 
+    }
+
+    @PostMapping("updateStatus")
+    @Operation(summary = "批量修改状态")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('system:vehicle:update')")
+    public Result<String> updateStatus(@RequestBody List<TVehicleVO> list) {
+        tVehicleService.updateStatus(list);
+        return Result.ok();
     }
 
 }
