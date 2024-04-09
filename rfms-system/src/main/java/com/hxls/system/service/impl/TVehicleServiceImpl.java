@@ -82,10 +82,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
      * 通过车牌号去设置绑定与解绑
      *
      * @param licensePlates 车牌号
-     * @param userId 登陆人员id
+     * @param userId        登陆人员id
+     * @param type
      */
     @Override
-    public void setByLicensePlates(String licensePlates, Long userId) {
+    public void setByLicensePlates(String licensePlates, Long userId, Integer type) {
 
         TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate ,licensePlates ));
         if (ObjectUtil.isNull(one)){
@@ -93,7 +94,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         }
         //修改默认司机
         one.setDriverId(userId);
-
+        if( type < 1){
+            //修改默认司机
+            one.setDriverId(null);
+        }
         updateById(one);
     }
 

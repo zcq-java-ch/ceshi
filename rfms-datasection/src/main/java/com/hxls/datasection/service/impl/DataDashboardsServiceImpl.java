@@ -178,8 +178,8 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         JSONArray locationArrays = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("siteName", "崇州站"); // 站点名称
-        jsonObject.put("longitudeOfTheSite", "10"); // 站点经度
-        jsonObject.put("siteLatitude", "10"); // 站点纬度
+        jsonObject.put("longitudeOfTheSite", "103.677481"); // 站点经度
+        jsonObject.put("siteLatitude", "30.637758"); // 站点纬度
         jsonObject.put("numberOfPeopleAtTheSite", "10"); // 站点人数
         jsonObject.put("numberOfStops", "10"); // 站点车数
         locationArrays.add(jsonObject);

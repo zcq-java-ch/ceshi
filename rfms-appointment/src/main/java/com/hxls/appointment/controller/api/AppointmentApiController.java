@@ -52,9 +52,6 @@ public class AppointmentApiController {
         tAppointmentService.save(vo);
         return Result.ok();
     }
-
-
-
     @GetMapping("page")
     @Operation(summary = "分页")
     public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
@@ -85,7 +82,9 @@ public class AppointmentApiController {
     @PostMapping("board")
     @Operation(summary = "获取安防看板")
     public PageResult<TAppointmentVO> board(@RequestBody AppointmentDTO data ){
+        System.out.println("开始访问获取安防看板");
         PageResult<TAppointmentVO>  result = tAppointmentService.pageBoard(data);
+        System.out.println(result);
         return result;
     }
 
