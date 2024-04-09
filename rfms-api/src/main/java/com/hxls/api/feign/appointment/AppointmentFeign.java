@@ -1,9 +1,10 @@
 package com.hxls.api.feign.appointment;
 
-import cn.hutool.db.PageResult;
+
 import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.ServerNames;
+import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

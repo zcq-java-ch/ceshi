@@ -1,9 +1,9 @@
 package com.hxls.datasection.controller;
 
-import cn.hutool.db.PageResult;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
 import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.framework.common.utils.Result;

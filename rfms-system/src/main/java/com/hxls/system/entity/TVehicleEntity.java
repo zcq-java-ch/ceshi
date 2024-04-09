@@ -41,6 +41,7 @@ public class TVehicleEntity extends BaseEntity {
 	/**
 	* 默认司机（关联用户）
 	*/
+	@TableField(updateStrategy = FieldStrategy.IGNORED )
 	private Long driverId;
 
 	/**

@@ -99,9 +99,9 @@ public class TVehicleController {
     @GetMapping("setVehicleBindingByLicensePlates")
     //@PreAuthorize("hasAuthority('system:vehicle:set')")
     @Operation(summary = "设置车辆绑定")
-    public Result<Void> setByLicensePlates(@RequestParam String licensePlates){
+    public Result<Void> setByLicensePlates(@RequestParam String licensePlates,@RequestParam Integer type){
         Long userId = SecurityUser.getUserId();
-        tVehicleService.setByLicensePlates(licensePlates , userId);
+        tVehicleService.setByLicensePlates(licensePlates , userId , type);
         return Result.ok();
     }
 
