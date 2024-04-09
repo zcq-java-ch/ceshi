@@ -37,7 +37,7 @@ public class AppointmentApiController {
         System.out.println("接收到信息");
         System.out.println(data);
         if ( redisCache.get(data.getIp()) ==null){
-            rabbitMqManager.declareExchangeAndQueue(data.getExchangeName(), data.getQueueName());
+            rabbitMqManager.declareExchangeAndQueue(data.getExchangeName(), data.getQueueName(), data.getRoutingKey());
             data.setResult(true);
         }
 

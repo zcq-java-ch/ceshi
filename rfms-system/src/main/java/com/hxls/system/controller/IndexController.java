@@ -15,6 +15,7 @@ import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.service.SysAreacodeDeviceService;
 import com.hxls.system.service.TDeviceManagementService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,11 +30,24 @@ import java.util.List;
  *
  */
 @RestController
+@Slf4j
 public class IndexController {
 
-    public static final String ROUTING_FACE_TOAGENT = "_ROUTING_FACE_TOAGENT";
+    public static final String QUEUE_FACE_TOAGENT = "_TOAGENT";
 
-    public static final String ROUTING_FACE_TOCLOUD = "_ROUTING_FACE_TOCLOUD";
+    public static final String QUEUE_FACE_TOCLOUD = "_TOCLOUD";
+
+    public static final String QUEUE_CAR_TOAGENT = "_TOAGENT";
+
+    public static final String QUEUE_CAR_TOCLOUD = "_TOCLOUD";
+
+    public final static String SITE_ROUTING_FACE_TOAGENT = "_ROUTING_FACE_TOAGENT";
+
+    public final static String SITE_ROUTING_CAR_TOAGENT = "_ROUTING_CAR_TOAGENT";
+
+    // 路由键 站点——类型 【站点到平台用的路由】
+    public final static String SITE_ROUTING_FACE_TOCLOUD = "_ROUTING_FACE_TOCLOUD";
+    public final static String SITE_ROUTING_CAR_TOCLOUD = "_ROUTING_CAR_TOCLOUD";
 
     @Resource
     private AppointmentFeign feign;
@@ -127,16 +141,34 @@ public class IndexController {
                 }
 
                 String exchangeName = siteCode + "_EXCHANGE";
-                String toAgentQueueName = siteCode + ROUTING_FACE_TOAGENT;
-                String toCloudQueueName = siteCode + ROUTING_FACE_TOCLOUD;
-                AppointmentDTO establish1 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toAgentQueueName).setIp(ip));
+                String toFaceAgentQueueName = siteCode + "_FACE_" + ip + QUEUE_FACE_TOAGENT;
+                String toFaceCloudQueueName = siteCode + "_FACE_" + ip + QUEUE_FACE_TOCLOUD;
+                String toFaceAgentRoutingName = siteCode + SITE_ROUTING_FACE_TOAGENT;
+                String toFaceCloudRoutingName = siteCode + SITE_ROUTING_FACE_TOCLOUD;
+
+                String toCarAgentQueueName = siteCode + "_CAR_" + ip + QUEUE_CAR_TOAGENT;
+                String toCarCloudQueueName = siteCode + "_CAR_" + ip + QUEUE_CAR_TOCLOUD;
+                String toCarAgentRoutingName = siteCode + SITE_ROUTING_CAR_TOAGENT;
+                String toCarCloudRoutingName = siteCode + SITE_ROUTING_CAR_TOCLOUD;
+
+                AppointmentDTO establish1 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toFaceAgentQueueName).setRoutingKey(toFaceAgentRoutingName).setIp(ip));
                 if (establish1.getResult()){
-                    System.out.println("平台下发指令到客户端的 队列创建成功：" + toCloudQueueName);
+                    log.info("平台下发【人脸】指令到客户端的队列创建成功：{}，路由键是：{}", toFaceAgentQueueName, toFaceAgentRoutingName);
                     redisCache.set( ip , "在线" ,60*3);
                 }
-                AppointmentDTO establish2 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toCloudQueueName).setIp(ip));
+                AppointmentDTO establish2 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toFaceCloudQueueName).setRoutingKey(toFaceCloudRoutingName).setIp(ip));
                 if (establish2.getResult()){
-                    System.out.println("客户端下发指令到平台的 队列创建成功：" + toAgentQueueName);
+                    log.info("客户端上行【人脸】指令到平台的队列创建成功：{}，路由键是：{}", toFaceCloudQueueName, toFaceCloudRoutingName);
+                    redisCache.set( ip , "在线" ,60*3);
+                }
+                AppointmentDTO establish3 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toCarAgentQueueName).setRoutingKey(toCarAgentRoutingName).setIp(ip));
+                if (establish3.getResult()){
+                    log.info("平台下发【车辆】指令到客户端的队列创建成功：{}，路由键是：{}", toCarAgentQueueName, toCarAgentRoutingName);
+                    redisCache.set( ip , "在线" ,60*3);
+                }
+                AppointmentDTO establish4 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toCarCloudQueueName).setRoutingKey(toCarCloudRoutingName).setIp(ip));
+                if (establish4.getResult()){
+                    log.info("客户端上行【车辆】指令到平台的队列创建成功：{}，路由键是：{}", toCarCloudQueueName, toCarCloudRoutingName);
                     redisCache.set( ip , "在线" ,60*3);
                 }
             }else {

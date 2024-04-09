@@ -16,6 +16,8 @@ import java.util.Date;
 @Accessors(chain = true)
 public class AppointmentDTO  implements Serializable {
 
+    private String routingKey ;
+
     private String exchangeName ;
 
     private String queueName;

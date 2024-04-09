@@ -17,7 +17,7 @@ public class RabbitMqManager {
 
     private final RabbitAdmin rabbitAdmin;
 
-    public void declareExchangeAndQueue(String exchangeName, String queueName) {
+    public void declareExchangeAndQueue(String exchangeName, String queueName, String routingKey) {
         // 声明交换机
         DirectExchange exchange = new DirectExchange(exchangeName, true, false);
         rabbitAdmin.declareExchange(exchange);
@@ -29,7 +29,7 @@ public class RabbitMqManager {
         rabbitAdmin.declareQueue(queue);
 
         // 绑定队列到交换机
-        Binding binding = BindingBuilder.bind(queue).to(exchange).with(queueName);
+        Binding binding = BindingBuilder.bind(queue).to(exchange).with(routingKey);
         rabbitAdmin.declareBinding(binding);
     }
 
