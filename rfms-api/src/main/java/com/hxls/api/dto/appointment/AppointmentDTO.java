@@ -20,7 +20,21 @@ public class AppointmentDTO  implements Serializable {
 
     private String exchangeName ;
 
-    private String queueName;
+    private String faceToAgentQueueName;
+
+    private String faceToCloudQueueName;
+
+    private String carToAgentQueueName;
+
+    private String carToCloudQueueName;
+
+    private String faceToAgentroutingKey ;
+
+    private String faceToCloudroutingKey ;
+
+    private String carToAgentroutingKey ;
+
+    private String carToCloudroutingKey ;
 
     private String ip ;
 

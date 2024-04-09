@@ -36,8 +36,8 @@ public class AppointmentApiController {
     public AppointmentDTO establish(@RequestBody AppointmentDTO data){
         System.out.println("接收到信息");
         System.out.println(data);
-        if ( redisCache.get(data.getIp()) ==null){
-            rabbitMqManager.declareExchangeAndQueue(data.getExchangeName(), data.getQueueName(), data.getRoutingKey());
+        if ( redisCache.get(data.getIp()) == null){
+            rabbitMqManager.declareExchangeAndQueue(data);
             data.setResult(true);
         }
 

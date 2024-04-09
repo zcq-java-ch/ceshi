@@ -98,6 +98,7 @@ public class IndexController {
                     String manufacturerCode = tDeviceManagementEntity1.getManufacturerCode();
                     String ipAddress = tDeviceManagementEntity1.getIpAddress();
                     String inoutType = tDeviceManagementEntity1.getType();
+                    String devicePass = tDeviceManagementEntity1.getPassword(); // 设备密码
 
                     // 其他字段
                     Long id = tDeviceManagementEntity1.getId();   // 设备ID
@@ -123,6 +124,7 @@ public class IndexController {
                         facejsonObject.putOnce("channel_name", channel_name);
                         facejsonObject.putOnce("device_id", id);
                         facejsonObject.putOnce("deviceName", deviceName);
+                        facejsonObject.putOnce("devicePass", devicePass);
                         faceJsonA.add(facejsonObject);
                     }else if("2".equals(deviceType)){
                         // 车辆
@@ -134,6 +136,7 @@ public class IndexController {
                         facejsonObject.putOnce("channel_name", channel_name);
                         facejsonObject.putOnce("device_id", id);
                         facejsonObject.putOnce("deviceName", deviceName);
+                        facejsonObject.putOnce("devicePass", devicePass);
                         faceJsonA.add(facejsonObject);
                     }else {
                         // 数据错误
@@ -151,28 +154,25 @@ public class IndexController {
                 String toCarAgentRoutingName = siteCode + SITE_ROUTING_CAR_TOAGENT;
                 String toCarCloudRoutingName = siteCode + SITE_ROUTING_CAR_TOCLOUD;
 
-                AppointmentDTO establish1 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toFaceAgentQueueName).setRoutingKey(toFaceAgentRoutingName).setIp(ip));
-                if (establish1.getResult()){
+                AppointmentDTO establish = feign.establish(new AppointmentDTO().setExchangeName(exchangeName)
+                        .setFaceToAgentQueueName(toFaceAgentQueueName)
+                        .setFaceToAgentroutingKey(toFaceAgentRoutingName)
+                        .setFaceToCloudQueueName(toFaceCloudQueueName)
+                        .setFaceToCloudroutingKey(toFaceCloudRoutingName)
+                        .setCarToAgentQueueName(toCarAgentQueueName)
+                        .setCarToAgentroutingKey(toCarAgentRoutingName)
+                        .setCarToCloudQueueName(toCarCloudQueueName)
+                        .setCarToCloudroutingKey(toCarCloudRoutingName)
+                        .setIp(ip));
+                if (establish.getResult()){
                     log.info("平台下发【人脸】指令到客户端的队列创建成功：{}，路由键是：{}", toFaceAgentQueueName, toFaceAgentRoutingName);
-                    redisCache.set( ip , "在线" ,60*3);
-                }
-                AppointmentDTO establish2 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toFaceCloudQueueName).setRoutingKey(toFaceCloudRoutingName).setIp(ip));
-                if (establish2.getResult()){
                     log.info("客户端上行【人脸】指令到平台的队列创建成功：{}，路由键是：{}", toFaceCloudQueueName, toFaceCloudRoutingName);
-                    redisCache.set( ip , "在线" ,60*3);
-                }
-                AppointmentDTO establish3 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toCarAgentQueueName).setRoutingKey(toCarAgentRoutingName).setIp(ip));
-                if (establish3.getResult()){
                     log.info("平台下发【车辆】指令到客户端的队列创建成功：{}，路由键是：{}", toCarAgentQueueName, toCarAgentRoutingName);
-                    redisCache.set( ip , "在线" ,60*3);
-                }
-                AppointmentDTO establish4 = feign.establish(new AppointmentDTO().setExchangeName(exchangeName).setQueueName(toCarCloudQueueName).setRoutingKey(toCarCloudRoutingName).setIp(ip));
-                if (establish4.getResult()){
                     log.info("客户端上行【车辆】指令到平台的队列创建成功：{}，路由键是：{}", toCarCloudQueueName, toCarCloudRoutingName);
                     redisCache.set( ip , "在线" ,60*3);
                 }
             }else {
-                return null;
+                return Result.error("当前ip在设备表中没有数据！"+ip);
             }
             jsonObject.putOnce("faceJsonA", faceJsonA);
             jsonObject.putOnce("carJsonA", carJsonA);

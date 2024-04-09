@@ -63,6 +63,11 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	private Long personId;
 
 	/**
+	 * 设备方用户唯一标识
+	 * */
+	private String devicePersonId;
+
+	/**
 	* 名字
 	*/
 	private String personName;

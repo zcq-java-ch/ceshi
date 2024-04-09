@@ -14,8 +14,8 @@ public class DynamicQueueNameProvider {
     public String getDynamicFaceQueueNameFromCloud() {
         // 可以根据业务逻辑动态生成队列名称
         // 从数据库中根据当前电脑IP获取站点名称，这里假设有一个方法 getSiteNameByIp 实现此逻辑
-        String siteName = "XICHANG";
-        String ip = "192.102.0.76";
+        String siteName = "HG02040211";
+        String ip = "192.205.0.92";
         String all = siteName + "_FACE_" + ip + "_TOCLOUD";
         System.out.println(
                 "全队列名称"+all

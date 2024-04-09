@@ -53,6 +53,9 @@ public class TPersonAccessRecordsVO implements Serializable {
 	@Schema(description = "用户id")
 	private Long personId;
 
+	@Schema(description = "设备方用户唯一标识")
+	private String devicePersonId;
+
 	@Schema(description = "名字")
 	private String personName;
 
