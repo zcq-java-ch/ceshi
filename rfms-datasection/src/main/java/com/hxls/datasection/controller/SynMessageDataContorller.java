@@ -62,6 +62,8 @@ public class SynMessageDataContorller {
             tPersonAccessRecordsEntity.setPersonName(jsonObjectRecords.get("person_name", String.class));
             tPersonAccessRecordsEntity.setDevicePersonId(jsonObjectRecords.get("device_person_id", String.class));
             tPersonAccessRecordsEntity.setRecordTime(jsonObjectRecords.get("record_time", Date.class));
+            tPersonAccessRecordsEntity.setManufacturerId(jsonObjectRecords.get("manufacturer_id", Long.class));
+            tPersonAccessRecordsEntity.setManufacturerName(jsonObjectRecords.get("manufacturer_name", String.class));
 
             tPersonAccessRecordsService.save(tPersonAccessRecordsEntity);
         }
