@@ -12,8 +12,10 @@ import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.entity.TDeviceManagementEntity;
+import com.hxls.system.entity.TManufacturerEntity;
 import com.hxls.system.service.SysAreacodeDeviceService;
 import com.hxls.system.service.TDeviceManagementService;
+import com.hxls.system.service.TManufacturerService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,10 @@ public class IndexController {
     @Autowired
     protected SysAreacodeDeviceService sysAreacodeDeviceService;
 
+    @Autowired
+    private TManufacturerService tManufacturerService;
+
+
     @GetMapping("/")
     public String index() {
         return "您好，项目已启动，祝您使用愉快！";
@@ -100,6 +106,11 @@ public class IndexController {
                     String inoutType = tDeviceManagementEntity1.getType();
                     String devicePass = tDeviceManagementEntity1.getPassword(); // 设备密码
 
+                    // 获取厂商名字
+                    Long manufacturerId = tDeviceManagementEntity1.getManufacturerId();
+                    TManufacturerEntity manufacturerEntity = tManufacturerService.getById(manufacturerId);
+                    String manufactureName = manufacturerEntity != null ? manufacturerEntity.getManufacturerName() : "";
+
                     // 其他字段
                     Long id = tDeviceManagementEntity1.getId();   // 设备ID
                     String deviceName = tDeviceManagementEntity1.getDeviceName(); // // 设备名字
@@ -125,6 +136,8 @@ public class IndexController {
                         facejsonObject.putOnce("device_id", id);
                         facejsonObject.putOnce("deviceName", deviceName);
                         facejsonObject.putOnce("devicePass", devicePass);
+                        facejsonObject.putOnce("manufactureName", manufactureName);
+                        facejsonObject.putOnce("manufacturerId", manufacturerId);
                         faceJsonA.add(facejsonObject);
                     }else if("2".equals(deviceType)){
                         // 车辆
@@ -137,6 +150,8 @@ public class IndexController {
                         facejsonObject.putOnce("device_id", id);
                         facejsonObject.putOnce("deviceName", deviceName);
                         facejsonObject.putOnce("devicePass", devicePass);
+                        facejsonObject.putOnce("manufactureName", manufactureName);
+                        facejsonObject.putOnce("manufacturerId", manufacturerId);
                         faceJsonA.add(facejsonObject);
                     }else {
                         // 数据错误

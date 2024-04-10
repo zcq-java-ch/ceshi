@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -34,9 +35,13 @@ public class SynMessageDataContorller {
      * 接收客户端传来的人员人别记录
      * */
     @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud()}")
+//    @RabbitListener(queues = "#{T(java.util.Arrays).stream(dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud()).filter(queue -> dynamicQueueNameProvider.isQueueExist(queue)).toArray()}")
+    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
     public void receiveFaceDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
+
+        log.info("接收到来自通道{},的消息{}",c,s);
+
 //        long tag = properties.getDeliveryTag();
 //        log.info("简单模式的消费者收到:{}",s);
 //        System.out.println("接收到来自客户端的人脸识别历史数据:"+s);
