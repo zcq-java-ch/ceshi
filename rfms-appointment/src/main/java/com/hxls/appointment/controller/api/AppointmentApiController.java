@@ -44,6 +44,16 @@ public class AppointmentApiController {
         return data;
     }
 
+    @PostMapping("establishAgentToCloud")
+    @Operation(summary = "用户客户端到平台的 建立站点队列")
+    public AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data){
+        System.out.println("接收到信息");
+        System.out.println(data);
+        rabbitMqManager.declareExchangeAndQueueToCloud(data);
+
+        return data;
+    }
+
 
     @PostMapping
     @Operation(summary = "保存")

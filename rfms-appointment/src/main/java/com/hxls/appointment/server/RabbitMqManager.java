@@ -45,4 +45,24 @@ public class RabbitMqManager {
         rabbitAdmin.declareBinding(binding3);
         rabbitAdmin.declareBinding(binding4);
     }
+
+    public void declareExchangeAndQueueToCloud(AppointmentDTO appointmentDTO) {
+        // 声明交换机
+        DirectExchange exchange = new DirectExchange(appointmentDTO.getExchangeName(), true, false);
+        rabbitAdmin.declareExchange(exchange);
+
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-message-ttl", 60000); // 60 seconds //60s删除
+        // 声明队列
+        Queue queue2 = new Queue(appointmentDTO.getCarToCloudQueueName(), true, false, false,args);
+        Queue queue4 = new Queue(appointmentDTO.getFaceToCloudQueueName(), true, false, false,args);
+        rabbitAdmin.declareQueue(queue2);
+        rabbitAdmin.declareQueue(queue4);
+
+        // 绑定队列到交换机
+        Binding binding2 = BindingBuilder.bind(queue2).to(exchange).with(appointmentDTO.getCarToCloudroutingKey());
+        Binding binding4 = BindingBuilder.bind(queue4).to(exchange).with(appointmentDTO.getFaceToCloudroutingKey());
+        rabbitAdmin.declareBinding(binding2);
+        rabbitAdmin.declareBinding(binding4);
+    }
 }

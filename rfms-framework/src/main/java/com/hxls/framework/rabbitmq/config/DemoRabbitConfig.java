@@ -155,9 +155,5 @@ public class DemoRabbitConfig {
         return jackson2JsonMessageConverter;
     }
 
-    @Bean
-    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
 
 }

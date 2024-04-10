@@ -23,6 +23,12 @@ public interface AppointmentFeign {
     AppointmentDTO establish(@RequestBody AppointmentDTO data) throws Exception;
 
     /**
+     * 用户客户端到平台的 建立站点队列
+     * */
+    @PostMapping("establishAgentToCloud")
+    AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data);
+
+    /**
      * 获取安保信息
      */
     @PostMapping(value = "api/appointment/board")
