@@ -1,6 +1,7 @@
 package com.hxls.appointment.controller.api;
 
 
+import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
@@ -40,7 +41,6 @@ public class AppointmentApiController {
             rabbitMqManager.declareExchangeAndQueue(data);
             data.setResult(true);
         }
-
         return data;
     }
 
@@ -53,7 +53,6 @@ public class AppointmentApiController {
 
         return data;
     }
-
 
     @PostMapping
     @Operation(summary = "保存")
@@ -71,7 +70,6 @@ public class AppointmentApiController {
         return Result.ok(page);
     }
 
-
     @PutMapping
     @Operation(summary = "修改")
     @OperateLog(type = OperateTypeEnum.UPDATE)
@@ -80,14 +78,12 @@ public class AppointmentApiController {
         return Result.ok();
     }
 
-
     @GetMapping("{id}")
     @Operation(summary = "信息")
     public Result<TAppointmentVO> get(@PathVariable("id") Long id){
         TAppointmentVO vo = tAppointmentService.getDetailById(id);
         return Result.ok(vo);
     }
-
 
     @PostMapping("board")
     @Operation(summary = "获取安防看板")
@@ -103,6 +99,9 @@ public class AppointmentApiController {
         tAppointmentService.delAppointment(id);
     }
 
-
+    @GetMapping(value = "/sum/{id}/{type}")
+    public JSONObject appointmentSum(@PathVariable  Long id , @PathVariable  Long type ){
+       return tAppointmentService.appointmentSum(id , type);
+    }
 
 }

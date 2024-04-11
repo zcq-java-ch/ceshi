@@ -54,4 +54,6 @@ public interface Constant {
      */
     Integer ZERO = 0;
 
+    String PASS = "1";
+
 }

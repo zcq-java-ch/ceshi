@@ -20,6 +20,4 @@ public class AppointmentApplication {
 		SpringApplication.run(AppointmentApplication.class, args);
 	}
 
-
-
 }

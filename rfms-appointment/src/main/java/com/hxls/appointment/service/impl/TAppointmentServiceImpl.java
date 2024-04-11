@@ -2,6 +2,7 @@ package com.hxls.appointment.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -34,9 +35,11 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -84,18 +87,30 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther() ,TAppointmentEntity::getAppointmentType , list );
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
+        wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
         wrapper.eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId());
         wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
         wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
         wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
         wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
+        wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
+        if (query.getIsPerson()){
+            wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass , 0);
+        }
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
         wrapper.eq(query.getCreator() != null , TAppointmentEntity::getCreator ,query.getCreator());
 
+        if (StringUtils.isNotEmpty(query.getSubmitterName())){
+            List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel,query.getSubmitterName()));
+            if (CollectionUtils.isNotEmpty(tAppointmentPersonnels)){
+                List<Long> ids = tAppointmentPersonnels.stream().map(TAppointmentPersonnel::getAppointmentId).toList();
+                wrapper.in(TAppointmentEntity::getId,ids);
+            }
+        }
         return wrapper;
     }
 
@@ -255,6 +270,13 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //修改主表的信息
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
         updateById(entity);
+        //审核通过后会执行下发对应指定的厂站
+        if (vo.getReviewStatus().equals(Constant.PASS)) {
+            //根据指定通道下发数据
+
+
+        }
+
     }
 
     @Override
@@ -294,7 +316,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
             }
         }
-
         return new PageResult<>(tAppointmentVOS, tAppointmentEntityPage.getTotal());
     }
 
@@ -307,4 +328,37 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
     }
 
+    /**
+     *
+     * @param id 场站id
+     * @param type 类型
+     * @return
+     */
+    @Override
+    public JSONObject appointmentSum(Long id, Long type) {
+
+        LocalDateTime now = LocalDateTime.now();
+        JSONObject entries = new JSONObject();
+
+        if(type > 1){
+            List<TAppointmentEntity> list = list(new LambdaQueryWrapper<TAppointmentEntity>()
+                    .eq(TAppointmentEntity::getSiteId,id).le(TAppointmentEntity::getEndTime,now).ge(TAppointmentEntity::getStartTime,now));
+            List<Long> longList = list.stream().map(TAppointmentEntity::getId).toList();
+            long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
+            long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
+            entries.set("vehicleCount" , vehicleCount);
+            entries.set("personCount" , personCount);
+            return entries;
+        }
+
+        List<String> typeList = Stream.of("3", "4", "5").toList();
+        List<TAppointmentEntity> list = list(new LambdaQueryWrapper<TAppointmentEntity>().in(TAppointmentEntity::getAppointmentType , typeList)
+                .eq(TAppointmentEntity::getSiteId,id).le(TAppointmentEntity::getEndTime,now).ge(TAppointmentEntity::getStartTime,now));
+        List<Long> longList = list.stream().map(TAppointmentEntity::getId).toList();
+        long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
+        long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
+        entries.set("vehicleCount" , vehicleCount);
+        entries.set("personCount" , personCount);
+        return entries;
+    }
 }

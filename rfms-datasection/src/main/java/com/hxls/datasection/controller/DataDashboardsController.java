@@ -103,4 +103,18 @@ public class DataDashboardsController {
     }
 
 
+    @GetMapping("/appointmentSum")
+    @Operation(summary = "数据看板-预约汇总")
+    @PreAuthorize("hasAuthority('datasection:appointment:sum')")
+    public Result< cn.hutool.json.JSONObject> appointmentSum(@RequestParam Long id) {
+        cn.hutool.json.JSONObject entries = appointmentFeign.appointmentSum(id , 2L);
+        return Result.ok(entries);
+    }
+    @GetMapping("/guardSum")
+    @Operation(summary = "数据看板-安保汇总")
+    @PreAuthorize("hasAuthority('datasection:guard:sum')")
+    public Result<cn.hutool.json.JSONObject> guardSum(@RequestParam Long id) {
+        cn.hutool.json.JSONObject entries = appointmentFeign.appointmentSum(id , 1L);
+        return Result.ok(entries);
+    }
 }

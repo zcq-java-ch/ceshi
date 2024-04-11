@@ -1,5 +1,6 @@
 package com.hxls.appointment.service;
 
+import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
@@ -90,4 +91,11 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param id
      */
     void delAppointment(Long id);
+
+    /**
+     * 根据类型查询汇总数据
+     * @param id
+     * @param type
+     */
+    JSONObject appointmentSum(Long id, Long type);
 }
