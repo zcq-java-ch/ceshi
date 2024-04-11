@@ -1,6 +1,5 @@
 package com.hxls.appointment.controller.api;
 
-
 import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
@@ -17,14 +16,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/appointment")
-@Tag(name = "api接口")
+@Tag(name = "api接口(免登录)")
 @AllArgsConstructor
 public class AppointmentApiController {
 

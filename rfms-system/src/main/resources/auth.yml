@@ -7,9 +7,10 @@ auth:
     - /sys/auth/send/code
     - /sys/auth/mobile
     - /sys/auth/third
-    - /sys/auth/getOpenIdByCode
+    - /sys/auth/getOpenIdByCode/**
     - /sys/third/callback/**
     - /sys/third/render/**
     - /sys/file/upload
+    - /sys/resource/**
     - /heartbeat
     - /api/**

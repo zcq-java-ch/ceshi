@@ -29,7 +29,6 @@ import java.util.List;
 public class TestController {
 
     private final TAppointmentDao dao;
-
     private final AmqpTemplate rabbitMQTemplate;
 
     @PostMapping("listByCarNumber")

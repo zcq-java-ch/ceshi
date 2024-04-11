@@ -83,12 +83,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String siteName = appointmentDao.selectSiteNameById(tAppointmentVO.getSiteId());
                 tAppointmentVO.setSiteName( siteName );
             }
-
+            //供应商名称
             if (StringUtils.isNotEmpty( tAppointmentVO.getSupplierName() )){
                 String siteName = appointmentDao.selectSupplierNameById(Long.parseLong(tAppointmentVO.getSupplierName()));
                 tAppointmentVO.setSupplierName( siteName );
             }
-
+            //创建者名称
             if (tAppointmentVO.getCreator() != null ) {
                 com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tAppointmentVO.getCreator());
                 if (jsonObject != null ){
@@ -124,6 +124,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
         wrapper.eq(query.getCreator() != null , TAppointmentEntity::getCreator ,query.getCreator());
+        wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()),TAppointmentEntity::getOpenId , query.getOpenId());
 
         if (StringUtils.isNotEmpty(query.getSubmitterName())){
             List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel,query.getSubmitterName()));
@@ -279,6 +280,30 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 }
                 tAppointmentVO.setPersonnelList(TAppointmentPersonnelConvert.INSTANCE.convertList(list) );
             }
+
+
+            //场站名称
+            if (tAppointmentVO.getSiteId()!=null ){
+                String siteName = appointmentDao.selectSiteNameById(tAppointmentVO.getSiteId());
+                tAppointmentVO.setSiteName( siteName );
+            }
+            //供应商名称
+            if (StringUtils.isNotEmpty( tAppointmentVO.getSupplierName() )){
+                String siteName = appointmentDao.selectSupplierNameById(Long.parseLong(tAppointmentVO.getSupplierName()));
+                tAppointmentVO.setSupplierName( siteName );
+            }
+            //创建者名称
+            if (tAppointmentVO.getCreator() != null ) {
+                com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tAppointmentVO.getCreator());
+                if (jsonObject != null ){
+                    String realName = jsonObject.getString("real_name");
+                    String postName = jsonObject.getString("name");
+                    tAppointmentVO.setCreatorName(realName);
+                    tAppointmentVO.setSubmitterOrgName(postName);
+                }
+            }
+
+
 
         }
         return new PageResult<>(tAppointmentVOS, page.getTotal());

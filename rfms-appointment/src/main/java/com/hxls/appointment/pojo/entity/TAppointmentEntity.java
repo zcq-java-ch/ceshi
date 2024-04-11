@@ -86,4 +86,10 @@ public class TAppointmentEntity extends BaseEntity {
 	*/
 	private Integer status;
 
+
+	/**
+	 * 外部预约存储的openId
+	 */
+	private String openId;
+
 }

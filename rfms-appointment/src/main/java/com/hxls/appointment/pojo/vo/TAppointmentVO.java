@@ -117,6 +117,13 @@ public class TAppointmentVO implements Serializable {
 	@Schema(description = "提交人信息")
 	private TAppointmentPersonnelVO submitPeople;
 
+
+	/**
+	 * 外部预约存储的openId
+	 */
+	@Schema(description = "外部预约存储的openId")
+	private String openId;
+
 	private Boolean person = false;
 	private Boolean vehicle = false;
 

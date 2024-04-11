@@ -33,7 +33,6 @@ public class ApplicationController {
         return Result.ok(page);
     }
 
-
     @GetMapping("{id}")
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('supplier:person:info')")
@@ -41,7 +40,6 @@ public class ApplicationController {
         TAppointmentVO vo = tAppointmentService.getDetailById(id);
         return Result.ok(vo);
     }
-
 
     @PostMapping
     @Operation(summary = "保存")

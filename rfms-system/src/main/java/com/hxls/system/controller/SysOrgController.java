@@ -41,7 +41,6 @@ public class SysOrgController {
     @PreAuthorize("hasAuthority('sys:org:page')")
     public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
         PageResult<SysOrgVO> page = sysOrgService.page(query);
-
         return Result.ok(page);
     }
 
