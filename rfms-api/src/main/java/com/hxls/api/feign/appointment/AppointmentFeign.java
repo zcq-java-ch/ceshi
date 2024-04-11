@@ -44,6 +44,6 @@ public interface AppointmentFeign {
     @GetMapping(value = "api/appointment/{id}")
     JSONObject guardInformation(@PathVariable("id") Long id);
 
-    @GetMapping(value = "api/appointment/sum/{id}/{type})")
+    @GetMapping(value = "api/appointment/sum/{id}/{type}")
     JSONObject appointmentSum(@PathVariable("id") Long id,@PathVariable ("type")  Long type);
 }

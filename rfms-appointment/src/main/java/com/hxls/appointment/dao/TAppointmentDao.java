@@ -1,5 +1,6 @@
 package com.hxls.appointment.dao;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import com.hxls.framework.mybatis.dao.BaseDao;
@@ -17,5 +18,34 @@ import java.util.List;
 @Mapper
 public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
 
+   /**
+    * 通过车牌获取所有的车辆信息
+    * @param data 车牌集合
+    * @return 车辆集合
+    */
    List<TVehicleVO> listByCarNumber(@Param("strings")List<String> data);
+
+
+   /**
+    * 通过id查询人名和岗位名称
+    */
+   JSONObject selectRealNameById(@Param("id") Long id);
+
+
+   /**
+    * 通过id查询区域名称
+    */
+   String selectAreaNameById(@Param("id") Long id);
+
+
+   /**
+    * 通过id查询供应商名称
+    */
+   String selectSupplierNameById(@Param("id") Long id);
+
+   /**
+    * 通过id查询场站名称
+    */
+   String selectSiteNameById(@Param("id") Long id);
+
 }

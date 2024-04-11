@@ -48,15 +48,13 @@ public class AppointmentAuditController {
         return Result.ok();
     }
 
-
     @GetMapping("{id}")
-    @Operation(summary = "详情")
+    @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('audit:appointment:info')")
-    public Result<List<TAppointmentPersonnelVO>> get(@PathVariable("id") Long id) {
-        List<TAppointmentPersonnelVO> result = tAppointmentService.getListById(id);
-        return Result.ok(result);
+    public Result<TAppointmentVO> getAll(@PathVariable("id") Long id){
+        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        return Result.ok(vo);
     }
-
 
     @GetMapping("/car/{id}")
     @Operation(summary = "车辆详情")
@@ -66,7 +64,6 @@ public class AppointmentAuditController {
         return Result.ok(result);
     }
 
-
     @PutMapping("car")
     @Operation(summary = "审核车辆")
     @OperateLog(type = OperateTypeEnum.UPDATE)
@@ -75,5 +72,4 @@ public class AppointmentAuditController {
         tAppointmentService.updateByAudit(vo);
         return Result.ok();
     }
-
 }

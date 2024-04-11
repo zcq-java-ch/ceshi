@@ -31,7 +31,6 @@ import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +38,6 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -62,12 +60,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      */
     private final TAppointmentVehicleServiceImpl tAppointmentVehicleService;
 
+    private final TAppointmentDao appointmentDao;
+
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
 
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
+        //需要翻译回显
         for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
             Long id = tAppointmentVO.getId();
             Long submitter = tAppointmentVO.getSubmitter();
@@ -76,6 +77,26 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             if (ObjectUtil.isNotNull(one)){
                 tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
                 tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
+            }
+            //场站名称
+            if (tAppointmentVO.getSiteId()!=null ){
+                String siteName = appointmentDao.selectSiteNameById(tAppointmentVO.getSiteId());
+                tAppointmentVO.setSiteName( siteName );
+            }
+
+            if (StringUtils.isNotEmpty( tAppointmentVO.getSupplierName() )){
+                String siteName = appointmentDao.selectSupplierNameById(Long.parseLong(tAppointmentVO.getSupplierName()));
+                tAppointmentVO.setSupplierName( siteName );
+            }
+
+            if (tAppointmentVO.getCreator() != null ) {
+                com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tAppointmentVO.getCreator());
+                if (jsonObject != null ){
+                    String realName = jsonObject.getString("real_name");
+                    String postName = jsonObject.getString("name");
+                    tAppointmentVO.setCreatorName(realName);
+                    tAppointmentVO.setSubmitterOrgName(postName);
+                }
             }
         }
 
@@ -339,7 +360,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
         LocalDateTime now = LocalDateTime.now();
         JSONObject entries = new JSONObject();
-
+        entries.set("vehicleCount" , Constant.ZERO);
+        entries.set("personCount" , Constant.ZERO);
         if(type > 1){
             List<TAppointmentEntity> list = list(new LambdaQueryWrapper<TAppointmentEntity>()
                     .eq(TAppointmentEntity::getSiteId,id).le(TAppointmentEntity::getEndTime,now).ge(TAppointmentEntity::getStartTime,now));
@@ -350,15 +372,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             entries.set("personCount" , personCount);
             return entries;
         }
-
         List<String> typeList = Stream.of("3", "4", "5").toList();
         List<TAppointmentEntity> list = list(new LambdaQueryWrapper<TAppointmentEntity>().in(TAppointmentEntity::getAppointmentType , typeList)
                 .eq(TAppointmentEntity::getSiteId,id).le(TAppointmentEntity::getEndTime,now).ge(TAppointmentEntity::getStartTime,now));
-        List<Long> longList = list.stream().map(TAppointmentEntity::getId).toList();
-        long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
-        long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
-        entries.set("vehicleCount" , vehicleCount);
-        entries.set("personCount" , personCount);
+        if (CollectionUtils.isNotEmpty(list)){
+            List<Long> longList = list.stream().map(TAppointmentEntity::getId).toList();
+            long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
+            long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
+            entries.set("vehicleCount" , vehicleCount);
+            entries.set("personCount" , personCount);
+        }
         return entries;
     }
 }

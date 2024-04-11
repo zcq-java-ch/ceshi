@@ -41,4 +41,11 @@
         status,deleted,creator,
         create_time,updater,update_time
     </sql>
+
+
+
+
+
+
+
 </mapper>

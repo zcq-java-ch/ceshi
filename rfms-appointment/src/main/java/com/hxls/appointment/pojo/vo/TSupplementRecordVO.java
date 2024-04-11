@@ -31,6 +31,13 @@ public class TSupplementRecordVO implements Serializable {
     @Schema(description = "站点id")
     private Long siteId;
 
+
+    /**
+     * 对应站点名称
+     */
+    @Schema(description = "站点名称")
+    private String siteName;
+
     /**
      * 出入类型（数据字典）
      */
@@ -64,13 +71,19 @@ public class TSupplementRecordVO implements Serializable {
 
     private Boolean person = false;
 
-
     @Schema(description = "创建者")
     private Long creator;
 
+    @Schema(description = "创建者名称")
+    private String creatorName;
+
+    @Schema(description = "创建者组织")
+    private String submitterOrgName;
     /**
      * 创建时间
      */
     @Schema(description = "创建时间")
     private Date createTime;
+
+
 }

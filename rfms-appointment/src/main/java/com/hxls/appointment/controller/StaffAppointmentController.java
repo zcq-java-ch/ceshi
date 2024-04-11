@@ -38,7 +38,6 @@ public class StaffAppointmentController {
         return Result.ok(page);
     }
 
-
     @GetMapping("{id}")
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('system:appointment:info')")
@@ -46,7 +45,6 @@ public class StaffAppointmentController {
         TAppointmentVO vo = tAppointmentService.getDetailById(id);
         return Result.ok(vo);
     }
-
 
     @PostMapping
     @Operation(summary = "保存")
@@ -57,7 +55,6 @@ public class StaffAppointmentController {
         return Result.ok();
     }
 
-
     @PutMapping
     @Operation(summary = "修改")
     @OperateLog(type = OperateTypeEnum.UPDATE)
@@ -66,7 +63,6 @@ public class StaffAppointmentController {
         tAppointmentService.update(vo);
         return Result.ok();
     }
-
 
     @DeleteMapping
     @Operation(summary = "删除")

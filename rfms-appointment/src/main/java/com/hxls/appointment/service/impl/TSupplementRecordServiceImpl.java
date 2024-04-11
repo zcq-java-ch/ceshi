@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
 import com.hxls.appointment.convert.TRecordSupplementConvert;
+import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TSupplementRecord;
@@ -41,6 +42,7 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
 
     private final TAppointmentPersonnelService tAppointmentPersonnelService;
+    private final TAppointmentDao appointmentDao;
 
     @Override
     public PageResult<TSupplementRecordVO> page(TSupplementRecordQuery query) {
@@ -51,6 +53,29 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
             List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id));
             List<TAppointmentPersonnelVO> tAppointmentPersonnelVOS = TAppointmentPersonnelConvert.INSTANCE.convertList(list);
             tSupplementRecordVO.setRemark1(tAppointmentPersonnelVOS);
+
+            //区域翻译
+            if (StringUtils.isNotEmpty(tSupplementRecordVO.getChannel())){
+                String areaName = appointmentDao.selectAreaNameById(Long.parseLong(tSupplementRecordVO.getChannel()));
+                tSupplementRecordVO.setChannel(areaName);
+            }
+            //场站翻译
+            if (tSupplementRecordVO.getSiteId()!=null ){
+                String siteName = appointmentDao.selectSiteNameById(tSupplementRecordVO.getSiteId());
+                tSupplementRecordVO.setSiteName( siteName );
+            }
+
+            //创建人翻译
+            if (tSupplementRecordVO.getCreator() != null ) {
+                com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tSupplementRecordVO.getCreator());
+                if (jsonObject != null ){
+                    String realName = jsonObject.getString("real_name");
+                    String postName = jsonObject.getString("name");
+                    tSupplementRecordVO.setCreatorName(realName);
+                    tSupplementRecordVO.setSubmitterOrgName(postName);
+                }
+            }
+
         }
         return new PageResult<>(tSupplementRecordVOS, page.getTotal());
     }
@@ -108,8 +133,6 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
     private LambdaQueryWrapper<TSupplementRecord> getWrapper(TSupplementRecordQuery query) {
         LambdaQueryWrapper<TSupplementRecord> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(query.getSiteId() != null, TSupplementRecord::getSiteId, query.getSiteId());
-//        wrapper.ge(query.getStartTime() != null, TSupplementRecord::getStartTime, query.getStartTime());
-//        wrapper.le(query.getEndTime() != null, TSupplementRecord::getEndTime, query.getEndTime());
         wrapper.between(ArrayUtils.isNotEmpty(query.getSupplementTime()), TSupplementRecord::getSupplementTime, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[0] : null, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getAccessType()), TSupplementRecord::getAccessType, query.getAccessType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplementType()), TSupplementRecord::getSupplementType, query.getSupplementType());
