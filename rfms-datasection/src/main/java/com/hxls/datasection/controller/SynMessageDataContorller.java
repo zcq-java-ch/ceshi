@@ -61,10 +61,13 @@ public class SynMessageDataContorller {
 //            String records_id = jsonObjectRecords.get("records_id", String.class);
             // 唯一编码
             String records_id =  jsonObjectRecords.get("device_person_id", String.class) +  jsonObjectRecords.get("record_time", String.class);
+            log.info("人脸惟一值是{}", records_id);
             boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(records_id);
             if (whetherItExists){
                 // 存在
+                log.info("人脸数据已经存在不进行存储");
             }else {
+                log.info("人脸数据不存在，开始存储");
                 TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
                 tPersonAccessRecordsEntity.setChannelId(jsonObjectRecords.get("channel_id", Long.class));
                 tPersonAccessRecordsEntity.setChannelName(jsonObjectRecords.get("channel_name", String.class));
@@ -79,6 +82,7 @@ public class SynMessageDataContorller {
                 tPersonAccessRecordsEntity.setManufacturerName(jsonObjectRecords.get("manufacturer_name", String.class));
                 tPersonAccessRecordsEntity.setRecordsId(records_id);
                 tPersonAccessRecordsService.save(tPersonAccessRecordsEntity);
+                log.info("人脸数据不存在，结束存储");
             }
         }
 

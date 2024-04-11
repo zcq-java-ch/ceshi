@@ -25,7 +25,7 @@ public interface AppointmentFeign {
     /**
      * 用户客户端到平台的 建立站点队列
      * */
-    @PostMapping("establishAgentToCloud")
+    @PostMapping("api/appointment/establishAgentToCloud")
     AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data);
 
     /**
