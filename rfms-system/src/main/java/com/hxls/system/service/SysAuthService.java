@@ -51,4 +51,11 @@ public interface SysAuthService {
      * @param accessToken accessToken
      */
     void logout(String accessToken);
+
+    /**
+     * 根据code获取openId
+     *
+     * @param code
+     */
+    String getOpenIdByCode(String code);
 }

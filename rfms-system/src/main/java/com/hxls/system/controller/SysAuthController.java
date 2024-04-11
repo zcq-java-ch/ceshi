@@ -89,4 +89,12 @@ public class SysAuthController {
 
         return Result.ok();
     }
+
+    @PostMapping("getOpenIdByCode")
+    @Operation(summary = "通过code获取openId")
+    public Result<String> getOpenIdByCode(@RequestBody String code) {
+        String openId = sysAuthService.getOpenIdByCode(code);
+        return Result.ok(openId);
+    }
+
 }

@@ -2,6 +2,7 @@ package com.hxls.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONObject;
 import com.hxls.api.module.message.SmsApi;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
@@ -13,6 +14,11 @@ import com.hxls.framework.security.third.ThirdLogin;
 import com.hxls.system.enums.LoginOperationEnum;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.*;
+import com.squareup.okhttp.HttpUrl;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import dm.jdbc.filter.stat.json.JSONException;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.security.user.UserDetail;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +26,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 权限认证服务
@@ -153,5 +162,45 @@ public class SysAuthServiceImpl implements SysAuthService {
 
         // 保存登录日志
         sysLogLoginService.save(user.getUsername(), Constant.SUCCESS, LoginOperationEnum.LOGOUT_SUCCESS.getValue());
+    }
+
+    @Override
+    public String getOpenIdByCode(String code) {
+        // 微信小程序配置
+        String appId = "wxf305c51a53760e43";
+        String secret = "4505c07f3b820532117e2ec0192be088";
+
+        OkHttpClient httpClient = new OkHttpClient();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.weixin.qq.com/sns/jscode2session").newBuilder();
+        urlBuilder.addQueryParameter("appid", appId);
+        urlBuilder.addQueryParameter("secret", secret);
+        urlBuilder.addQueryParameter("js_code", code);
+        urlBuilder.addQueryParameter("grant_type", "authorization_code");
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        // 发送请求并处理响应
+        try {
+            Response firstResponse = httpClient.newCall(request).execute();
+            // 检查响应码
+            if (firstResponse.isSuccessful()) {
+                // 请求成功，处理响应数据
+                String openId = "获取失败";
+                String responseBody = firstResponse.body().string();
+                System.out.println("请求返回：" + responseBody);
+                JSONObject json1 = new JSONObject(responseBody);
+                if(json1.containsKey("openid")){
+                    openId = json1.getStr("openid");
+                }
+                return openId;
+            }
+        } catch (Exception e) {
+                // 网络异常处理
+                e.printStackTrace();
+        }
+
+        return null;
     }
 }
