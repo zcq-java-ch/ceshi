@@ -1,5 +1,6 @@
 package com.hxls.datasection.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -156,6 +157,18 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         }else {
             return new PageResult<>(null, 0);
+        }
+    }
+
+    @Override
+    public boolean whetherItExists(String recordsId) {
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getRecordsId, recordsId);
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+        if (CollectionUtil.isNotEmpty(tPersonAccessRecordsEntities)){
+            return true;
+        }else {
+            return false;
         }
     }
 }

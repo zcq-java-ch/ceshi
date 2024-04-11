@@ -1,5 +1,6 @@
 package com.hxls.appointment.server;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.core.Binding;
@@ -54,15 +55,22 @@ public class RabbitMqManager {
         Map<String, Object> args = new HashMap<>();
         args.put("x-message-ttl", 60000); // 60 seconds //60s删除
         // 声明队列
-        Queue queue2 = new Queue(appointmentDTO.getCarToCloudQueueName(), true, false, false,args);
-        Queue queue4 = new Queue(appointmentDTO.getFaceToCloudQueueName(), true, false, false,args);
-        rabbitAdmin.declareQueue(queue2);
-        rabbitAdmin.declareQueue(queue4);
+        if (ObjectUtil.isNotEmpty(appointmentDTO.getCarToCloudQueueName())){
+            Queue queue2 = new Queue(appointmentDTO.getCarToCloudQueueName(), true, false, false,args);
+            rabbitAdmin.declareQueue(queue2);
+            // 绑定队列到交换机
+            Binding binding2 = BindingBuilder.bind(queue2).to(exchange).with(appointmentDTO.getCarToCloudroutingKey());
+            rabbitAdmin.declareBinding(binding2);
+        }
+        if (ObjectUtil.isNotEmpty(appointmentDTO.getFaceToCloudQueueName())){
+            Queue queue4 = new Queue(appointmentDTO.getFaceToCloudQueueName(), true, false, false,args);
+            rabbitAdmin.declareQueue(queue4);
+            // 绑定队列到交换机
+            Binding binding4 = BindingBuilder.bind(queue4).to(exchange).with(appointmentDTO.getFaceToCloudroutingKey());
+            rabbitAdmin.declareBinding(binding4);
+        }
 
-        // 绑定队列到交换机
-        Binding binding2 = BindingBuilder.bind(queue2).to(exchange).with(appointmentDTO.getCarToCloudroutingKey());
-        Binding binding4 = BindingBuilder.bind(queue4).to(exchange).with(appointmentDTO.getFaceToCloudroutingKey());
-        rabbitAdmin.declareBinding(binding2);
-        rabbitAdmin.declareBinding(binding4);
+
+
     }
 }

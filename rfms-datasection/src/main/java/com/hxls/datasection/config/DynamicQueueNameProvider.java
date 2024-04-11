@@ -38,7 +38,7 @@ public class DynamicQueueNameProvider {
         // 可以根据业务逻辑动态生成队列名称
 
         /**
-         * 通过fegin 查询system中的设备，将所有合格的设备，获取sn和ip全部进行监听
+         * 通过fegin 查询system中的设备，将所有合格的站点
          * */
         JSONArray objects = deviceFeign.queryAllDeviceList();
         log.info("来自系统服务的查询设备的结果：{}",objects);
@@ -53,19 +53,13 @@ public class DynamicQueueNameProvider {
                 String exchangeName = siteCode + "_EXCHANGE";
                 String toFaceCloudQueueName = siteCode + "_FACE_" + ipAddress + QUEUE_FACE_TOCLOUD;
                 String toFaceCloudRoutingName = siteCode + SITE_ROUTING_FACE_TOCLOUD;
-                String toCarCloudQueueName = siteCode + "_CAR_" + ipAddress + QUEUE_CAR_TOCLOUD;
-                String toCarCloudRoutingName = siteCode + SITE_ROUTING_CAR_TOCLOUD;
                 AppointmentDTO appointmentDTO = new AppointmentDTO();
                 appointmentDTO.setExchangeName(exchangeName);
                 appointmentDTO.setFaceToCloudQueueName(toFaceCloudQueueName);
                 appointmentDTO.setFaceToCloudroutingKey(toFaceCloudRoutingName);
-                appointmentDTO.setCarToCloudQueueName(toCarCloudQueueName);
-                appointmentDTO.setCarToCloudroutingKey(toCarCloudRoutingName);
                 appointmentFeign.establishAgentToCloud(appointmentDTO);
                 log.info("获取到来自系统服务的设备，并开始监听人脸队列{}",toFaceCloudQueueName);
-                log.info("获取到来自系统服务的设备，并开始监听车辆队列{}",toCarCloudQueueName);
                 all.add(toFaceCloudQueueName);
-                all.add(toCarCloudQueueName);
             }
         }
 
@@ -77,15 +71,36 @@ public class DynamicQueueNameProvider {
      * Mryang
      * 获取当前从客户端到平台端 车辆的 静态 路由名称
      * */
-    public String getDynamicCarQueueNameFromCloud() {
+    public List<String> getDynamicCarQueueNameFromCloud() {
         // 可以根据业务逻辑动态生成队列名称
-        // 从数据库中根据当前电脑IP获取站点名称，这里假设有一个方法 getSiteNameByIp 实现此逻辑
-        String siteName = "XICHANG";
-        String ip = "192.102.0.76";
-        String all = siteName + "_CAR_" + ip + "_TOCLOUD";
-        System.out.println(
-                "全队列名称"+all
-        );
+
+        /**
+         * 通过fegin 查询system中的设备，将所有合格的站点
+         * */
+        JSONArray objects = deviceFeign.queryAllDeviceList();
+        log.info("来自系统服务的查询设备的结果：{}",objects);
+        List<String> all = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(objects)){
+            for (int i = 0; i < objects.size(); i++) {
+                JSONObject jsonObject = objects.get(i, JSONObject.class);
+                String siteCode = jsonObject.get("siteCode", String.class);
+                String ipAddress = jsonObject.get("ipAddress", String.class);
+
+                // 创建交换机 和 队列
+                String exchangeName = siteCode + "_EXCHANGE";
+                String toCarCloudQueueName = siteCode + "_CAR_" + ipAddress + QUEUE_CAR_TOCLOUD;
+                String toCarCloudRoutingName = siteCode + SITE_ROUTING_CAR_TOCLOUD;
+                AppointmentDTO appointmentDTO = new AppointmentDTO();
+                appointmentDTO.setExchangeName(exchangeName);
+                appointmentDTO.setCarToCloudQueueName(toCarCloudQueueName);
+                appointmentDTO.setCarToCloudroutingKey(toCarCloudRoutingName);
+                appointmentFeign.establishAgentToCloud(appointmentDTO);
+                log.info("获取到来自系统服务的设备，并开始监听车辆队列{}",toCarCloudQueueName);
+                all.add(toCarCloudQueueName);
+            }
+        }
+
+        log.debug("最终监听到的队列集合是：{}",all);
         return all;
 
     }

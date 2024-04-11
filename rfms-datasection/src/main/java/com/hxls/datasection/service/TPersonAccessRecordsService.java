@@ -25,4 +25,6 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
     void delete(List<Long> idList);
 
     PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query);
+
+    boolean whetherItExists(String recordsId);
 }

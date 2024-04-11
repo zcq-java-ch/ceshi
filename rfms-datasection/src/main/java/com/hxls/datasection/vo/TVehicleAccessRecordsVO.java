@@ -93,5 +93,7 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date updateTime;
 
+	@Schema(description = "记录唯一标识")
+	private String recordsId;
 
 }

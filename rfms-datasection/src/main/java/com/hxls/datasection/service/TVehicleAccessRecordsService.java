@@ -23,4 +23,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     void update(TVehicleAccessRecordsVO vo);
 
     void delete(List<Long> idList);
+
+    boolean whetherItExists(String recordsId);
 }

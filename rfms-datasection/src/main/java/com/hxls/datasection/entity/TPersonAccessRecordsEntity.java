@@ -128,7 +128,10 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	*/
 	private Integer status;
 
-
+	/**
+	 * 记录唯一标识
+	 * */
+	private String recordsId;
 
 
 
