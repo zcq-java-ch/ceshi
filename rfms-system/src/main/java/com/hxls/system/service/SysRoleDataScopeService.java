@@ -2,6 +2,7 @@ package com.hxls.system.service;
 
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.system.entity.SysRoleDataScopeEntity;
+import com.hxls.system.vo.SysOrgVO;
 
 import java.util.List;
 
@@ -30,4 +31,10 @@ public interface SysRoleDataScopeService extends BaseService<SysRoleDataScopeEnt
      * @param roleIdList 角色id列表
      */
     void deleteByRoleIdList(List<Long> roleIdList);
+
+
+    /**
+     * 根据用户ID，获取机构列表
+     */
+    List<SysOrgVO> getOrgList(Long userId);
 }

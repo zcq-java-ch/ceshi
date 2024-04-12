@@ -152,7 +152,8 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "排序")
     private Integer sort;
 
-
+    @Schema(description = "站点列表")
+    private List<SysOrgVO> orgList;
 
 
 

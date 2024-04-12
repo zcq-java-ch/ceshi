@@ -31,6 +31,10 @@ public class SysMenuVO extends TreeNode<SysMenuVO> {
     @Schema(description = "菜单URL")
     private String url;
 
+    @Schema(description = "类别  1：web端   2：移动端")
+    @Range(min = 1, max = 2, message = "类别不正确")
+    private Integer category;
+
     @Schema(description = "类型  0：菜单   1：按钮   2：接口")
     @Range(min = 0, max = 2, message = "类型不正确")
     private Integer type;

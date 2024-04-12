@@ -33,6 +33,10 @@ public class SysMenuEntity extends BaseEntity {
      */
     private String authority;
     /**
+     * 类别（1、web端   2、移动端）
+     */
+    private Integer category;
+    /**
      * 类型   0：菜单   1：按钮   2：接口
      */
     private Integer type;

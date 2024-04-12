@@ -13,10 +13,7 @@ import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
-import com.hxls.system.vo.MainUserVO;
-import com.hxls.system.vo.SysUserBaseVO;
-import com.hxls.system.vo.SysUserPasswordVO;
-import com.hxls.system.vo.SysUserVO;
+import com.hxls.system.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -47,6 +44,7 @@ public class SysUserController {
     private final SysPostService sysPostService;
     private final PasswordEncoder passwordEncoder;
     private final TVehicleService tVehicleService;
+    private final SysRoleDataScopeService sysRoleDataScopeService;
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -93,7 +91,11 @@ public class SysUserController {
         //用户车牌号
         SysUserEntity byId = sysUserService.getById(user.getId());
         user.setLicensePlate(byId.getLicensePlate());
-        //用户管理的站点
+
+
+        //用户管理的站点数据权限
+        List<SysOrgVO> orgList = sysRoleDataScopeService.getOrgList(user.getId());
+        user.setOrgList(orgList);
 
         return Result.ok(user);
     }
