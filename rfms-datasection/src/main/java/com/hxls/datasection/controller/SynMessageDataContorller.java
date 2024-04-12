@@ -61,7 +61,7 @@ public class SynMessageDataContorller {
 //            String records_id = jsonObjectRecords.get("records_id", String.class);
             // 唯一编码
             String records_id =  jsonObjectRecords.get("device_person_id", String.class) +  jsonObjectRecords.get("record_time", String.class);
-            log.info("人脸惟一值是{}", records_id);
+//            log.info("人脸惟一值是{}", records_id);
             boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(records_id);
             if (whetherItExists){
                 // 存在
@@ -109,10 +109,12 @@ public class SynMessageDataContorller {
 
             // 判断数据  数据库中已经存在
             String records_id = jsonObjectRecords.get("records_id", String.class);
+            log.info("车辆惟一值是{}", records_id);
             boolean whetherItExists = tVehicleAccessRecordsService.whetherItExists(records_id);
             if (whetherItExists){
                 // 存在
             }else {
+                log.info("开始插入车辆记录");
                 TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = new TVehicleAccessRecordsEntity();
                 tVehicleAccessRecordsEntity.setChannelId(jsonObjectRecords.get("channel_id", Long.class));
                 tVehicleAccessRecordsEntity.setChannelName(jsonObjectRecords.get("channel_name", String.class));
