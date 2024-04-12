@@ -56,4 +56,11 @@ public interface Constant {
 
     String PASS = "1";
 
+
+    String EXCHANGE = "_EXCHANGE";
+
+    // 路由键 站点——类型 【平台-->站点】
+    String SITE_ROUTING_FACE_TOAGENT = "_ROUTING_FACE_TOAGENT";
+    String SITE_ROUTING_CAR_TOAGENT = "_ROUTING_CAR_TOAGENT";
+
 }

@@ -31,6 +31,7 @@ import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +61,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      */
     private final TAppointmentVehicleServiceImpl tAppointmentVehicleService;
 
+    /**
+     * 自定义sql方法的mapper
+     */
     private final TAppointmentDao appointmentDao;
+
+    /**
+     * 消息队列
+     */
+    private final AmqpTemplate rabbitMQTemplate;
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
@@ -146,10 +155,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public void save(TAppointmentVO vo) {
         //主表转换
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
+        //默认启用
+        entity.setStatus(Constant.ENABLE);
         //插入主预约信息单
         int insert = baseMapper.insert(entity);
         //判断是否插入成功
-        if (insert > 0) {
+        if (insert > Constant.ZERO) {
             Long id = entity.getId();
             //避免没有id报错
             if (ObjectUtil.isNotNull(id)) {
@@ -345,7 +356,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(StringUtils.isNotEmpty(data.getAppointmentType()), TAppointmentEntity::getAppointmentType, data.getAppointmentType());
         wrapper.eq(data.getSiteId() != null, TAppointmentEntity::getSiteId, data.getSiteId());
-        wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
+        wrapper.eq(TAppointmentEntity::getStatus , Constant.ENABLE);
+        wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
         Page<TAppointmentEntity> page = new Page<>(data.getPage(), data.getLimit());
 
         IPage<TAppointmentEntity> tAppointmentEntityPage = page(page, wrapper);
@@ -360,6 +372,26 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             if (ObjectUtil.isNotNull(one)){
                 tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
                 tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
+            }
+            //场站名称
+            if (tAppointmentVO.getSiteId()!=null ){
+                String siteName = appointmentDao.selectSiteNameById(tAppointmentVO.getSiteId());
+                tAppointmentVO.setSiteName( siteName );
+            }
+            //供应商名称
+            if (StringUtils.isNotEmpty( tAppointmentVO.getSupplierName() )){
+                String siteName = appointmentDao.selectSupplierNameById(Long.parseLong(tAppointmentVO.getSupplierName()));
+                tAppointmentVO.setSupplierName( siteName );
+            }
+            //创建者名称
+            if (tAppointmentVO.getCreator() != null ) {
+                com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tAppointmentVO.getCreator());
+                if (jsonObject != null ){
+                    String realName = jsonObject.getString("real_name");
+                    String postName = jsonObject.getString("name");
+                    tAppointmentVO.setCreatorName(realName);
+                    tAppointmentVO.setSubmitterOrgName(postName);
+                }
             }
         }
         return new PageResult<>(tAppointmentVOS, tAppointmentEntityPage.getTotal());
@@ -391,10 +423,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             List<TAppointmentEntity> list = list(new LambdaQueryWrapper<TAppointmentEntity>()
                     .eq(TAppointmentEntity::getSiteId,id).le(TAppointmentEntity::getEndTime,now).ge(TAppointmentEntity::getStartTime,now));
             List<Long> longList = list.stream().map(TAppointmentEntity::getId).toList();
-            long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
-            long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
-            entries.set("vehicleCount" , vehicleCount);
-            entries.set("personCount" , personCount);
+            if(CollectionUtils.isNotEmpty(list)){
+                long vehicleCount = tAppointmentVehicleService.count(new LambdaQueryWrapper<TAppointmentVehicle>().in(TAppointmentVehicle::getAppointmentId, longList));
+                long personCount = tAppointmentPersonnelService.count(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, longList));
+                entries.set("vehicleCount" , vehicleCount);
+                entries.set("personCount" , personCount);
+            }
             return entries;
         }
         List<String> typeList = Stream.of("3", "4", "5").toList();
@@ -408,5 +442,17 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             entries.set("personCount" , personCount);
         }
         return entries;
+    }
+
+    @Override
+    public void issuedPeople(JSONObject data) {
+        //开始下发
+        String siteCode = data.getStr("siteCode");
+        String type = data.getStr("type");
+        switch (type){
+            case "1" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_FACE_TOAGENT , data);
+            case "2" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_CAR_TOAGENT , data);
+            default -> throw new ServerException("类型参数不对");
+        }
     }
 }

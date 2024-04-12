@@ -98,4 +98,10 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param type
      */
     JSONObject appointmentSum(Long id, Long type);
+
+    /**
+     * 下发信息
+     * @param data
+     */
+    void issuedPeople(JSONObject data);
 }

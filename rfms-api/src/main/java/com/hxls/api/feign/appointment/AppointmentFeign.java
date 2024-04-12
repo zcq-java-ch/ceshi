@@ -41,8 +41,28 @@ public interface AppointmentFeign {
     @GetMapping(value = "api/appointment/del")
     void delAppointment(@RequestParam  Long id);
 
+
+    /**
+     * 下发人员
+     * @param data  人员信息
+     * @return 是否成功
+     */
+    @PostMapping(value = "api/appointment/issuedPeople")
+    Boolean issuedPeople(@RequestBody JSONObject data );
+
+
+    /**
+     * 下发车辆
+     * @param data  车辆
+     * @return 是否成功
+     */
+    @PostMapping(value = "api/appointment/issuedVehicle")
+    Boolean issuedVehicle(@RequestBody JSONObject data );
+
+
     @GetMapping(value = "api/appointment/{id}")
     JSONObject guardInformation(@PathVariable("id") Long id);
+
 
     @GetMapping(value = "api/appointment/sum/{id}/{type}")
     JSONObject appointmentSum(@PathVariable("id") Long id,@PathVariable ("type")  Long type);

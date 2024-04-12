@@ -25,10 +25,7 @@ import java.util.List;
 @Tag(name = "预约管理")
 @AllArgsConstructor
 public class StaffAppointmentController {
-
-
     private final TAppointmentService tAppointmentService;
-
 
     @GetMapping("page")
     @Operation(summary = "分页")
