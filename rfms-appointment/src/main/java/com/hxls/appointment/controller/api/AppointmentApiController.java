@@ -24,80 +24,92 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class AppointmentApiController {
 
+
     private final RabbitMqManager rabbitMqManager;
     private final RedisCache redisCache;
     private final TAppointmentService tAppointmentService;
 
+
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
-    public AppointmentDTO establish(@RequestBody AppointmentDTO data){
+    public AppointmentDTO establish(@RequestBody AppointmentDTO data) {
         System.out.println("接收到信息");
         System.out.println(data);
-        if ( redisCache.get(data.getIp()) == null){
+        if (redisCache.get(data.getIp()) == null) {
             rabbitMqManager.declareExchangeAndQueue(data);
             data.setResult(true);
         }
         return data;
     }
 
+
     @PostMapping("establishAgentToCloud")
     @Operation(summary = "用户客户端到平台的 建立站点队列")
-    public AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data){
+    public AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data) {
         System.out.println("接收到信息");
         System.out.println(data);
         rabbitMqManager.declareExchangeAndQueueToCloud(data);
-
         return data;
     }
 
     @PostMapping
     @Operation(summary = "保存")
     @OperateLog(type = OperateTypeEnum.INSERT)
-    public Result<String> save(@RequestBody TAppointmentVO vo){
+    public Result<String> save(@RequestBody TAppointmentVO vo) {
         tAppointmentService.save(vo);
         return Result.ok();
     }
+
     @GetMapping("page")
     @Operation(summary = "分页")
-    public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+    public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query) {
         //查询外部预约
         query.setOther(true);
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
+
     }
 
     @PutMapping
     @Operation(summary = "修改")
     @OperateLog(type = OperateTypeEnum.UPDATE)
-    public Result<String> update(@RequestBody @Valid TAppointmentVO vo){
+    public Result<String> update(@RequestBody @Valid TAppointmentVO vo) {
         tAppointmentService.update(vo);
         return Result.ok();
     }
 
     @GetMapping("{id}")
     @Operation(summary = "信息")
-    public Result<TAppointmentVO> get(@PathVariable("id") Long id){
+    public Result<TAppointmentVO> get(@PathVariable("id") Long id) {
         TAppointmentVO vo = tAppointmentService.getDetailById(id);
         return Result.ok(vo);
     }
 
     @PostMapping("board")
     @Operation(summary = "获取安防看板")
-    public PageResult<TAppointmentVO> board(@RequestBody AppointmentDTO data ){
+    public PageResult<TAppointmentVO> board(@RequestBody AppointmentDTO data) {
         System.out.println("开始访问获取安防看板");
-        PageResult<TAppointmentVO>  result = tAppointmentService.pageBoard(data);
+        PageResult<TAppointmentVO> result = tAppointmentService.pageBoard(data);
         System.out.println(result);
         return result;
     }
 
     @GetMapping(value = "del")
-    public void delAppointment(@RequestParam  Long id){
+    public void delAppointment(@RequestParam Long id) {
         tAppointmentService.delAppointment(id);
     }
 
     @GetMapping(value = "/sum/{id}/{type}")
-    public JSONObject appointmentSum(@PathVariable  Long id , @PathVariable  Long type ){
-       return tAppointmentService.appointmentSum(id , type);
+    public JSONObject appointmentSum(@PathVariable Long id, @PathVariable Long type) {
+        return tAppointmentService.appointmentSum(id, type);
+    }
+
+    @PostMapping("issuedPeople")
+    @Operation(summary = "下发信息")
+    public Result<Void> issuedPeople(@RequestBody JSONObject data) {
+        System.out.println("下发信息");
+        tAppointmentService.issuedPeople(data);
+        return Result.ok();
     }
 
 }
