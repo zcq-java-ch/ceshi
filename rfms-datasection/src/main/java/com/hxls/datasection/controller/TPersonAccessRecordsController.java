@@ -140,6 +140,8 @@ public class TPersonAccessRecordsController {
                  * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
                  * */
                 JSONObject entries = deviceFeign.useTheIpAddressToQueryDeviceInformation(dfCallBackDto.getDevicename());
+                log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
+                log.info("平台端的设备名称:{}",entries.get("device_name", String.class));
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
