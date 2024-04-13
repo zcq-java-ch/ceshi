@@ -1,9 +1,15 @@
 package com.hxls.datasection.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.rabbitmq.domain.MessageSendDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -14,30 +20,42 @@ import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
+import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
 * 人员出入记录表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-29
 */
 @RestController
 @RequestMapping("datasection/TPersonAccessRecords")
 @Tag(name="人员出入记录表")
 @AllArgsConstructor
+@Slf4j
 public class TPersonAccessRecordsController {
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
+    @Autowired
+    private DeviceFeign deviceFeign;
 
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
@@ -102,5 +120,63 @@ public class TPersonAccessRecordsController {
 
 
         return Result.ok(page);
+    }
+
+    @PostMapping("/callbackAddressFaceRecognitionByWZ")
+    @Operation(summary = "万众人脸识别结果回调地址")
+//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
+    public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException {
+        if(ObjectUtil.isNotEmpty(dfCallBackDto)){
+
+            /**
+             * 1. 先验证uuid是否存在，存在说明录入过了
+             * */
+            boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(dfCallBackDto.getId());
+            if (whetherItExists){
+                // 存在
+                log.info("人脸数据已经存在不进行存储");
+            }else {
+                /**
+                 * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
+                 * */
+                JSONObject entries = deviceFeign.useTheIpAddressToQueryDeviceInformation(dfCallBackDto.getDevicename());
+
+                TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
+                body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
+                body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
+                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
+                body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
+                body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                body.setHeadUrl(dfCallBackDto.getFace_base64());
+                body.setPersonName(dfCallBackDto.getName());
+                body.setDevicePersonId(dfCallBackDto.getEmployee_number());
+                // 定义日期格式
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(dfCallBackDto.getTime()) ? dfCallBackDto.getTime() : "2023-04-17 12:00:00"));
+                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
+                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                body.setRecordsId(dfCallBackDto.getId());
+                try {
+                    tPersonAccessRecordsService.save(body);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+
+        /**
+         * {
+         *  "result":0, //0接收成功，非0接收失败，设备会重新推送
+         *   "message": "OK"
+         * }
+         *
+         * */
+        JSONObject obj = JSONUtil.createObj();
+        obj.set("result", 0);
+        obj.set("message", "ok");
+        return obj;
     }
 }
