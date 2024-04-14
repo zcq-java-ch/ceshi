@@ -109,6 +109,9 @@ public class IndexController {
                     String connectionType = tDeviceManagementEntity1.getConnectionType(); // 连接方式
                     String masterIp = tDeviceManagementEntity1.getMasterIp(); // 主机ip
                     String deviceSn = tDeviceManagementEntity1.getDeviceSn(); // 设备编码
+                    String masterSn = tDeviceManagementEntity1.getMasterSn(); // 主机编码【数据库名字】
+                    String masterAccount = tDeviceManagementEntity1.getMasterAccount(); // 主机数据库账户
+                    String masterPassword = tDeviceManagementEntity1.getMasterPassword(); // 主机数据库密码
 
                     // 获取厂商名字
                     Long manufacturerId = tDeviceManagementEntity1.getManufacturerId();
@@ -145,6 +148,9 @@ public class IndexController {
                         facejsonObject.putOnce("connectionType", connectionType);
                         facejsonObject.putOnce("masterIp", masterIp);
                         facejsonObject.putOnce("deviceSn", deviceSn);
+                        facejsonObject.putOnce("masterSn", masterSn);
+                        facejsonObject.putOnce("masterAccount", masterAccount);
+                        facejsonObject.putOnce("masterPassword", masterPassword);
                         faceJsonA.add(facejsonObject);
                     }else if("2".equals(deviceType)){
                         // 车辆
@@ -162,6 +168,9 @@ public class IndexController {
                         facejsonObject.putOnce("connectionType", connectionType);
                         facejsonObject.putOnce("masterIp", masterIp);
                         facejsonObject.putOnce("deviceSn", deviceSn);
+                        facejsonObject.putOnce("masterSn", masterSn);
+                        facejsonObject.putOnce("masterAccount", masterAccount);
+                        facejsonObject.putOnce("masterPassword", masterPassword);
                         carJsonA.add(facejsonObject);
                     }else {
                         // 数据错误
