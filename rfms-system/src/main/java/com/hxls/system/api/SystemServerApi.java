@@ -87,7 +87,8 @@ public class SystemServerApi implements DeviceFeign {
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getAccount, agentDeviceName);
         List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
-
+        System.out.println("当前万众客户端传过来的设备名称是："+agentDeviceName);
+        System.out.println("是否在数据库中找到了对应的数据："+tDeviceManagementEntities.toString());
         JSONObject entries = new JSONObject();
         if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
             TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);

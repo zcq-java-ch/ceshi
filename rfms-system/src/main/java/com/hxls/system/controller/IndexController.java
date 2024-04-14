@@ -108,6 +108,7 @@ public class IndexController {
                     String devicePass = tDeviceManagementEntity1.getPassword(); // 设备密码
                     String connectionType = tDeviceManagementEntity1.getConnectionType(); // 连接方式
                     String masterIp = tDeviceManagementEntity1.getMasterIp(); // 主机ip
+                    String deviceSn = tDeviceManagementEntity1.getDeviceSn(); // 设备编码
 
                     // 获取厂商名字
                     Long manufacturerId = tDeviceManagementEntity1.getManufacturerId();
@@ -143,6 +144,7 @@ public class IndexController {
                         facejsonObject.putOnce("manufacturerId", manufacturerId);
                         facejsonObject.putOnce("connectionType", connectionType);
                         facejsonObject.putOnce("masterIp", masterIp);
+                        facejsonObject.putOnce("deviceSn", deviceSn);
                         faceJsonA.add(facejsonObject);
                     }else if("2".equals(deviceType)){
                         // 车辆
@@ -159,6 +161,7 @@ public class IndexController {
                         facejsonObject.putOnce("manufacturerId", manufacturerId);
                         facejsonObject.putOnce("connectionType", connectionType);
                         facejsonObject.putOnce("masterIp", masterIp);
+                        facejsonObject.putOnce("deviceSn", deviceSn);
                         carJsonA.add(facejsonObject);
                     }else {
                         // 数据错误
