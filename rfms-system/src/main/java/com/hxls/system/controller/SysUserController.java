@@ -82,10 +82,9 @@ public class SysUserController {
         if (user == null){
             throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
-        user = SysUserConvert.INSTANCE.convert(sysUserService.getById(user.getId()));
 
         //查询机构名字
-
+        user = SysUserConvert.INSTANCE.convert(sysUserService.getById(user.getId()));
 
         // 用户岗位列表
         List<Long> postIdList = sysUserPostService.getPostIdList(user.getId());
@@ -96,11 +95,10 @@ public class SysUserController {
         user.setPostNameList(postNameList);
 
         //用户站点名字
-        if(user.getOrgId() != null){
-            SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
-            user.setOrgName(byId.getName());
+        if(user.getStationId() != null){
+            SysOrgEntity byId = sysOrgService.getById(user.getStationId());
+            user.setStationName(byId.getName());
         }
-
 
         //用户管理的站点数据权限
         List<SysOrgVO> orgList = sysRoleDataScopeService.getOrgList(user.getId());
@@ -186,6 +184,20 @@ public class SysUserController {
 
         return Result.ok();
     }
+
+    @PostMapping("resetPassword")
+    @Operation(summary = "重置密码")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('sys:user:update')")
+    public Result<String> resetPassword(@RequestBody List<Long> idList) {
+        for (Long id : idList) {
+            // 重置密码
+            sysUserService.updatePassword(id, passwordEncoder.encode("hxls1234"));
+        }
+
+        return Result.ok();
+    }
+
 
     @PostMapping("import")
     @Operation(summary = "导入用户")

@@ -39,7 +39,10 @@ public class SysUserVO implements Serializable, TransPojo {
     private String userType;
 
     @Schema(description = "所属站点（组织类型为站点的组织id）")
-    private String stationId;
+    private Long stationId;
+
+    @Schema(description = "站点名称")
+    private String stationName;
 
 
     @Schema(description = "业务：数据字典")

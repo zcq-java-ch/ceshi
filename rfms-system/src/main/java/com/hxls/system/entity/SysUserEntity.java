@@ -31,7 +31,7 @@ public class SysUserEntity extends BaseEntity {
     /**
      * 所属站点
      **/
-    private String stationId;
+    private Long stationId;
 
 
     /**
