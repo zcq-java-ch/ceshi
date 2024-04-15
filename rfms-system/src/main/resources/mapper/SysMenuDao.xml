@@ -23,6 +23,9 @@
 				<if test="type != null">
 					and t1.type = #{type}
 				</if>
+				<if test="category != null">
+					and t1.category = #{category}
+				</if>
 		ORDER BY
 			t1.sort ASC;
 
@@ -56,6 +59,9 @@
 			<if test="type != null">
 				and t3.type = #{type}
 			</if>
+			<if test="category != null">
+				and t3.category = #{category}
+			</if>
 		ORDER BY
 			t3.sort ASC
 		) t1
@@ -73,6 +79,9 @@
 			AND t3.deleted = 0
 			<if test="type != null">
 				and t3.type = #{type}
+			</if>
+			<if test="category != null">
+				and t3.category = #{category}
 			</if>
 		ORDER BY
 			t3.sort ASC
@@ -92,6 +101,9 @@
 			<if test="type != null">
 				and t3.type = #{type}
 			</if>
+			<if test="category != null">
+				and t3.category = #{category}
+			</if>
 		ORDER BY
 			t3.sort ASC
 		) t3 ON t2.pid = t3.id
@@ -99,6 +111,9 @@
 			t1.deleted = 0
 			<if test="type != null">
 				and t1.type = #{type}
+			</if>
+			<if test="category != null">
+				and t1.category = #{category}
 			</if>
 		ORDER BY
 			t1.sort ASC;

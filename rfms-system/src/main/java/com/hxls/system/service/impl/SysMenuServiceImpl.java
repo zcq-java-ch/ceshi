@@ -67,21 +67,21 @@ public class SysMenuServiceImpl extends BaseServiceImpl<SysMenuDao, SysMenuEntit
     }
 
     @Override
-    public List<SysMenuVO> getMenuList(Integer type) {
-        List<SysMenuEntity> menuList = baseMapper.getMenuList(type);
+    public List<SysMenuVO> getMenuList(Integer type, Integer category) {
+        List<SysMenuEntity> menuList = baseMapper.getMenuList(type, category);
 
         return TreeUtils.build(SysMenuConvert.INSTANCE.convertList(menuList));
     }
 
     @Override
-    public List<SysMenuVO> getUserMenuList(UserDetail user, Integer type) {
+    public List<SysMenuVO> getUserMenuList(UserDetail user, Integer type, Integer category) {
         List<SysMenuEntity> menuList;
 
         // 系统管理员，拥有最高权限
         if (user.getSuperAdmin().equals(SuperAdminEnum.YES.getValue())) {
-            menuList = baseMapper.getMenuList(type);
+            menuList = baseMapper.getMenuList(type,category);
         } else {
-            menuList = baseMapper.getUserMenuList(user.getId(), type);
+            menuList = baseMapper.getUserMenuList(user.getId(), type,category);
         }
 
         return TreeUtils.build(SysMenuConvert.INSTANCE.convertList(menuList));

@@ -38,7 +38,7 @@ public class SysMenuController {
     @Operation(summary = "菜单导航")
     public Result<List<SysMenuVO>> nav() {
         UserDetail user = SecurityUser.getUser();
-        List<SysMenuVO> list = sysMenuService.getUserMenuList(user, MenuTypeEnum.MENU.getValue());
+        List<SysMenuVO> list = sysMenuService.getUserMenuList(user, MenuTypeEnum.MENU.getValue(),1);
 
         return Result.ok(list);
     }
@@ -57,8 +57,16 @@ public class SysMenuController {
     @Parameter(name = "type", description = "菜单类型 0：菜单 1：按钮  2：接口  null：全部")
     @PreAuthorize("hasAuthority('sys:menu:list')")
     public Result<List<SysMenuVO>> list(Integer type) {
-        List<SysMenuVO> list = sysMenuService.getMenuList(type);
+        List<SysMenuVO> list = sysMenuService.getMenuList(type,1);
 
+        return Result.ok(list);
+    }
+
+    @GetMapping("getAppMenu")
+    @Operation(summary = "菜单列表(移动端)")
+    @Parameter(name = "type", description = "菜单类型 0：菜单 1：按钮  2：接口  null：全部")
+    public Result<List<SysMenuVO>> getAppMenu(Integer type) {
+        List<SysMenuVO> list = sysMenuService.getMenuList(type,2);
         return Result.ok(list);
     }
 

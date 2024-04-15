@@ -126,7 +126,7 @@ public class SysRoleController {
     @PreAuthorize("hasAuthority('sys:role:menu')")
     public Result<List<SysMenuVO>> menu() {
         UserDetail user = SecurityUser.getUser();
-        List<SysMenuVO> list = sysMenuService.getUserMenuList(user, null);
+        List<SysMenuVO> list = sysMenuService.getUserMenuList(user, null,1);
 
         return Result.ok(list);
     }

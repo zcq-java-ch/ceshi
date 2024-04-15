@@ -26,9 +26,11 @@ public interface SysMenuService extends BaseService<SysMenuEntity> {
 	/**
 	 * 菜单列表
 	 *
-	 * @param type 菜单类型
+	 * @param type 菜单类型	0：全部  1：目录   2：菜单   3：按钮
+	 *  @param category   菜单分类(1：web端   2：移动端)
 	 */
-	List<SysMenuVO> getMenuList(Integer type);
+	List<SysMenuVO> getMenuList(Integer type,Integer category);
+
 
 	/**
 	 * 用户菜单列表
@@ -36,7 +38,7 @@ public interface SysMenuService extends BaseService<SysMenuEntity> {
 	 * @param user  用户
 	 * @param type 菜单类型
 	 */
-	List<SysMenuVO> getUserMenuList(UserDetail user, Integer type);
+	List<SysMenuVO> getUserMenuList(UserDetail user, Integer type,Integer category);
 
 	/**
 	 * 获取子菜单的数量
