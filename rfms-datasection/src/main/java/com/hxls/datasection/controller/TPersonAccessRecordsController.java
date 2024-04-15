@@ -5,6 +5,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
+import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -124,7 +125,6 @@ public class TPersonAccessRecordsController {
 
     @PostMapping("/callbackAddressFaceRecognitionByWZ")
     @Operation(summary = "万众人脸识别结果回调地址")
-//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
     public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException {
         if(ObjectUtil.isNotEmpty(dfCallBackDto)){
 

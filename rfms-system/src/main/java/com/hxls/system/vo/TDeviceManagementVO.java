@@ -95,5 +95,9 @@ public class TDeviceManagementVO implements Serializable {
 	@Schema(description = "主机密码")
 	private String masterPassword;
 
+	@Schema(description = "所属厂站名称")
+	private String manufacturerName;
 
+	@Schema(description = "所属站点名称")
+	private String siteName;
 }

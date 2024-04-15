@@ -1,5 +1,9 @@
 package com.hxls.datasection.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,11 +16,16 @@ import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -29,8 +38,11 @@ import java.util.List;
 @RequestMapping("datasection/TVehicleAccessRecords")
 @Tag(name="车辆出入记录表")
 @AllArgsConstructor
+@Slf4j
 public class TVehicleAccessRecordsController {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
+    @Autowired
+    private DeviceFeign deviceFeign;
 
     @GetMapping("/pageTVehicleAccessRecords")
     @Operation(summary = "分页")
@@ -78,6 +90,71 @@ public class TVehicleAccessRecordsController {
         tVehicleAccessRecordsService.delete(idList);
 
         return Result.ok();
+    }
+
+    @PostMapping("/callbackAddressFaceRecognitionByHKWS")
+    @Operation(summary = "海康威视车辆识别结果回调地址")
+    public JSONObject callbackAddressFaceRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException {
+        if(ObjectUtil.isNotEmpty(jsonObject)){
+            String uniqueNo = jsonObject.get("uniqueNo", String.class);
+            String plateNo = jsonObject.get("plateNo", String.class);
+            String picPlateFileData = jsonObject.get("picPlateFileData", String.class);
+            String passTime = jsonObject.get("passTime", String.class);
+            String terminalNo = jsonObject.get("terminalNo", String.class);
+            String laneCode = jsonObject.get("laneCode", String.class);
+
+
+            /**
+             * 1. 先验证uuid是否存在，存在说明录入过了
+             * */
+            boolean whetherItExists = tVehicleAccessRecordsService.whetherItExists(uniqueNo);
+            if (whetherItExists){
+                // 存在
+                log.info("人脸数据已经存在不进行存储");
+            }else {
+                /**
+                 * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
+                 * */
+                JSONObject entries = deviceFeign.useTheDeviceSnToQueryDeviceInformation(laneCode);
+                log.info("海康客户端传来的设备编号:{}",laneCode);
+                log.info("平台端的设备编号:{}",entries.get("device_name", String.class));
+
+                TVehicleAccessRecordsEntity body = new TVehicleAccessRecordsEntity();
+                body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
+                body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
+                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
+                body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
+                body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                body.setCarUrl(picPlateFileData);
+                body.setPlateNumber(plateNo);
+                body.setRecordsId(uniqueNo);
+                // 定义日期格式
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(passTime) ? passTime : "2023-04-17 12:00:00"));
+                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
+                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                try {
+                    tVehicleAccessRecordsService.save(body);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+
+        /**
+         * {
+         *  "result":0, //0接收成功，非0接收失败，设备会重新推送
+         *   "message": "OK"
+         * }
+         *
+         * */
+        JSONObject obj = JSONUtil.createObj();
+        obj.set("result", 0);
+        obj.set("message", "ok");
+        return obj;
     }
 
 }
