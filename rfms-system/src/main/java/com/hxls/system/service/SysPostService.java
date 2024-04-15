@@ -3,6 +3,7 @@ package com.hxls.system.service;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.system.entity.SysPostEntity;
 import com.hxls.system.query.SysPostQuery;
+import com.hxls.system.vo.MainPostVO;
 import com.hxls.system.vo.SysPostVO;
 import com.hxls.framework.common.utils.PageResult;
 
@@ -27,4 +28,6 @@ public interface SysPostService extends BaseService<SysPostEntity> {
     void update(SysPostVO vo);
 
     void delete(List<Long> idList);
+
+    List<MainPostVO> queryByMainPosts(SysPostQuery query);
 }

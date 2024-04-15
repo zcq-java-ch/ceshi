@@ -1,18 +1,19 @@
 package com.hxls.system.controller;
 
+import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.system.convert.SysPostConvert;
 import com.hxls.system.entity.SysPostEntity;
 import com.hxls.system.query.SysPostQuery;
 import com.hxls.system.service.SysPostService;
+import com.hxls.system.vo.MainPostVO;
 import com.hxls.system.vo.SysPostVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import com.hxls.framework.common.utils.PageResult;
-import com.hxls.framework.common.utils.Result;
-import com.hxls.system.convert.SysPostConvert;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -87,5 +88,13 @@ public class SysPostController {
         sysPostService.delete(idList);
 
         return Result.ok();
+    }
+
+    @GetMapping("queryByMainPosts")
+    @Operation(summary = "主数据岗位下拉数据")
+    @PreAuthorize("hasAuthority('sys:post:page')")
+    public Result<List<MainPostVO>> queryByMainPosts(@ParameterObject @Valid SysPostQuery query) {
+        List<MainPostVO> postVOS= sysPostService.queryByMainPosts(query);
+        return Result.ok(postVOS);
     }
 }
