@@ -127,7 +127,7 @@ public class TPersonAccessRecordsController {
     @Operation(summary = "万众人脸识别结果回调地址")
     public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException {
         if(ObjectUtil.isNotEmpty(dfCallBackDto)){
-
+            log.info("万众人脸识别结果：{}",dfCallBackDto.toString());
             /**
              * 1. 先验证uuid是否存在，存在说明录入过了
              * */
