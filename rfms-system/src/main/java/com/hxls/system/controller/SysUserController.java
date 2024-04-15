@@ -10,6 +10,7 @@ import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysUserConvert;
+import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
@@ -44,6 +45,7 @@ public class SysUserController {
     private final SysPostService sysPostService;
     private final PasswordEncoder passwordEncoder;
     private final TVehicleService tVehicleService;
+    private final SysOrgService sysOrgService;
     private final SysRoleDataScopeService sysRoleDataScopeService;
 
     @GetMapping("page")
@@ -80,6 +82,11 @@ public class SysUserController {
         if (user == null){
             throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
+        user = SysUserConvert.INSTANCE.convert(sysUserService.getById(user.getId()));
+
+        //查询机构名字
+
+
         // 用户岗位列表
         List<Long> postIdList = sysUserPostService.getPostIdList(user.getId());
         user.setPostIdList(postIdList);
@@ -88,9 +95,11 @@ public class SysUserController {
         List<String> postNameList = sysPostService.getNameList(postIdList);
         user.setPostNameList(postNameList);
 
-        //用户车牌号
-        SysUserEntity byId = sysUserService.getById(user.getId());
-        user.setLicensePlate(byId.getLicensePlate());
+        //用户站点名字
+        if(user.getOrgId() != null){
+            SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
+            user.setOrgName(byId.getName());
+        }
 
 
         //用户管理的站点数据权限
