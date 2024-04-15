@@ -1,6 +1,7 @@
 package com.hxls.datasection.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.api.feign.system.DeviceFeign;
@@ -23,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -92,13 +94,13 @@ public class TVehicleAccessRecordsController {
         return Result.ok();
     }
 
-    @PostMapping("/callbackAddressFaceRecognitionByHKWS")
+    @PostMapping("/callbackAddressCarRecognitionByHKWS")
     @Operation(summary = "海康威视车辆识别结果回调地址")
-    public JSONObject callbackAddressFaceRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException {
+    public JSONObject callbackAddressCarRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException {
         if(ObjectUtil.isNotEmpty(jsonObject)){
             String uniqueNo = jsonObject.get("uniqueNo", String.class);
             String plateNo = jsonObject.get("plateNo", String.class);
-            String picPlateFileData = jsonObject.get("picPlateFileData", String.class);
+            String picVehicleFileData = jsonObject.get("picVehicleFileData", String.class);
             String passTime = jsonObject.get("passTime", String.class);
             String terminalNo = jsonObject.get("terminalNo", String.class);
             String laneCode = jsonObject.get("laneCode", String.class);
@@ -110,7 +112,7 @@ public class TVehicleAccessRecordsController {
             boolean whetherItExists = tVehicleAccessRecordsService.whetherItExists(uniqueNo);
             if (whetherItExists){
                 // 存在
-                log.info("人脸数据已经存在不进行存储");
+                log.info("车辆数据已经存在不进行存储");
             }else {
                 /**
                  * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
@@ -125,7 +127,7 @@ public class TVehicleAccessRecordsController {
                 body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
                 body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                 body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
-                body.setCarUrl(picPlateFileData);
+                body.setCarUrl(picVehicleFileData);
                 body.setPlateNumber(plateNo);
                 body.setRecordsId(uniqueNo);
                 // 定义日期格式
@@ -156,5 +158,26 @@ public class TVehicleAccessRecordsController {
         obj.set("message", "ok");
         return obj;
     }
+
+//    @PostMapping("/callbackAddressFaceRecognitionByHKWS")
+//    @Operation(summary = "海康威视人脸识别结果回调地址")
+//        public JSONObject callbackAddressFaceRecognitionByHKWS(@RequestPart("jsonObject") MultipartFile file) {
+//        if(ObjectUtil.isNotEmpty(file)){
+//            log.info("海康威视人脸识别结果：{}",file);
+//        }
+//
+//
+//        /**
+//         * {
+//         *  "result":0, //0接收成功，非0接收失败，设备会重新推送
+//         *   "message": "OK"
+//         * }
+//         *
+//         * */
+//        JSONObject obj = JSONUtil.createObj();
+//        obj.set("result", 0);
+//        obj.set("message", "ok");
+//        return obj;
+//    }
 
 }
