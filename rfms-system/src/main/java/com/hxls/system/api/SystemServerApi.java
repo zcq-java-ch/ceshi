@@ -79,9 +79,9 @@ public class SystemServerApi implements DeviceFeign {
      * 客户端的设备名称一样，我们才能将客户端的设备与平台
      * 设置的设备相对应起来
      * */
-    @PostMapping("/useTheIpAddressToQueryDeviceInformation")
-    @Operation(summary = "useTheIpAddressToQueryDeviceInformation")
-    public JSONObject useTheIpAddressToQueryDeviceInformation(@RequestParam("agentDeviceName") String agentDeviceName){
+    @PostMapping("/useTheAccountToQueryDeviceInformation")
+    @Operation(summary = "useTheAccountToQueryDeviceInformation")
+    public JSONObject useTheAccountToQueryDeviceInformation(@RequestParam("agentDeviceName") String agentDeviceName){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
@@ -119,7 +119,7 @@ public class SystemServerApi implements DeviceFeign {
         return entries;
     }
 
-    @PostMapping(value = "api/system/useTheDeviceSnToQueryDeviceInformation")
+    @PostMapping(value = "/useTheDeviceSnToQueryDeviceInformation")
     public JSONObject useTheDeviceSnToQueryDeviceInformation(@RequestParam("deviceSn") String deviceSn){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
@@ -149,7 +149,7 @@ public class SystemServerApi implements DeviceFeign {
             entries.putOnce("channel_id", channel_id);
             entries.putOnce("channel_name", channel_name);
             entries.putOnce("device_id", tDeviceManagementEntity.getId());
-            entries.putOnce("deviceName", tDeviceManagementEntity.getDeviceName());
+            entries.putOnce("device_name", tDeviceManagementEntity.getDeviceName());
             entries.putOnce("access_type", tDeviceManagementEntity.getType());
             entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
             entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
@@ -157,6 +157,47 @@ public class SystemServerApi implements DeviceFeign {
         }
         return entries;
     }
+
+    @PostMapping(value = "/useTheIpaddressToQueryDeviceInformation")
+    public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress){
+        LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getIpAddress, ipAddress);
+        List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
+        System.out.println("当前海康人脸客户端传过来的设备名称是："+ipAddress);
+        System.out.println("是否在数据库中找到了对应的数据："+tDeviceManagementEntities.toString());
+        JSONObject entries = new JSONObject();
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+            TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
+
+            // 通过设备id找到通道id和通道名字
+            Long channel_id = 1L;
+            String channel_name = "";
+            SysSiteAreaEntity sysSiteAreaEntity = sysAreacodeDeviceService.queryChannelByDeviceId(tDeviceManagementEntity.getId());
+            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)){
+                channel_id = sysSiteAreaEntity.getId();
+                channel_name = sysSiteAreaEntity.getAreaName();
+            }else {
+            }
+            // 获取厂商名字
+            Long manufacturerId = tDeviceManagementEntity.getManufacturerId();
+            TManufacturerEntity manufacturerEntity = tManufacturerService.getById(manufacturerId);
+            String manufactureName = manufacturerEntity != null ? manufacturerEntity.getManufacturerName() : "";
+
+            entries.putOnce("channel_id", channel_id);
+            entries.putOnce("channel_name", channel_name);
+            entries.putOnce("device_id", tDeviceManagementEntity.getId());
+            entries.putOnce("device_name", tDeviceManagementEntity.getDeviceName());
+            entries.putOnce("access_type", tDeviceManagementEntity.getType());
+            entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
+            entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
+            entries.putOnce("manufacturer_name", manufactureName);
+            entries.putOnce("ipAddress", tDeviceManagementEntity.getIpAddress());
+        }
+        return entries;
+    }
+
 
 
 }

@@ -9,6 +9,7 @@ import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
@@ -18,16 +19,21 @@ import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -158,26 +164,5 @@ public class TVehicleAccessRecordsController {
         obj.set("message", "ok");
         return obj;
     }
-
-//    @PostMapping("/callbackAddressFaceRecognitionByHKWS")
-//    @Operation(summary = "海康威视人脸识别结果回调地址")
-//        public JSONObject callbackAddressFaceRecognitionByHKWS(@RequestPart("jsonObject") MultipartFile file) {
-//        if(ObjectUtil.isNotEmpty(file)){
-//            log.info("海康威视人脸识别结果：{}",file);
-//        }
-//
-//
-//        /**
-//         * {
-//         *  "result":0, //0接收成功，非0接收失败，设备会重新推送
-//         *   "message": "OK"
-//         * }
-//         *
-//         * */
-//        JSONObject obj = JSONUtil.createObj();
-//        obj.set("result", 0);
-//        obj.set("message", "ok");
-//        return obj;
-//    }
 
 }

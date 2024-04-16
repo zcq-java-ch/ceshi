@@ -22,22 +22,27 @@ import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.C;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -139,14 +144,14 @@ public class TPersonAccessRecordsController {
                 /**
                  * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
                  * */
-                JSONObject entries = deviceFeign.useTheIpAddressToQueryDeviceInformation(dfCallBackDto.getDevicename());
+                JSONObject entries = deviceFeign.useTheAccountToQueryDeviceInformation(dfCallBackDto.getDevicename());
                 log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
                 log.info("平台端的设备名称:{}",entries.get("device_name", String.class));
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
                 body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
-                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
+                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
                 body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                 body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
                 body.setHeadUrl(dfCallBackDto.getFace_base64());
@@ -181,4 +186,86 @@ public class TPersonAccessRecordsController {
         obj.set("message", "ok");
         return obj;
     }
+
+
+    @PostMapping(value= "/callbackAddressFaceRecognitionByHKWS", produces = {MediaType.APPLICATION_JSON_VALUE},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "海康威视人脸识别结果回调地址")
+    public JSONObject callbackAddressFaceRecognitionByHKWS( @RequestParam("event_log") String event_log,@RequestParam(value = "Picture", required = false) MultipartFile pictureFile) throws ParseException {
+        // 在这里处理接收到的事件日志 JSON 字符串和图片文件
+//        System.out.println("Received event log JSON: " + event_log);
+        if (StringUtils.isNotEmpty(event_log)){
+            JSONObject jsonObject = JSONUtil.parseObj(event_log);
+            String ipAddress = jsonObject.get("ipAddress", String.class);
+            Date dateTime = jsonObject.get("dateTime", Date.class);
+            JSONObject accessControllerEvent = jsonObject.get("AccessControllerEvent", JSONObject.class);
+            String name = accessControllerEvent.get("name", String.class);
+            String employeeNoString = accessControllerEvent.get("employeeNoString", String.class);
+            String recordId = accessControllerEvent.get("serialNo", String.class);
+
+            boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(recordId);
+            if (whetherItExists){
+                // 存在
+                log.info("人脸数据已经存在不进行存储，他的唯一值是{}",recordId);
+            }else {
+                // 检查文件是否为空或未上传
+                if (pictureFile != null && !pictureFile.isEmpty()) {
+                    try {
+                        // 读取文件内容
+                        byte[] fileContent = pictureFile.getBytes();
+
+                        // 将文件内容转换为Base64编码的字符串
+                        String base64Encoded = Base64.getEncoder().encodeToString(fileContent);
+
+                        // 输出Base64编码的字符串
+//                System.out.println("Base64 encoded file content: " + base64Encoded);
+                        // 进行存储
+                        JSONObject entries = deviceFeign.useTheIpaddressToQueryDeviceInformation(ipAddress);
+                        log.info("海康人脸客户端传来的IP:{}",ipAddress);
+                        log.info("平台端的设备的IP:{}",entries.get("ipAddress", String.class));
+                        TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
+                        body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
+                        body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
+                        body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
+                        body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
+                        body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                        body.setHeadUrl(base64Encoded);
+                        body.setPersonName(name);
+                        body.setDevicePersonId(employeeNoString);
+                        // 定义日期格式
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+//                    body.setRecordTime(dateFormat.parse(dateTime));
+                        body.setRecordTime(dateTime);
+                        body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
+                        body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                        body.setRecordsId(recordId);
+                        tPersonAccessRecordsService.save(body);
+                        // 返回结果或进行其他处理
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        // 处理文件读取异常
+                    }
+                } else {
+                    // 处理文件为空或未上传的情况
+                    System.out.println("No picture file received.");
+                }
+            }
+
+        }
+
+
+        /**
+         * {
+         *  "result":0, //0接收成功，非0接收失败，设备会重新推送
+         *   "message": "OK"
+         * }
+         *
+         * */
+        JSONObject obj = JSONUtil.createObj();
+        obj.set("result", 0);
+        obj.set("message", "ok");
+        return obj;
+    }
+
 }

@@ -14,9 +14,12 @@ public interface DeviceFeign {
     @PostMapping(value = "api/system/queryAllDeviceList")
     JSONArray queryAllDeviceList();
 
-    @PostMapping(value = "api/system/useTheIpAddressToQueryDeviceInformation")
-    JSONObject useTheIpAddressToQueryDeviceInformation(@RequestParam("agentDeviceName") String agentDeviceName);
+    @PostMapping(value = "api/system/useTheAccountToQueryDeviceInformation")
+    JSONObject useTheAccountToQueryDeviceInformation(@RequestParam("agentDeviceName") String agentDeviceName);
     @PostMapping(value = "api/system/useTheDeviceSnToQueryDeviceInformation")
     JSONObject useTheDeviceSnToQueryDeviceInformation(@RequestParam("deviceSn") String deviceSn);
+
+    @PostMapping(value = "api/system/useTheIpaddressToQueryDeviceInformation")
+    public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress);
 
 }
