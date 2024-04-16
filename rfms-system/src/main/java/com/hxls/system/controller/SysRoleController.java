@@ -8,6 +8,7 @@ import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysRoleConvert;
 import com.hxls.system.entity.SysRoleEntity;
+import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysRoleQuery;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.service.*;
@@ -45,10 +46,15 @@ public class SysRoleController {
 
     @GetMapping("page")
     @Operation(summary = "分页")
-//    @PreAuthorize("hasAuthority('sys:role:page')")
+    @PreAuthorize("hasAuthority('sys:role:page')")
     public Result<PageResult<SysRoleVO>> page(@ParameterObject @Valid SysRoleQuery query) {
         PageResult<SysRoleVO> page = sysRoleService.page(query);
 
+        //添加创建人
+        for (SysRoleVO roleVO : page.getList()){
+            SysUserEntity byId = sysUserService.getById(roleVO.getCreator());
+            roleVO.setCreatorName(byId.getRealName());
+        }
         return Result.ok(page);
     }
 

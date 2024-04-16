@@ -129,6 +129,7 @@ public class SysPostServiceImpl extends BaseServiceImpl<SysPostDao, SysPostEntit
             Response secondResponse = client.newCall(secondRequest).execute();
             if (secondResponse.isSuccessful()) {
                 JSONObject rel1 = new JSONObject(secondResponse.body().string());
+                System.out.println(rel1);
                 JSONObject rel2 = new JSONObject(rel1.get("data").toString());
                 List<MainPostVO> mainPostVOS = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<MainPostVO>>() {}, true);
                 return mainPostVOS;

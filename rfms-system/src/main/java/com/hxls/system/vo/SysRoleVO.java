@@ -54,5 +54,14 @@ public class SysRoleVO implements Serializable {
     @Schema(description = "状态 0:停用, 1:启用")
     private Integer status;
 
+    @Schema(description = "创建人")
+    private Long creator;
+
+    @Schema(description = "创建人名字")
+    private String creatorName;
+
+    @Schema(description = "排序")
+    private Integer sort;
+
 
 }

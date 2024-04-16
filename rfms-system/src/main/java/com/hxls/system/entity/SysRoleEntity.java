@@ -3,6 +3,7 @@ package com.hxls.system.entity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.hxls.framework.mybatis.entity.BaseEntity;
@@ -47,4 +48,8 @@ public class SysRoleEntity extends BaseEntity {
      * 状态 0:停用, 1:启用
      */
     private Integer status;
+    /**
+     * 排序
+     */
+    private Integer sort;
 }
