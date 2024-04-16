@@ -146,7 +146,7 @@ public class TPersonAccessRecordsController {
                  * */
                 JSONObject entries = deviceFeign.useTheAccountToQueryDeviceInformation(dfCallBackDto.getDevicename());
                 log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
-                log.info("平台端的设备名称:{}",entries.get("device_name", String.class));
+                log.info("平台端的设备名称:{}",entries.get("account", String.class));
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);

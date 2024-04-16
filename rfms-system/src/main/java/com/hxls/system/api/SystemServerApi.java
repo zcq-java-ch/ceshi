@@ -115,6 +115,7 @@ public class SystemServerApi implements DeviceFeign {
             entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
             entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
             entries.putOnce("manufacturer_name", manufactureName);
+            entries.putOnce("account", tDeviceManagementEntity.getAccount());
         }
         return entries;
     }
