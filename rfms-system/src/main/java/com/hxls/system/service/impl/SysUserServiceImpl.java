@@ -132,6 +132,14 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         // 保存用户
         baseMapper.insert(entity);
 
+        //TODO  添加用户的时候人脸下发
+
+
+        //TODO 添加用户的时候车辆下发
+
+
+
+
         // 保存用户角色关系
         sysUserRoleService.saveOrUpdate(entity.getId(), vo.getRoleIdList());
 
