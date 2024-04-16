@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.RandomSnowUtils;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.SysOrgConvert;
@@ -29,10 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 机构管理
@@ -81,6 +79,10 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         SysOrgEntity entity = SysOrgConvert.INSTANCE.convert(vo);
 
         baseMapper.insert(entity);
+
+        //添加组织编码(RFMS + 组织ID)
+        entity.setCode("RFMS"+entity.getId());
+        updateById(entity);
     }
 
     @Override
