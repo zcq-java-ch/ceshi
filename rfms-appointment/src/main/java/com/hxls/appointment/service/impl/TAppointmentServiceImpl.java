@@ -3,6 +3,7 @@ package com.hxls.appointment.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -24,6 +25,7 @@ import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.user.SecurityUser;
@@ -313,9 +315,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     tAppointmentVO.setSubmitterOrgName(postName);
                 }
             }
-
-
-
         }
         return new PageResult<>(tAppointmentVOS, page.getTotal());
 
@@ -330,10 +329,63 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //审核通过后会执行下发对应指定的厂站
         if (vo.getReviewStatus().equals(Constant.PASS)) {
             //根据指定通道下发数据
+            Long id = entity.getId();
+            TAppointmentEntity byId = getById(id);
+
+            List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(
+                    TAppointmentVehicle::getAppointmentId , id
+            ));
+
+            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<>());
+
+            if (byId.getAppointmentType().equals("1") || byId.getAppointmentType().equals("2")){
+                if (CollectionUtils.isNotEmpty(personnelList)){
+                    String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
+                    List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId() , "1");
+                    for (String device : strings) {
+
+                        List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device);
+
+                        List<String> masterIpById = appointmentDao.selectMasterIpById(device , "1");
+                        for (String masterIp : masterIpById) {
+                            for (TAppointmentPersonnel personnel : personnelList) {
+                                JSONObject entries = new JSONObject();
+                                entries.set("type" , device );
+                                entries.set("startTime" , DateUtils.format(byId.getStartTime(),DateUtils.DATE_TIME_PATTERN));
+                                entries.set("deadline" , DateUtils.format(byId.getEndTime(),DateUtils.DATE_TIME_PATTERN));
+                                entries.set("peopleName" , personnel.getExternalPersonnel());
+                                entries.set("peopleCode" , personnel.getUserId());
+                                entries.set("faceUrl" , personnel.getHeadUrl());
+                                entries.set("masterIp" , masterIp);
+                                entries.set("deviceInfos" , JSONUtil.toJsonStr(jsonObjects));
+                                rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_FACE_TOAGENT , entries);
+                            }
+                        }
+                    }
+                }
+            }
 
 
+            if(CollectionUtils.isNotEmpty(list)){
+                String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
+                List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "2");
+                for (String device : strings) {
+                    List<String> masterIpById = appointmentDao.selectMasterIpById(device , "2");
+                    for (String masterIp : masterIpById) {
+                        for (TAppointmentVehicle tAppointmentVehicle : list) {
+                            JSONObject entries = new JSONObject();
+                            entries.set("type" , device );
+                            entries.set("startTime" , DateUtils.format(byId.getStartTime(),DateUtils.DATE_TIME_PATTERN));
+                            entries.set("deadline" , DateUtils.format(byId.getEndTime(),DateUtils.DATE_TIME_PATTERN));
+                            entries.set("carNumber" , tAppointmentVehicle.getPlateNumber());
+                            entries.set("status" , "add");
+                            entries.set("masterIp" , masterIp);
+                            rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_CAR_TOAGENT , entries);
+                        }
+                    }
+                }
+            }
         }
-
     }
 
     @Override
@@ -448,8 +500,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public void issuedPeople(JSONObject data) {
         //开始下发
         String siteCode = data.getStr("siteCode");
-        String type = data.getStr("type");
-        switch (type){
+        String sendType = data.getStr("sendType");
+        switch (sendType){
             case "1" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_FACE_TOAGENT , data);
             case "2" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_CAR_TOAGENT , data);
             default -> throw new ServerException("类型参数不对");

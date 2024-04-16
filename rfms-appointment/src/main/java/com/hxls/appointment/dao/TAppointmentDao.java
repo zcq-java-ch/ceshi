@@ -48,4 +48,27 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
    String selectSiteNameById(@Param("id") Long id);
 
+
+   /**
+    * 通过id查询场站code
+    */
+   String selectSiteCodeById(@Param("id") Long id);
+
+   /**
+    * 通过id查询场站设备集合
+    */
+   List<String> selectManuFacturerIdById(@Param("id") Long id, @Param("type")String type);
+
+
+   /**
+    * 通过code查询场站主机ip
+    */
+   List<String> selectMasterIpById(@Param("code") String code ,@Param("type")String type);
+
+   /**
+    * 通过code查询场站主机ip
+    */
+   List<JSONObject> selectDeviceList(@Param("code") String code);
+
+
 }
