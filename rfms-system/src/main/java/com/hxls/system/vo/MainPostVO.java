@@ -17,5 +17,5 @@ public class MainPostVO {
     private String id;
 
     @Schema(description = "岗位名字")
-    private String postName;
+    private String name;
 }
