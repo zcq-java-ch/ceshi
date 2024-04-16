@@ -70,9 +70,14 @@ public class SysRoleController {
         // 转换对象
         SysRoleVO role = SysRoleConvert.INSTANCE.convert(entity);
 
-        // 查询角色对应的菜单
-        List<Long> menuIdList = sysRoleMenuService.getMenuIdList(id);
+        // 查询角色对应的菜单(pc端)
+        List<Long> menuIdList = sysRoleMenuService.getMenuIdList(id,1);
         role.setMenuIdList(menuIdList);
+
+
+        // 查询角色对应的菜单（移动端）
+        List<Long> appMenuIdList = sysRoleMenuService.getMenuIdList(id,2);
+        role.setAppMenuIdList(appMenuIdList);
 
         // 查询角色对应的数据权限
         List<Long> orgIdList = sysRoleDataScopeService.getOrgIdList(id);

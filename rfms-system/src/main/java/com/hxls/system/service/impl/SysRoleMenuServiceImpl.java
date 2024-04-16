@@ -25,9 +25,9 @@ public class SysRoleMenuServiceImpl extends BaseServiceImpl<SysRoleMenuDao, SysR
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void saveOrUpdate(Long roleId, List<Long> menuIdList) {
+	public void saveOrUpdate(Long roleId, List<Long> menuIdList,Integer category) {
 		// 数据库菜单ID列表
-		List<Long> dbMenuIdList = getMenuIdList(roleId);
+		List<Long> dbMenuIdList = getMenuIdList(roleId,category);
 
 		// 需要新增的菜单ID
 		Collection<Long> insertMenuIdList = CollUtil.subtract(menuIdList, dbMenuIdList);
@@ -52,8 +52,8 @@ public class SysRoleMenuServiceImpl extends BaseServiceImpl<SysRoleMenuDao, SysR
 	}
 
 	@Override
-	public List<Long> getMenuIdList(Long roleId){
-		return baseMapper.getMenuIdList(roleId);
+	public List<Long> getMenuIdList(Long roleId,Integer category){
+		return baseMapper.getMenuIdList(roleId,category);
 	}
 
 	@Override

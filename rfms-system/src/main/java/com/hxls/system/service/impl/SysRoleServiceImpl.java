@@ -68,8 +68,11 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         entity.setDataScope(DataScopeEnum.SELF.getValue());
         baseMapper.insert(entity);
 
-        // 保存角色菜单关系
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList());
+        // 保存角色菜单关系(pc端)
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(),1);
+
+        // 保存角色菜单关系（移动端）
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(),2);
     }
 
     @Override
@@ -81,7 +84,10 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         updateById(entity);
 
         // 更新角色菜单关系
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList());
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(),1);
+
+        // 更新角色菜单关系
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(),2);
 
         // 更新角色对应用户的缓存权限
         sysUserTokenService.updateCacheAuthByRoleId(entity.getId());

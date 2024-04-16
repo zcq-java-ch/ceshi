@@ -41,6 +41,9 @@ public class SysRoleVO implements Serializable {
     @Schema(description = "菜单ID列表")
     private List<Long> menuIdList;
 
+    @Schema(description = "移动端菜单ID列表")
+    private List<Long> appMenuIdList;
+
     @Schema(description = "机构ID列表")
     private List<Long> orgIdList;
 

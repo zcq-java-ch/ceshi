@@ -4,7 +4,7 @@
 <mapper namespace="com.hxls.system.dao.SysRoleMenuDao">
 
 	<select id="getMenuIdList" resultType="long">
-		select menu_id from sys_role_menu where role_id = #{roleId} and deleted = 0
+		select menu_id from sys_role_menu rm JOIN sys_menu m ON rm.menu_id = m.id where rm.role_id = #{roleId} AND m.category = #{category} and rm.deleted = 0
 	</select>
 
 </mapper>
