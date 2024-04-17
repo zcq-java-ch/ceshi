@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fhs.trans.service.impl.TransService;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import com.hxls.framework.common.exception.ServerException;
@@ -57,6 +58,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     private final TokenStoreCache tokenStoreCache;
     private final TransService transService;
     private final MainPlatformCache mainPlatformCache;
+    private final AppointmentFeign appointmentFeign;
 
     @Override
     public PageResult<SysUserVO> page(SysUserQuery query) {
@@ -133,12 +135,19 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         baseMapper.insert(entity);
 
         //TODO  添加用户的时候人脸下发
+        JSONObject person = new JSONObject();
+        person.set("sendType","1");
+        person.set("data" , entity.toString());
+        appointmentFeign.issuedPeople(person);
 
+        //TODO 添加用户的时候车辆下发 ---判断是否有值
 
-        //TODO 添加用户的时候车辆下发
-
-
-
+        if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+            JSONObject vehicle = new JSONObject();
+            vehicle.set("sendType","2");
+            vehicle.set("data" , entity.toString());
+            appointmentFeign.issuedPeople(vehicle);
+        }
 
         // 保存用户角色关系
         sysUserRoleService.saveOrUpdate(entity.getId(), vo.getRoleIdList());
