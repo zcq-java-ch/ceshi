@@ -108,7 +108,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         one.setDriverId(userId);
         if( type < 1){
             //修改默认司机
-            one.setDriverId(null);
+            one.setDriverId(-1L);
         }
         updateById(one);
     }
