@@ -18,6 +18,14 @@ import java.util.List;
 @Mapper
 public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
 
+
+   /**
+    * 通过id查询名字
+    */
+   String getNameById(@Param("id") Long id);
+
+
+
    /**
     * 通过车牌获取所有的车辆信息
     * @param data 车牌集合

@@ -89,6 +89,9 @@
         SELECT  device_sn as code, ip_address as ip, account as username, password  FROM t_device_management where device_type = 1  and  manufacturer_code = #{code} and deleted = 0
 
     </select>
+    <select id="getNameById" resultType="java.lang.String">
+        SELECT u.real_name  FROM sys_user u  where u.id = #{id} and u.deleted = 0
+    </select>
 
 
 </mapper>
