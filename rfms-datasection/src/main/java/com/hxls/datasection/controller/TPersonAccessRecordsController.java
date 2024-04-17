@@ -226,7 +226,7 @@ public class TPersonAccessRecordsController {
                         TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                         body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
                         body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
-                        body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("devicea_id", Long.class) : 999L);
+                        body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
                         body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                         body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
                         body.setHeadUrl(base64Encoded);
