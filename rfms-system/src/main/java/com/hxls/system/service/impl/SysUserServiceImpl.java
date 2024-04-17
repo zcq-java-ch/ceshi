@@ -134,19 +134,19 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         // 保存用户
         baseMapper.insert(entity);
 
-        //TODO  添加用户的时候人脸下发
-        JSONObject person = new JSONObject();
-        person.set("sendType","1");
-        person.set("data" , entity.toString());
-        appointmentFeign.issuedPeople(person);
-
-        //TODO 添加用户的时候车辆下发 ---判断是否有值
-
-        if (StringUtils.isNotEmpty(entity.getLicensePlate())){
-            JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType","2");
-            vehicle.set("data" , entity.toString());
-            appointmentFeign.issuedPeople(vehicle);
+        //TODO  添加用户的时候人脸下发  还需要判断是否有场站
+        if (entity.getStationId() !=null) {
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(entity));
+            appointmentFeign.issuedPeople(person);
+            //TODO 添加用户的时候车辆下发 ---判断是否有值
+            if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                appointmentFeign.issuedPeople(vehicle);
+            }
         }
 
         // 保存用户角色关系
@@ -174,6 +174,24 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         // 更新用户
         updateById(entity);
+
+        if (entity.getStationId() !=null) {
+            //TODO 修改用户的时候人脸下发
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(entity));
+            appointmentFeign.issuedPeople(person);
+
+            //TODO 修改用户的时候车辆下发 ---判断是否有值
+
+            if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                appointmentFeign.issuedPeople(vehicle);
+            }
+        }
+
 
         // 更新用户角色关系
         sysUserRoleService.saveOrUpdate(entity.getId(), vo.getRoleIdList());
