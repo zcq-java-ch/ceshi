@@ -54,6 +54,11 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
             List<TAppointmentPersonnelVO> tAppointmentPersonnelVOS = TAppointmentPersonnelConvert.INSTANCE.convertList(list);
             tSupplementRecordVO.setRemark1(tAppointmentPersonnelVOS);
 
+            Long submitter = tSupplementRecordVO.getCreator();
+
+            String name = appointmentDao.getNameById(submitter);
+            tSupplementRecordVO.setCreatorName(name);
+
             //区域翻译
             if (StringUtils.isNotEmpty(tSupplementRecordVO.getChannel())){
                 String areaName = appointmentDao.selectAreaNameById(Long.parseLong(tSupplementRecordVO.getChannel()));

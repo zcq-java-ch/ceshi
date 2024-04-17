@@ -84,19 +84,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             Long id = tAppointmentVO.getId();
             Long submitter = tAppointmentVO.getSubmitter();
 
-            //如果预约的类型为人员派驻 -- 则走其他的逻辑
-            if (tAppointmentVO.getAppointmentType().equals("1")){
-                String name = appointmentDao.getNameById(submitter);
-                tAppointmentVO.setCreatorName(name);
+            String name = appointmentDao.getNameById(submitter);
+            tAppointmentVO.setCreatorName(name);
 
-            }else {
-                TAppointmentPersonnel one = tAppointmentPersonnelService.getOne(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id)
-                        .eq(TAppointmentPersonnel::getUserId, submitter));
-                if (ObjectUtil.isNotNull(one)) {
-                    tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
-                    tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
-                }
+            TAppointmentPersonnel one = tAppointmentPersonnelService.getOne(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id)
+                    .eq(TAppointmentPersonnel::getUserId, submitter));
+            if (ObjectUtil.isNotNull(one)) {
+                tAppointmentVO.setSubmitPeople(TAppointmentPersonnelConvert.INSTANCE.convert(one));
+                tAppointmentVO.setSubmitterName(one.getExternalPersonnel());
             }
+
             //场站名称
             if (tAppointmentVO.getSiteId() != null) {
                 String siteName = appointmentDao.selectSiteNameById(tAppointmentVO.getSiteId());
@@ -302,6 +299,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 tAppointmentVO.setPersonnelList(TAppointmentPersonnelConvert.INSTANCE.convertList(list));
             }
 
+            Long submitter = tAppointmentVO.getSubmitter();
+
+            String name = appointmentDao.getNameById(submitter);
+            tAppointmentVO.setCreatorName(name);
 
             //场站名称
             if (tAppointmentVO.getSiteId() != null) {
