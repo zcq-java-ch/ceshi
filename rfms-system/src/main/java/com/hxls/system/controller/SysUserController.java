@@ -207,7 +207,7 @@ public class SysUserController {
         if (file.isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
-        sysUserService.importByExcel(file, passwordEncoder.encode("123456"));
+        sysUserService.importByExcel(file, passwordEncoder.encode("hxls1234"));
 
         return Result.ok();
     }
