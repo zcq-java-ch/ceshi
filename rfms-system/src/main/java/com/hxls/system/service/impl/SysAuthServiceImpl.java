@@ -62,7 +62,21 @@ public class SysAuthServiceImpl implements SysAuthService {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(login.getUsername(), Sm2Util.decrypt(login.getPassword())));
         } catch (BadCredentialsException e) {
-            throw new ServerException("用户名或密码错误");
+            //账户密码错误之后，判断是否是手机号进行登录
+            SysUserVO byMobile = sysUserService.getByMobile(login.getUsername());
+            if(byMobile == null){
+                throw new ServerException("用户名/手机号码或密码错误");
+            }
+
+            try {
+                // 用户认证
+                authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(byMobile.getUsername(), Sm2Util.decrypt(login.getPassword())));
+            }catch (BadCredentialsException be){
+                throw new ServerException("用户名/手机号码或密码错误");
+            }
+
+
         }
         // 用户信息
         UserDetail user = (UserDetail) authentication.getPrincipal();
