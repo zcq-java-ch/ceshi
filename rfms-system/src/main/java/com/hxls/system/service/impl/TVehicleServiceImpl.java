@@ -1,9 +1,11 @@
 package com.hxls.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -31,6 +33,8 @@ import java.util.List;
 @AllArgsConstructor
 public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEntity> implements TVehicleService {
 
+    private final AppointmentFeign appointmentFeign;
+
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
         IPage<TVehicleEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
@@ -52,6 +56,14 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
         baseMapper.insert(entity);
+
+        //通用车辆下发
+        JSONObject vehicle = new JSONObject();
+        vehicle.set("sendType","2");
+        vehicle.set("data" , entity.toString());
+        appointmentFeign.issuedPeople(vehicle);
+
+
     }
 
     @Override

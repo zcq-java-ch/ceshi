@@ -92,7 +92,7 @@ public class TVehicleController {
 
     /**
      * 隐蔽性企业查询接口
-     * @param data
+     * @param
      * @return
      */
     @PostMapping("getByLicensePlates")
