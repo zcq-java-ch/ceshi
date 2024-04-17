@@ -2,6 +2,7 @@ package com.hxls.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -38,7 +39,6 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
         IPage<TVehicleEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
-
         return new PageResult<>(TVehicleConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
@@ -60,7 +60,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         //通用车辆下发
         JSONObject vehicle = new JSONObject();
         vehicle.set("sendType","2");
-        vehicle.set("data" , entity.toString());
+        vehicle.set("data" , JSONUtil.toJsonStr(entity));
         appointmentFeign.issuedPeople(vehicle);
 
 
@@ -71,6 +71,12 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
         updateById(entity);
+
+        JSONObject vehicle = new JSONObject();
+        vehicle.set("sendType","2");
+        vehicle.set("data" , JSONUtil.toJsonStr(entity));
+        appointmentFeign.issuedPeople(vehicle);
+
     }
 
     @Override

@@ -106,10 +106,15 @@ public class AppointmentApiController {
 
     @PostMapping("issuedPeople")
     @Operation(summary = "下发信息")
-    public Result<Void> issuedPeople(@RequestBody JSONObject data) {
+    public Boolean issuedPeople(@RequestBody JSONObject data) {
         System.out.println("下发信息");
-        tAppointmentService.issuedPeople(data);
-        return Result.ok();
+        try{
+            tAppointmentService.issuedPeople(data);
+        }catch (Exception e){
+            return false;
+        }
+
+        return true;
     }
 
 }
