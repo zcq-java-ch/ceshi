@@ -46,8 +46,11 @@ public class TVehicleController {
         //添加默认司机基础信息
         for (TVehicleVO tVehicleVO : page.getList()){
             SysUserEntity byId = sysUserService.getById(tVehicleVO.getDriverId());
-            tVehicleVO.setDriverName(byId.getRealName());
-            tVehicleVO.setDriverMobile(byId.getMobile());
+            if(byId != null){
+                tVehicleVO.setDriverName(byId.getRealName());
+                tVehicleVO.setDriverMobile(byId.getMobile());
+            }
+
         }
         return Result.ok(page);
     }
