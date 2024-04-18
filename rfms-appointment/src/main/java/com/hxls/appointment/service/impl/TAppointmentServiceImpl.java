@@ -527,7 +527,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //人脸地址  avatar
                 String faceUrl = entries.getStr("avatar");
                 //编码 code
-                String code = entries.getStr("code");
+                String code = entries.getStr("id");
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 //场站设备集合
