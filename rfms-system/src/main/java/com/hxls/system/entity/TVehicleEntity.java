@@ -95,8 +95,10 @@ public class TVehicleEntity extends BaseEntity {
 	private Integer status;
 
 
-
-
+	/**
+	 * 车辆类型（数据字典）
+	 */
+	private String carType;
 
 
 }

@@ -92,5 +92,6 @@ public class TVehicleVO implements Serializable {
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date updateTime;
 
-
+	@Schema(description = "车辆类型")
+	private String carType;
 }

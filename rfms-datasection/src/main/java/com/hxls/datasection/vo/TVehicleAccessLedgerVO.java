@@ -64,6 +64,9 @@ public class TVehicleAccessLedgerVO implements Serializable {
 	@Schema(description = "出厂照片")
 	private String outPic;
 
+	@Schema(description = "是否完成记录(0；否只有入 1：完成)")
+	private Integer isOver;
+
 	@Schema(description = "排序")
 	private Integer sort;
 

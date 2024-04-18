@@ -89,6 +89,11 @@ public class TVehicleAccessLedgerEntity {
 	private String outPic;
 
 	/**
+	 * 是否完成记录(0；否只有入 1：完成)
+	 */
+	private Integer isOver;
+
+	/**
 	* 排序
 	*/
 	private Integer sort;
@@ -107,6 +112,7 @@ public class TVehicleAccessLedgerEntity {
 	* 删除标识  0：正常   1：已删除
 	*/
 	private Integer deleted;
+
 
 	/**
 	* 创建者

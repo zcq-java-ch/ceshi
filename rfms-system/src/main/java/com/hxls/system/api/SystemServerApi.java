@@ -6,12 +6,15 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.system.controller.TVehicleController;
 import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.entity.TManufacturerEntity;
+import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.service.SysAreacodeDeviceService;
 import com.hxls.system.service.TDeviceManagementService;
 import com.hxls.system.service.TManufacturerService;
+import com.hxls.system.service.TVehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -36,11 +39,13 @@ public class SystemServerApi implements DeviceFeign {
     private TDeviceManagementService tDeviceManagementService;
     @Autowired
     protected SysAreacodeDeviceService sysAreacodeDeviceService;
-
     @Autowired
     private TManufacturerService tManufacturerService;
+    @Autowired
+    private TVehicleService tVehicleService;
     @PostMapping("/queryAllDeviceList")
     @Operation(summary = "查询所有站点的编码和主ip")
+    @Override
     public JSONArray queryAllDeviceList(){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
@@ -81,6 +86,7 @@ public class SystemServerApi implements DeviceFeign {
      * */
     @PostMapping("/useTheAccountToQueryDeviceInformation")
     @Operation(summary = "useTheAccountToQueryDeviceInformation")
+    @Override
     public JSONObject useTheAccountToQueryDeviceInformation(@RequestParam("agentDeviceName") String agentDeviceName){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
@@ -121,6 +127,7 @@ public class SystemServerApi implements DeviceFeign {
     }
 
     @PostMapping(value = "/useTheDeviceSnToQueryDeviceInformation")
+    @Override
     public JSONObject useTheDeviceSnToQueryDeviceInformation(@RequestParam("deviceSn") String deviceSn){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
@@ -160,6 +167,7 @@ public class SystemServerApi implements DeviceFeign {
     }
 
     @PostMapping(value = "/useTheIpaddressToQueryDeviceInformation")
+    @Override
     public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress){
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
@@ -199,6 +207,28 @@ public class SystemServerApi implements DeviceFeign {
         return entries;
     }
 
+    @PostMapping(value = "/queryVehicleInformationByLicensePlateNumber")
+    @Override
+    public JSONObject queryVehicleInformationByLicensePlateNumber(@RequestParam("licensePlates") String licensePlates){
+        LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getLicensePlate, licensePlates);
+        List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtil.isNotEmpty(tVehicleEntities)){
+            TVehicleEntity tVehicleEntity = tVehicleEntities.get(0);
+
+            entries.putOnce("carType", tVehicleEntity.getCarType());
+            entries.putOnce("emissionStandard", tVehicleEntity.getEmissionStandard());
+            entries.putOnce("licenseImage", tVehicleEntity.getLicenseImage());
+            entries.putOnce("images", tVehicleEntity.getImages()); // 随车环报清单
+            entries.putOnce("fleetName", tVehicleEntity.getFleetName());
+            entries.putOnce("vinNumber", tVehicleEntity.getVinNumber());
+            entries.putOnce("engineNumber", tVehicleEntity.getEngineNumber());
+        }
+        return entries;
+    }
 
 
 }
