@@ -8,6 +8,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,10 @@ public interface StorageFeign {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     StorageDTO upload(@RequestPart("file") MultipartFile file) throws IOException;
 
+
+    @PostMapping(value = "api/storage/httpUpload", produces = {MediaType.APPLICATION_JSON_VALUE},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    StorageDTO httpUpload(@RequestPart("file") MultipartFile file, @RequestParam("sitePri") String sitePri) throws IOException;
     class MultipartSupportConfig {
         @Bean
         public Encoder feignFormEncoder() {

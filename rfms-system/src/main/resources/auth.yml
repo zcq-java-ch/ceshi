@@ -14,3 +14,4 @@ auth:
     - /sys/resource/**
     - /heartbeat
     - /api/**
+    - /sys/file/httpUpload

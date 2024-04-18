@@ -25,4 +25,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     void delete(List<Long> idList);
 
     boolean whetherItExists(String recordsId);
+
+    void saveLedger(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity);
 }

@@ -82,4 +82,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         }
 
     }
+
+    @Override
+    public void saveLedger(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+
+    }
 }

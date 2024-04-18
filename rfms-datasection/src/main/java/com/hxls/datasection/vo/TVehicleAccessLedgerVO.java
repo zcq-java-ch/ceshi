@@ -8,17 +8,16 @@ import com.hxls.framework.common.utils.DateUtils;
 import java.util.Date;
 
 /**
-* 车辆出入记录表
+* 车辆进出厂展示台账
 *
 * @author zhaohong 
-* @since 1.0.0 2024-03-29
+* @since 1.0.0 2024-04-18
 */
 @Data
-@Schema(description = "车辆出入记录表")
-public class TVehicleAccessRecordsVO implements Serializable {
+@Schema(description = "车辆进出厂展示台账")
+public class TVehicleAccessLedgerVO implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Schema(description = "id")
 	private Long id;
 
 	@Schema(description = "对应站点id")
@@ -26,31 +25,6 @@ public class TVehicleAccessRecordsVO implements Serializable {
 
 	@Schema(description = "对应站点名字")
 	private String siteName;
-
-	@Schema(description = "对应厂商id")
-	private Long manufacturerId;
-
-	@Schema(description = "对应厂商名字")
-	private String manufacturerName;
-
-	@Schema(description = "出入类型（数据字典）")
-	private String accessType;
-
-	@Schema(description = "出入通道ID")
-	private Long channelId;
-
-	@Schema(description = "出入通道名字")
-	private String channelName;
-
-	@Schema(description = "设备ID")
-	private Long deviceId;
-
-	@Schema(description = "设备名字")
-	private String deviceName;
-
-	@Schema(description = "记录时间")
-	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
-	private Date recordTime;
 
 	@Schema(description = "车牌号")
 	private String plateNumber;
@@ -61,17 +35,34 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "车辆排放标准（数据字典）")
 	private String emissionStandard;
 
-	@Schema(description = "车辆照片地址")
-	private String carUrl;
+	@Schema(description = "行驶证照片")
+	private String licenseImage;
 
-	@Schema(description = "司机id")
-	private Long driverId;
+	@Schema(description = "环报随车清单")
+	private String envirList;
 
-	@Schema(description = "司机姓名")
-	private String driverName;
+	@Schema(description = "车队名称")
+	private String fleetName;
 
-	@Schema(description = "司机手机号码")
-	private String driverPhone;
+	@Schema(description = "进厂时间")
+	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	private Date inTime;
+
+	@Schema(description = "出厂时间")
+	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	private Date outTime;
+
+	@Schema(description = "车辆识别码")
+	private String vinNumber;
+
+	@Schema(description = "发动机号")
+	private String engineNumber;
+
+	@Schema(description = "进厂照片")
+	private String inPic;
+
+	@Schema(description = "出厂照片")
+	private String outPic;
 
 	@Schema(description = "排序")
 	private Integer sort;
@@ -99,7 +90,5 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date updateTime;
 
-	@Schema(description = "记录唯一标识")
-	private String recordsId;
 
 }

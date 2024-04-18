@@ -112,6 +112,8 @@ public class IndexController {
                     String masterSn = tDeviceManagementEntity1.getMasterSn(); // 主机编码【数据库名字】
                     String masterAccount = tDeviceManagementEntity1.getMasterAccount(); // 主机数据库账户
                     String masterPassword = tDeviceManagementEntity1.getMasterPassword(); // 主机数据库密码
+                    Long siteId = tDeviceManagementEntity1.getSiteId();
+                    String siteName = tDeviceManagementEntity1.getSiteName();
 
                     // 获取厂商名字
                     Long manufacturerId = tDeviceManagementEntity1.getManufacturerId();
@@ -151,6 +153,8 @@ public class IndexController {
                         facejsonObject.putOnce("masterSn", masterSn);
                         facejsonObject.putOnce("masterAccount", masterAccount);
                         facejsonObject.putOnce("masterPassword", masterPassword);
+                        facejsonObject.putOnce("siteId", siteId);
+                        facejsonObject.putOnce("siteName", siteName);
                         faceJsonA.add(facejsonObject);
                     }else if("2".equals(deviceType)){
                         // 车辆
@@ -171,6 +175,8 @@ public class IndexController {
                         facejsonObject.putOnce("masterSn", masterSn);
                         facejsonObject.putOnce("masterAccount", masterAccount);
                         facejsonObject.putOnce("masterPassword", masterPassword);
+                        facejsonObject.putOnce("siteId", siteId);
+                        facejsonObject.putOnce("siteName", siteName);
                         carJsonA.add(facejsonObject);
                     }else {
                         // 数据错误

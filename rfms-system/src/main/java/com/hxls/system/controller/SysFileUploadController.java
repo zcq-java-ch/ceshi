@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.storage.service.StorageService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,4 +49,30 @@ public class SysFileUploadController {
 
         return Result.ok(vo);
     }
+
+    @PostMapping("httpUpload")
+    @Operation(summary = "agent上传专用")
+    @OperateLog(type = OperateTypeEnum.INSERT)
+    public Result<SysFileUploadVO> httpUpload(@RequestParam("file") MultipartFile file, @RequestParam("sitePri") String sitePri) throws Exception {
+        if (file.isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        if (StringUtils.isEmpty(sitePri)){
+            return Result.error("远程上传必须有站点全拼接");
+        }
+
+        // 上传路径
+        String path = sitePri + "/" + storageService.getPath(file.getOriginalFilename());
+        // 上传文件
+        String url = storageService.upload(file.getBytes(), path);
+
+        SysFileUploadVO vo = new SysFileUploadVO();
+        vo.setUrl(url);
+        vo.setSize(file.getSize());
+        vo.setName(file.getOriginalFilename());
+        vo.setPlatform(storageService.properties.getConfig().getType().name());
+
+        return Result.ok(vo);
+    }
+
 }

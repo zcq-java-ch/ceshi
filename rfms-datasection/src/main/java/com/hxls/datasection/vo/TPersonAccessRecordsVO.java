@@ -26,9 +26,15 @@ public class TPersonAccessRecordsVO implements Serializable {
 	private Long id;
 
 	@Schema(description = "对应站点id")
-	private Long manufacturerId;
+	private Long siteId;
 
 	@Schema(description = "对应站点名字")
+	private String siteName;
+
+	@Schema(description = "对应厂商id")
+	private Long manufacturerId;
+
+	@Schema(description = "对应厂商名字")
 	private String manufacturerName;
 
 	@Schema(description = "出入类型（数据字典）")

@@ -131,7 +131,13 @@ public class SynMessageDataContorller {
                 tVehicleAccessRecordsEntity.setAccessType(access_type);
                 tVehicleAccessRecordsEntity.setCarUrl(jsonObjectRecords.get("car_url", String.class));
                 tVehicleAccessRecordsEntity.setRecordTime(jsonObjectRecords.get("record_time", Date.class));
+                tVehicleAccessRecordsEntity.setSiteId(jsonObjectRecords.get("siteId", Long.class));
+                tVehicleAccessRecordsEntity.setSiteName(jsonObjectRecords.get("siteName", String.class));
                 tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);
+
+                // 存储车辆进出场展示台账
+                tVehicleAccessRecordsService.saveLedger(tVehicleAccessRecordsEntity);
+
             }
         }
 

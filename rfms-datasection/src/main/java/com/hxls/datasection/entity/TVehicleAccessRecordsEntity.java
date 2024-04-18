@@ -19,14 +19,22 @@ import com.hxls.framework.mybatis.entity.BaseEntity;
 @Data
 @TableName("t_vehicle_access_records")
 public class TVehicleAccessRecordsEntity extends BaseEntity {
+	/**
+	 * 对应站点id
+	 */
+	private Long siteId;
 
 	/**
-	* 对应站点id
+	 * 对应站点名字
+	 */
+	private String siteName;
+	/**
+	* 对应厂商id
 	*/
 	private Long manufacturerId;
 
 	/**
-	* 对应站点名字
+	* 对应厂商名字
 	*/
 	private String manufacturerName;
 
