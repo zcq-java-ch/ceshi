@@ -142,6 +142,8 @@ public class TVehicleAccessRecordsController {
                 body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(passTime) ? passTime : "2023-04-17 12:00:00"));
                 body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
                 body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
+                body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
                 try {
                     tVehicleAccessRecordsService.save(body);
                 }catch (Exception e){

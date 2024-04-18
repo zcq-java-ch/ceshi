@@ -80,6 +80,8 @@ public class SynMessageDataContorller {
                 tPersonAccessRecordsEntity.setRecordTime(jsonObjectRecords.get("record_time", Date.class));
                 tPersonAccessRecordsEntity.setManufacturerId(jsonObjectRecords.get("manufacturer_id", Long.class));
                 tPersonAccessRecordsEntity.setManufacturerName(jsonObjectRecords.get("manufacturer_name", String.class));
+                tPersonAccessRecordsEntity.setSiteId(jsonObjectRecords.get("siteId", Long.class));
+                tPersonAccessRecordsEntity.setSiteName(jsonObjectRecords.get("siteName", String.class));
                 tPersonAccessRecordsEntity.setRecordsId(records_id);
                 tPersonAccessRecordsService.save(tPersonAccessRecordsEntity);
                 log.info("人脸数据不存在，结束存储");

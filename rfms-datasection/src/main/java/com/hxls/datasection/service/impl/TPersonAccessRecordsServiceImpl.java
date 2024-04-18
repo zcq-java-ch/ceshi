@@ -101,23 +101,23 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
             List<TPersonAccessRecordsVO> personAccessRecordsEntityArrayList = new ArrayList<>();
 
-            // 按照 manufacturerId 进行分组
+            // 按照 站点 进行分组
             Map<Long, List<TPersonAccessRecordsEntity>> groupedByManufacturerId = tPersonAccessRecordsEntities.stream()
-                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getManufacturerId));
+                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getSiteId));
             // 打印每个分组
-            groupedByManufacturerId.forEach((manufacturerId, recordsList) -> {
-                System.out.println("Manufacturer ID: " + manufacturerId);
+            groupedByManufacturerId.forEach((siteId, recordsList) -> {
+                System.out.println("Site ID: " + siteId);
                 System.out.println("Records:");
                 recordsList.forEach(System.out::println);
                 System.out.println("---------------------------------");
 
                 // 按照 姓名 进行分组
-                Map<Long, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
-                        .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getPersonId));
+                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
+                        .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
                 // 打印每个分组
                 groupedByPersonId.forEach((personId, records2List) -> {
-                    System.out.println("Person ID: " + personId);
+                    System.out.println("Device Person ID: " + personId);
                     System.out.println("Records:");
                     records2List.forEach(System.out::println);
                     System.out.println("---------------------------------");

@@ -118,7 +118,7 @@ public class TPersonAccessRecordsController {
 
     @GetMapping("/pageUnidirectionalTpersonAccessRecords")
     @Operation(summary = "查询单向通行记录")
-    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
+//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
     public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query){
 
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query);
@@ -163,6 +163,8 @@ public class TPersonAccessRecordsController {
                 body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(dfCallBackDto.getTime()) ? dfCallBackDto.getTime() : "2023-04-17 12:00:00"));
                 body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
                 body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
+                body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
                 body.setRecordsId(dfCallBackDto.getId());
                 try {
                     tPersonAccessRecordsService.save(body);
@@ -239,6 +241,8 @@ public class TPersonAccessRecordsController {
                         body.setRecordTime(dateTime);
                         body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
                         body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
+                        body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
+                        body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
                         body.setRecordsId(recordId);
                         tPersonAccessRecordsService.save(body);
                         // 返回结果或进行其他处理

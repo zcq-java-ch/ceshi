@@ -122,6 +122,8 @@ public class SystemServerApi implements DeviceFeign {
             entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
             entries.putOnce("manufacturer_name", manufactureName);
             entries.putOnce("account", tDeviceManagementEntity.getAccount());
+            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
+            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
@@ -162,6 +164,8 @@ public class SystemServerApi implements DeviceFeign {
             entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
             entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
             entries.putOnce("manufacturer_name", manufactureName);
+            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
+            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
@@ -203,6 +207,8 @@ public class SystemServerApi implements DeviceFeign {
             entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
             entries.putOnce("manufacturer_name", manufactureName);
             entries.putOnce("ipAddress", tDeviceManagementEntity.getIpAddress());
+            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
+            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
