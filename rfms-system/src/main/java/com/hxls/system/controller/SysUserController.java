@@ -53,6 +53,12 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> page(@ParameterObject @Valid SysUserQuery query) {
         PageResult<SysUserVO> page = sysUserService.page(query);
+        for (SysUserVO userVO : page.getList()){
+            if(userVO.getOrgId() != null){
+                SysOrgEntity byId = sysOrgService.getById(userVO.getOrgId());
+                userVO.setOrgName(byId.getName());
+            }
+        }
         return Result.ok(page);
     }
 
@@ -71,6 +77,12 @@ public class SysUserController {
         // 用户岗位列表
         List<Long> postIdList = sysUserPostService.getPostIdList(id);
         vo.setPostIdList(postIdList);
+
+        //查询组织名字
+        if(entity.getOrgId() != null){
+            SysOrgEntity byId = sysOrgService.getById(entity.getOrgId());
+            vo.setOrgName(byId.getName());
+        }
 
         return Result.ok(vo);
     }
