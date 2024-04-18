@@ -6,9 +6,11 @@ import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.system.convert.TVehicleConvert;
+import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.service.SysOrgService;
 import com.hxls.system.service.SysUserService;
 import com.hxls.system.service.TVehicleService;
 import com.hxls.system.vo.SysRoleVO;
@@ -36,6 +38,7 @@ import java.util.List;
 public class TVehicleController {
     private final TVehicleService tVehicleService;
     private final SysUserService sysUserService;
+    private final SysOrgService sysOrgService;
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -50,6 +53,10 @@ public class TVehicleController {
                 tVehicleVO.setDriverName(byId.getRealName());
                 tVehicleVO.setDriverMobile(byId.getMobile());
             }
+            SysOrgEntity sysOrgEntity = sysOrgService.getById(tVehicleVO.getSiteId());
+            if(sysOrgEntity != null){
+                tVehicleVO.setSiteName(sysOrgEntity.getName());
+            }
 
         }
         return Result.ok(page);
@@ -60,7 +67,12 @@ public class TVehicleController {
     @PreAuthorize("hasAuthority('system:vehicle:info')")
     public Result<TVehicleVO> get(@PathVariable("id") Long id){
         TVehicleEntity entity = tVehicleService.getById(id);
-        return Result.ok(TVehicleConvert.INSTANCE.convert(entity));
+        TVehicleVO vo = TVehicleConvert.INSTANCE.convert(entity);
+        SysOrgEntity sysOrgEntity = sysOrgService.getById(entity.getSiteId());
+        if(sysOrgEntity != null){
+            vo.setSiteName(sysOrgEntity.getName());
+        }
+        return Result.ok(vo);
     }
 
     @PostMapping

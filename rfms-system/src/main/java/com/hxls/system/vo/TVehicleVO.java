@@ -24,6 +24,9 @@ public class TVehicleVO implements Serializable {
 	@Schema(description = "站点ID")
 	private Long siteId;
 
+	@Schema(description = "站点名字")
+	private String siteName;
+
 	@Schema(description = "车牌号")
 	private String licensePlate;
 
