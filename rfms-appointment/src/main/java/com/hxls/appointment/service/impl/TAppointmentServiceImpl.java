@@ -340,35 +340,32 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             //根据指定通道下发数据
             Long id = entity.getId();
             TAppointmentEntity byId = getById(id);
-
             List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(
                     TAppointmentVehicle::getAppointmentId, id
             ));
 
             List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<>());
 
-            if (byId.getAppointmentType().equals("1") || byId.getAppointmentType().equals("2")) {
-                if (CollectionUtils.isNotEmpty(personnelList)) {
-                    String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
-                    List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
-                    for (String device : strings) {
+            if (CollectionUtils.isNotEmpty(personnelList)) {
+                String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
+                List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
+                for (String device : strings) {
 
-                        List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device);
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device);
 
-                        List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1");
-                        for (String masterIp : masterIpById) {
-                            for (TAppointmentPersonnel personnel : personnelList) {
-                                JSONObject entries = new JSONObject();
-                                entries.set("type", device);
-                                entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
-                                entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
-                                entries.set("peopleName", personnel.getExternalPersonnel());
-                                entries.set("peopleCode", personnel.getUserId());
-                                entries.set("faceUrl", personnel.getHeadUrl());
-                                entries.set("masterIp", masterIp);
-                                entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
-                                rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
-                            }
+                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1");
+                    for (String masterIp : masterIpById) {
+                        for (TAppointmentPersonnel personnel : personnelList) {
+                            JSONObject entries = new JSONObject();
+                            entries.set("type", device);
+                            entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
+                            entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
+                            entries.set("peopleName", personnel.getExternalPersonnel());
+                            entries.set("peopleCode", personnel.getUserId());
+                            entries.set("faceUrl", personnel.getHeadUrl());
+                            entries.set("masterIp", masterIp);
+                            entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
+                            rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
                         }
                     }
                 }
