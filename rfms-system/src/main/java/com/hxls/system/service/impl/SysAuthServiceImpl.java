@@ -3,6 +3,9 @@ package com.hxls.system.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONObject;
+import cn.hutool.setting.SettingUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hxls.api.module.message.SmsApi;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
@@ -11,6 +14,7 @@ import com.hxls.framework.security.crypto.Sm2Util;
 import com.hxls.framework.security.mobile.MobileAuthenticationToken;
 import com.hxls.framework.security.third.ThirdAuthenticationToken;
 import com.hxls.framework.security.third.ThirdLogin;
+import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.enums.LoginOperationEnum;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.*;
@@ -26,9 +30,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 权限认证服务
@@ -45,6 +49,7 @@ public class SysAuthServiceImpl implements SysAuthService {
     private final SysLogLoginService sysLogLoginService;
     private final SysUserService sysUserService;
     private final SysUserTokenService sysUserTokenService;
+    private final SysOrgService orgService;
     private final SmsApi smsApi;
 
     @Override
@@ -80,10 +85,21 @@ public class SysAuthServiceImpl implements SysAuthService {
         }
         // 用户信息
         UserDetail user = (UserDetail) authentication.getPrincipal();
+
+        //查询管理场站
+        Long id = user.getId();
+        LambdaQueryWrapper<SysOrgEntity> wrapper = new LambdaQueryWrapper<>();
+        String format = String.format(" JSON_CONTAINS( site_admin_ids, JSON_ARRAY(%s)) ", id);
+        wrapper.apply(format);
+        List<SysOrgEntity> list = orgService.list(wrapper);
+        if (!CollectionUtils.isEmpty(list)){
+            List<Long> ids = list.stream().map(SysOrgEntity::getId).toList();
+            user.setManageStation(new HashSet<>(ids));
+        }
+
         //需要补充一个管理场站的集合信息 -- 后期完善
         // 生成 accessToken
         SysUserTokenVO userTokenVO = sysUserTokenService.createToken(user.getId());
-
         // 保存用户信息到缓存
         tokenStoreCache.saveUser(userTokenVO.getAccessToken(), user);
         return userTokenVO;

@@ -112,6 +112,12 @@ public class SysUserController {
             user.setStationName(byId.getName());
         }
 
+        //查询组织名字
+        if(user.getOrgId() != null){
+            SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
+            user.setOrgName(byId.getName());
+        }
+
         //用户管理的站点数据权限
         List<SysOrgVO> orgList = sysRoleDataScopeService.getOrgList(user.getId());
         user.setOrgList(orgList);

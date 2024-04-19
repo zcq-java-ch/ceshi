@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -40,7 +41,6 @@ public class AppointmentApiController {
     private final RedisCache redisCache;
     private final TAppointmentService tAppointmentService;
     private final TAppointmentPersonnelService tAppointmentPersonnelService;
-
 
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
@@ -169,5 +169,14 @@ public class AppointmentApiController {
         jsonObject.putOnce("postAll", postobjects);
         return jsonObject;
     }
+
+
+    @GetMapping("auditPage")
+    @Operation(summary = "主页查询")
+    public Result<PageResult<TAppointmentVO>> auditPage(@ParameterObject @Valid TAppointmentQuery query) {
+        PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
+        return Result.ok(page);
+    }
+
 
 }

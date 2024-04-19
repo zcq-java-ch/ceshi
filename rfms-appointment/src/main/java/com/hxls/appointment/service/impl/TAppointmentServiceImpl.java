@@ -75,7 +75,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
-        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException("请登陆");
+        }
+        Set<Long> manageStation = user.getManageStation();
+
+        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, manageStation));
 
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
@@ -115,14 +122,21 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 }
             }
         }
-
         return new PageResult<>(tAppointmentVOS, page.getTotal());
     }
 
-    private LambdaQueryWrapper<TAppointmentEntity> getWrapper(TAppointmentQuery query) {
+    private LambdaQueryWrapper<TAppointmentEntity> getWrapper(TAppointmentQuery query, Set<Long> manageStation) {
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
+        if (query.getIsFinish() != null ){
+           if (query.getIsFinish()){
+               wrapper.ne(TAppointmentEntity::getReviewStatus , 0);
+           } else {
+               wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
+           }
+        }
+        wrapper.in(CollectionUtils.isNotEmpty(manageStation),TAppointmentEntity::getSiteId, query.getSiteId());
         wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteId());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
@@ -283,8 +297,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         if (ObjectUtil.isNull(user)) {
             throw new ServerException("请登陆");
         }
-        Set<String> manageStation = user.getManageStation();
-        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
+        Set<Long> manageStation = user.getManageStation();
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query ,manageStation);
        // wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());

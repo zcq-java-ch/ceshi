@@ -63,7 +63,10 @@ public class UserDetail implements UserDetails {
      */
     private Set<String> authoritySet;
 
-    private Set<String> manageStation;
+    /**
+     * 管理场站集合
+     */
+    private Set<Long> manageStation;
 
     @Override
     @JsonIgnore
