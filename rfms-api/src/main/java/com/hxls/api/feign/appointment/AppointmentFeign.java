@@ -6,6 +6,7 @@ import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.ServerNames;
 import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,4 +67,7 @@ public interface AppointmentFeign {
 
     @GetMapping(value = "api/appointment/sum/{id}/{type}")
     JSONObject appointmentSum(@PathVariable("id") Long id,@PathVariable ("type")  Long type);
+
+    @PostMapping("api/appointment/queryTheNumberOfResidencies")
+    JSONObject queryTheNumberOfResidencies(@RequestParam Long siteId);
 }

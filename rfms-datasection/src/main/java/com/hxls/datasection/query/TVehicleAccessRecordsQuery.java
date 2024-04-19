@@ -19,10 +19,10 @@ import java.util.Date;
 @Schema(description = "车辆出入记录表查询")
 public class TVehicleAccessRecordsQuery extends Query {
     @Schema(description = "对应站点id")
-    private Long manufacturerId;
+    private Long siteId;
 
     @Schema(description = "对应站点名字")
-    private String manufacturerName;
+    private String siteName;
 
     @Schema(description = "出入类型（数据字典）")
     private String accessType;

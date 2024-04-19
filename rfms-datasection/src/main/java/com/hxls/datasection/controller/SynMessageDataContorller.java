@@ -138,6 +138,7 @@ public class SynMessageDataContorller {
                 tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);
 
                 // 存储车辆进出场展示台账
+                log.info("通信记录存储完成，开始记录台账");
                 tVehicleAccessRecordsService.saveLedger(tVehicleAccessRecordsEntity);
 
             }

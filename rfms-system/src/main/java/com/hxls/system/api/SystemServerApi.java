@@ -7,14 +7,8 @@ import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.system.controller.TVehicleController;
-import com.hxls.system.entity.SysSiteAreaEntity;
-import com.hxls.system.entity.TDeviceManagementEntity;
-import com.hxls.system.entity.TManufacturerEntity;
-import com.hxls.system.entity.TVehicleEntity;
-import com.hxls.system.service.SysAreacodeDeviceService;
-import com.hxls.system.service.TDeviceManagementService;
-import com.hxls.system.service.TManufacturerService;
-import com.hxls.system.service.TVehicleService;
+import com.hxls.system.entity.*;
+import com.hxls.system.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -28,6 +22,7 @@ import oshi.driver.mac.net.NetStat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/system")
@@ -43,6 +38,8 @@ public class SystemServerApi implements DeviceFeign {
     private TManufacturerService tManufacturerService;
     @Autowired
     private TVehicleService tVehicleService;
+    @Autowired
+    private SysUserService sysUserService;
     @PostMapping("/queryAllDeviceList")
     @Operation(summary = "查询所有站点的编码和主ip")
     @Override
@@ -236,5 +233,49 @@ public class SystemServerApi implements DeviceFeign {
         return entries;
     }
 
+    /**
+     * 查询厂站看板人员信息
+     * */
+    @PostMapping(value = "/queryInformationOnkanbanPersonnelStation")
+    @Override
+    public JSONObject queryInformationOnkanbanPersonnelStation(@RequestParam("siteId") Long siteId){
+        LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
+        List<SysUserEntity> sysUserEntities = sysUserService.list(sysUserEntityLambdaQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtil.isNotEmpty(sysUserEntities)){
+            // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
+            entries.putOnce("numberOfPeopleRegistered", sysUserEntities.size());
+
+            // 获取在册人员所有id
+            List<Long> collect = sysUserEntities.stream().map(SysUserEntity::getId).collect(Collectors.toList());
+            entries.putOnce("numberOfPeopleRegisteredIdList", collect);
+
+            // 按照 busis 字段进行分组
+            Map<String, Long> typeCounts = sysUserEntities.stream()
+                    .collect(Collectors.groupingBy(SysUserEntity::getBusis, Collectors.counting()));
+            // 打印每个类型及其数量
+            JSONObject objects = new JSONObject();
+            for (Map.Entry<String, Long> entry : typeCounts.entrySet()) {
+                System.out.println("类型：" + entry.getKey() + "，数量：" + entry.getValue());
+                objects.putOnce(entry.getKey(), entry.getValue());
+            }
+            entries.putOnce("jobs", objects);
+
+            // 按照 busis 字段进行分组
+            Map<String, Long> postCounts = sysUserEntities.stream()
+                    .collect(Collectors.groupingBy(SysUserEntity::getPostId, Collectors.counting()));
+            // 打印每个类型及其数量
+            JSONObject postobjects = new JSONObject();
+            for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
+                System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
+                postobjects.putOnce(entry2.getKey(), entry2.getValue());
+            }
+            entries.putOnce("postobjects", postobjects);
+        }
+        return entries;
+    }
 
 }

@@ -32,10 +32,10 @@ import java.util.List;
 public class TVehicleAccessLedgerController {
     private final TVehicleAccessLedgerService tVehicleAccessLedgerService;
 
-    @GetMapping("page")
+    @PostMapping("page")
     @Operation(summary = "分页")
-    @PreAuthorize("hasAuthority('datasection:ledger:page')")
-    public Result<PageResult<TVehicleAccessLedgerVO>> page(@ParameterObject @Valid TVehicleAccessLedgerQuery query){
+//    @PreAuthorize("hasAuthority('datasection:ledger:page')")
+    public Result<PageResult<TVehicleAccessLedgerVO>> page(@RequestBody TVehicleAccessLedgerQuery query){
         PageResult<TVehicleAccessLedgerVO> page = tVehicleAccessLedgerService.page(query);
 
         return Result.ok(page);

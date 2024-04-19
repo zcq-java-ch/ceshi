@@ -1,6 +1,6 @@
 package com.hxls.datasection.controller;
 
-import com.alibaba.fastjson.JSONObject;
+import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.vo.PageResult;

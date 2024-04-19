@@ -23,7 +23,7 @@ import java.util.Date;
 public class TPersonAccessRecordsQuery extends Query {
 
     @Schema(description = "对应站点id")
-    private Long manufacturerId;
+    private Long siteId;
 
     @Schema(description = "出入类型（数据字典）")
     private String accessType;

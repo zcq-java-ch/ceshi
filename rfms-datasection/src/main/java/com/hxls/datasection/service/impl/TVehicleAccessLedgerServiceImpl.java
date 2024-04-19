@@ -1,5 +1,9 @@
 package com.hxls.datasection.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,8 +41,21 @@ public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAcc
         return new PageResult<>(TVehicleAccessLedgerConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
-    private LambdaQueryWrapper<TVehicleAccessLedgerEntity> getWrapper(TVehicleAccessLedgerQuery query){
-        LambdaQueryWrapper<TVehicleAccessLedgerEntity> wrapper = Wrappers.lambdaQuery();
+    private QueryWrapper<TVehicleAccessLedgerEntity> getWrapper(TVehicleAccessLedgerQuery query){
+        QueryWrapper<TVehicleAccessLedgerEntity> wrapper = Wrappers.query();
+        wrapper.eq("status",1);
+        wrapper.eq("deleted",0);
+        wrapper.eq(ObjectUtil.isNotEmpty(query.getSiteId()),"site_id",query.getSiteId());
+        wrapper.eq(StringUtils.isNotBlank(query.getPlateNumber()), "plate_number",query.getPlateNumber());
+        // 检查数组是否为空，如果不为空再调用 between 方法
+        if (CollectionUtils.isNotEmpty(query.getInRecordTimeArr())) {
+            wrapper.between("in_time", query.getInRecordTimeArr().get(0), query.getInRecordTimeArr().get(1));
+        }
+
+        // 检查数组是否为空，如果不为空再调用 between 方法
+        if (CollectionUtils.isNotEmpty(query.getOutRecordTimeArr())) {
+            wrapper.between("out_time", query.getOutRecordTimeArr().get(0), query.getOutRecordTimeArr().get(1));
+        }
         return wrapper;
     }
 

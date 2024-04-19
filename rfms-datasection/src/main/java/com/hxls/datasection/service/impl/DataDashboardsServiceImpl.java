@@ -1,61 +1,74 @@
 package com.hxls.datasection.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.hxls.datasection.convert.TPersonAccessRecordsConvert;
-import com.hxls.datasection.dao.TPersonAccessRecordsDao;
-import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
-import com.hxls.datasection.query.TPersonAccessRecordsQuery;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
-import com.hxls.datasection.vo.TPersonAccessRecordsVO;
-import com.hxls.framework.common.utils.PageResult;
-import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Delete;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @Service
 @AllArgsConstructor
 public class DataDashboardsServiceImpl implements DataDashboardsService {
 
+    private final DeviceFeign deviceFeign;
+    @Autowired
+    private TPersonAccessRecordsService tPersonAccessRecordsService;
+
+    private final AppointmentFeign appointmentFeign;
     /**
      * 人员信息部分
      * */
     @Override
     public JSONObject personnelInformationSection(Long stationId) {
 
+        // 内部员工数量与id集合
+        JSONObject jsonObject1 = deviceFeign.queryInformationOnkanbanPersonnelStation(stationId);
+        List<Long> numberOfPeopleRegisteredIdList = jsonObject1.get("numberOfPeopleRegisteredIdList", ArrayList.class);
+        Long numberOfPeopleRegistered = jsonObject1.get("numberOfPeopleRegistered", Long.class);
+        List<Long> postobjects = jsonObject1.get("postobjects", ArrayList.class);
+
+        // 派驻员工数量，与id集合
+        JSONObject jsonObject3 = appointmentFeign.queryTheNumberOfResidencies(stationId);
+        Long pzNum = jsonObject3.get("pzNum", Long.class);
+        List<Long> pzAllIds = jsonObject3.get("pzAllIds", ArrayList.class);
+        JSONObject postAll = jsonObject3.get("postAll", JSONObject.class);
+//        numberOfPeopleRegisteredIdList.addAll(pzAllIds);
+
+        // 内部员工+派驻员工 在厂人数，实时在厂总人数，内部员工在厂数量，
+        JSONObject jsonObject2 = tPersonAccessRecordsService.queryInformationOnkanbanPersonnelStation(stationId, numberOfPeopleRegisteredIdList, pzAllIds, numberOfPeopleRegistered);
+        Long zccn = jsonObject2.get("inTheRegisteredFactory", Long.class);
+        Long realTimeTotalNumberOfPeople = jsonObject2.get("realTimeTotalNumberOfPeople", Long.class);
+        Long nbzc = jsonObject2.get("nbzc", Long.class);
+        Long wbzp = jsonObject2.get("wbzp", Long.class);
+
+        jsonObject1.get("jobs", JSONObject.class);
+
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("numberOfPeopleRegistered", "10"); // 在册人数
-        jsonObject.put("inTheRegisteredFactory", "10"); // 在册厂内
-        jsonObject.put("outsideTheRegisteredFactory", "10"); // 在册厂外
-        jsonObject.put("numberOfPeopleReadyToMix", "10"); // 预拌人数
-        jsonObject.put("preMadeNumberOfPeople", "10"); // 预制人数
-        jsonObject.put("realTimeTotalNumberOfPeople", "10"); // 实时总人数
-        jsonObject.put("companyPersonnel", "10"); // 公司人员
-        jsonObject.put("residency", "10"); // 派驻人员
-        jsonObject.put("externalAppointments", "10"); // 外部预约
+        jsonObject.putOnce("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum); // 在册人数
+        jsonObject.putOnce("inTheRegisteredFactory", zccn); // 在册厂内
+        jsonObject.putOnce("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn); // 在册厂外
+        jsonObject.putOnce("numberOfPeopleReadyToMix", jsonObject1); // 预拌人数 预制人数 等业务与人数
+//        jsonObject.putOnce("preMadeNumberOfPeople", "10"); //
 
-        JSONObject jsonObjectType = new JSONObject();
-        jsonObjectType.put("钢筋工", "10"); // 钢筋工
-        jsonObjectType.put("xx工", "10"); // xx工
+        jsonObject.putOnce("realTimeTotalNumberOfPeople", realTimeTotalNumberOfPeople); // 实时总人数
+        jsonObject.putOnce("companyPersonnel", nbzc); // 公司人员
+        jsonObject.putOnce("residency", wbzp); // 派驻人员
+        jsonObject.putOnce("externalAppointments", "10"); // 外部预约
 
-        jsonObject.put("jobs", jsonObjectType); // 工种人员数量集合
+//        JSONObject jsonObjectType = new JSONObject();
+//        jsonObjectType.put("钢筋工", "10"); // 钢筋工
+//        jsonObjectType.put("xx工", "10"); // xx工
+
+        jsonObject.put("jobs", postAll); // 工种人员数量集合
 
         return jsonObject;
     }

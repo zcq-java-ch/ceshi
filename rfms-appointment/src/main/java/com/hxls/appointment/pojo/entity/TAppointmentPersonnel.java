@@ -107,4 +107,9 @@ public class TAppointmentPersonnel extends BaseEntity {
      */
     private Integer status;
 
+    /**
+     * 岗位编码
+     */
+    private String postCode;
+
 }

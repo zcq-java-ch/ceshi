@@ -18,6 +18,7 @@ import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.datasection.dao.TVehicleAccessRecordsDao;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,7 @@ import java.util.List;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAccessRecordsDao, TVehicleAccessRecordsEntity> implements TVehicleAccessRecordsService {
 
     private final TVehicleAccessLedgerDao tVehicleAccessLedgerDao;
@@ -49,7 +51,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
     private LambdaQueryWrapper<TVehicleAccessRecordsEntity> getWrapper(TVehicleAccessRecordsQuery query){
         LambdaQueryWrapper<TVehicleAccessRecordsEntity> wrapper = Wrappers.lambdaQuery();
-        wrapper.eq(ObjectUtils.isNotEmpty(query.getManufacturerId()), TVehicleAccessRecordsEntity::getManufacturerId, query.getManufacturerId());
+        wrapper.eq(ObjectUtils.isNotEmpty(query.getSiteId()), TVehicleAccessRecordsEntity::getSiteId, query.getSiteId());
         wrapper.eq(StringUtils.isNotEmpty(query.getAccessType()), TVehicleAccessRecordsEntity::getAccessType, query.getAccessType());
         wrapper.eq(ObjectUtils.isNotEmpty(query.getChannelId()), TVehicleAccessRecordsEntity::getChannelId, query.getChannelId());
         wrapper.between(StringUtils.isNotEmpty(query.getStartRecordTime()) && StringUtils.isNotEmpty(query.getEndRecordTime()), TVehicleAccessRecordsEntity::getRecordTime, query.getStartRecordTime(), query.getEndRecordTime());
@@ -93,9 +95,10 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
     @Override
     public void saveLedger(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+        log.info("当前的厂商是：{}",tVehicleAccessRecordsEntity.getManufacturerId());
         if (5 == tVehicleAccessRecordsEntity.getManufacturerId()){
             // 先只处理精诚元鸿的设备
-
+            log.info("开始存储台账");
             if ("1".equals(tVehicleAccessRecordsEntity.getAccessType())){
                 // 如果是入的记录 则直接插入一条
                 // 先通过车牌找到对应的平台车辆信息
