@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,7 +29,6 @@ public class AppointmentApiController {
     private final RabbitMqManager rabbitMqManager;
     private final RedisCache redisCache;
     private final TAppointmentService tAppointmentService;
-
 
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
@@ -116,5 +116,14 @@ public class AppointmentApiController {
 
         return true;
     }
+
+
+    @GetMapping("auditPage")
+    @Operation(summary = "主页查询")
+    public Result<PageResult<TAppointmentVO>> auditPage(@ParameterObject @Valid TAppointmentQuery query) {
+        PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
+        return Result.ok(page);
+    }
+
 
 }

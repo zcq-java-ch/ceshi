@@ -82,4 +82,14 @@ public class TAppointmentQuery extends Query {
      * 是否是人员审核
      */
     private Boolean isPerson = false;
+
+
+    /**
+     * 是否办理
+     */
+    private Boolean isFinish ;
+
+
+
+
 }
