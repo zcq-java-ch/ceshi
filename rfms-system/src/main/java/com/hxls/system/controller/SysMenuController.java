@@ -64,11 +64,12 @@ public class SysMenuController {
 
     @GetMapping("getAppMenu")
     @Operation(summary = "菜单列表(移动端)")
-    @Parameter(name = "type", description = "菜单类型 0：菜单 1：按钮  2：接口  null：全部")
-    public Result<List<SysMenuVO>> getAppMenu(Integer type) {
-        List<SysMenuVO> list = sysMenuService.getMenuList(type,2);
+    public Result<List<SysMenuVO>> getAppMenu() {
+        UserDetail user = SecurityUser.getUser();
+        List<SysMenuVO> list = sysMenuService.getUserMenuList(user, MenuTypeEnum.MENU.getValue(),2);
         return Result.ok(list);
     }
+
 
     @GetMapping("{id}")
     @Operation(summary = "信息")
