@@ -74,7 +74,7 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
    List<String> selectMasterIpById(@Param("code") String code ,@Param("type")String type);
 
    /**
-    * 通过code查询场站主机ip
+    * 通过code查询场站设备的账号密码
     */
    List<JSONObject> selectDeviceList(@Param("code") String code);
 

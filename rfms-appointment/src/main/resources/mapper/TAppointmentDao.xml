@@ -70,7 +70,7 @@
     </select>
     <select id="selectSiteCodeById" resultType="java.lang.String">
 
-        SELECT org_alias FROM sys_org where property = 4  and  id = #{id} and deleted = 0
+        SELECT code FROM sys_org where property = 4  and  id = #{id} and deleted = 0
 
     </select>
 

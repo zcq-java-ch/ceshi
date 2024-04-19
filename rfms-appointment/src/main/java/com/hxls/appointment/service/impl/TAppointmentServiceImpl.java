@@ -123,6 +123,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteId());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
@@ -134,8 +135,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
-        if (query.getIsPerson()) {
-            wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
+        if (query.getIsPerson() && StringUtils.isEmpty(query.getReviewStatus())) {
+          //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
+            wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
         }
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
@@ -283,7 +285,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
         Set<String> manageStation = user.getManageStation();
         LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
-        wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
+       // wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
@@ -518,7 +520,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //人脸进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("stationId");
+                String stationId = entries.getStr("orgId");
                 //realName  真实姓名
                 String peopleName = entries.getStr("realName");
                 //人脸地址  avatar
@@ -554,7 +556,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("stationId");
+                String stationId = entries.getStr("orgId");
                 //车牌号
                 String licensePlate = entries.getStr("licensePlate");
 

@@ -176,9 +176,7 @@ public class SysUserController {
         } else {
             vo.setPassword(passwordEncoder.encode(vo.getPassword()));
         }
-
         sysUserService.update(vo);
-
         return Result.ok();
     }
 

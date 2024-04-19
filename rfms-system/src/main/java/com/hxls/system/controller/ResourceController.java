@@ -4,10 +4,13 @@ package com.hxls.system.controller;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.query.SysOrgQuery;
+import com.hxls.system.query.TBannerQuery;
 import com.hxls.system.service.SysDictTypeService;
 import com.hxls.system.service.SysOrgService;
+import com.hxls.system.service.TBannerService;
 import com.hxls.system.vo.SysDictVO;
 import com.hxls.system.vo.SysOrgVO;
+import com.hxls.system.vo.TBannerVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +33,7 @@ public class ResourceController {
 
     private final SysDictTypeService sysDictTypeService;
 
+    private final TBannerService tBannerService;
 
     @GetMapping("page")
     @Operation(summary = "场站分页")
@@ -44,6 +48,16 @@ public class ResourceController {
     public Result<List<SysDictVO>> all() {
         List<SysDictVO> dictList = sysDictTypeService.getDictList();
         return Result.ok(dictList);
+    }
+
+
+
+    @GetMapping("pageBanner")
+    @Operation(summary = "分页")
+    public Result<PageResult<TBannerVO>> page(@ParameterObject @Valid TBannerQuery query){
+        PageResult<TBannerVO> page = tBannerService.page(query);
+
+        return Result.ok(page);
     }
 
 }

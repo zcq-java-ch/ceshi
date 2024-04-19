@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
 * 预约信息表查询
@@ -35,6 +36,8 @@ public class TAppointmentQuery extends Query {
 
     @Schema(description = "预约站点id")
     private Long siteId;
+    @Schema(description = "预约站点id集合")
+    private List<Long> siteIds;
 
     @Schema(description = "预约厂站名字")
     private String siteName;
