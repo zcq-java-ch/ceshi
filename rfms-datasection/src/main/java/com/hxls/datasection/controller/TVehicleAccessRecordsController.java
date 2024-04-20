@@ -5,6 +5,7 @@ import cn.hutool.json.JSON;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,14 @@ import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.apache.poi.ss.util.ImageUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -30,16 +39,19 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 
 /**
 * 车辆出入记录表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-29
 */
 @RestController
@@ -51,6 +63,8 @@ public class TVehicleAccessRecordsController {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     @Autowired
     private DeviceFeign deviceFeign;
+
+    private final BaseImageUtils baseImageUtils;
 
     @GetMapping("/pageTVehicleAccessRecords")
     @Operation(summary = "分页")
@@ -102,7 +116,7 @@ public class TVehicleAccessRecordsController {
 
     @PostMapping("/callbackAddressCarRecognitionByHKWS")
     @Operation(summary = "海康威视车辆识别结果回调地址")
-    public JSONObject callbackAddressCarRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException {
+    public JSONObject callbackAddressCarRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException, IOException {
         if(ObjectUtil.isNotEmpty(jsonObject)){
             String uniqueNo = jsonObject.get("uniqueNo", String.class);
             String plateNo = jsonObject.get("plateNo", String.class);
@@ -112,6 +126,7 @@ public class TVehicleAccessRecordsController {
             String laneCode = jsonObject.get("laneCode", String.class);
 
 
+            String carUrl = baseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR");
             /**
              * 1. 先验证uuid是否存在，存在说明录入过了
              * */
@@ -133,7 +148,7 @@ public class TVehicleAccessRecordsController {
                 body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
                 body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                 body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
-                body.setCarUrl(picVehicleFileData);
+                body.setCarUrl(carUrl);
                 body.setPlateNumber(plateNo);
                 body.setRecordsId(uniqueNo);
                 // 定义日期格式
@@ -166,5 +181,6 @@ public class TVehicleAccessRecordsController {
         obj.set("message", "ok");
         return obj;
     }
+
 
 }
