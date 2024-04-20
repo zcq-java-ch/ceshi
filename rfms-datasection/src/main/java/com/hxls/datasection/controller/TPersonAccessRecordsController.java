@@ -116,19 +116,29 @@ public class TPersonAccessRecordsController {
         return Result.ok();
     }
 
-
+    /**
+      * @author: Mryang
+      * @Description: PC端-查询单行同行记录
+      * @Date: 22:42 2024/4/20
+      * @Param:
+      * @return:
+      */
     @GetMapping("/pageUnidirectionalTpersonAccessRecords")
     @Operation(summary = "查询单向通行记录")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
     public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query){
 
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query);
-        List<TPersonAccessRecordsVO> list = page.getList();
-
-
         return Result.ok(page);
     }
 
+    /**
+      * @author: Mryang
+      * @Description: 所有万众人脸识别结果回调地址
+      * @Date: 22:41 2024/4/20
+      * @Param:
+      * @return:
+      */
     @PostMapping("/callbackAddressFaceRecognitionByWZ")
     @Operation(summary = "万众人脸识别结果回调地址")
     public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException, IOException {
@@ -196,6 +206,13 @@ public class TPersonAccessRecordsController {
     }
 
 
+    /**
+      * @author: Mryang
+      * @Description: 所有海康威视人脸识别结果回调地址
+      * @Date: 22:40 2024/4/20
+      * @Param:
+      * @return:
+      */
     @PostMapping(value= "/callbackAddressFaceRecognitionByHKWS", produces = {MediaType.APPLICATION_JSON_VALUE},
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "海康威视人脸识别结果回调地址")
@@ -240,7 +257,7 @@ public class TPersonAccessRecordsController {
                         body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
                         body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                         body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
-                        body.setHeadUrl(base64Encoded);
+                        body.setHeadUrl(faceUrl);
                         body.setPersonName(name);
                         body.setDevicePersonId(employeeNoString);
                         // 定义日期格式

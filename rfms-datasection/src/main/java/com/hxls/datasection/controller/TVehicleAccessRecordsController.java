@@ -113,6 +113,13 @@ public class TVehicleAccessRecordsController {
         return Result.ok();
     }
 
+    /**
+      * @author: Mryang
+      * @Description: 所有海康威视车辆识别结果回调地址
+      * @Date: 22:41 2024/4/20
+      * @Param:
+      * @return:
+      */
     @PostMapping("/callbackAddressCarRecognitionByHKWS")
     @Operation(summary = "海康威视车辆识别结果回调地址")
     public JSONObject callbackAddressCarRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException, IOException {
