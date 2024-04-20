@@ -64,7 +64,6 @@ public class TVehicleAccessRecordsController {
     @Autowired
     private DeviceFeign deviceFeign;
 
-    private final BaseImageUtils baseImageUtils;
 
     @GetMapping("/pageTVehicleAccessRecords")
     @Operation(summary = "分页")
@@ -126,7 +125,7 @@ public class TVehicleAccessRecordsController {
             String laneCode = jsonObject.get("laneCode", String.class);
 
 
-            String carUrl = baseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR");
+            String carUrl = BaseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR");
             /**
              * 1. 先验证uuid是否存在，存在说明录入过了
              * */

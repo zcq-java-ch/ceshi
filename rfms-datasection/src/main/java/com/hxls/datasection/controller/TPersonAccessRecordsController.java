@@ -7,6 +7,7 @@ import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
+import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -130,7 +131,7 @@ public class TPersonAccessRecordsController {
 
     @PostMapping("/callbackAddressFaceRecognitionByWZ")
     @Operation(summary = "万众人脸识别结果回调地址")
-    public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException {
+    public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException, IOException {
         if(ObjectUtil.isNotEmpty(dfCallBackDto)){
             log.info("万众人脸识别结果：{}",dfCallBackDto.toString());
             /**
@@ -147,6 +148,11 @@ public class TPersonAccessRecordsController {
                 JSONObject entries = deviceFeign.useTheAccountToQueryDeviceInformation(dfCallBackDto.getDevicename());
                 log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
                 log.info("平台端的设备名称:{}",entries.get("account", String.class));
+                String faceBase64 = dfCallBackDto.getFace_base64();
+
+                log.info("万众人脸开始转换base64");
+                String faceUrl = BaseImageUtils.base64ToUrl(faceBase64, "WANZHONG/FACE");
+                log.info("万众人脸转换完成：{}",faceUrl);
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
@@ -154,7 +160,7 @@ public class TPersonAccessRecordsController {
                 body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
                 body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
                 body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
-                body.setHeadUrl(dfCallBackDto.getFace_base64());
+                body.setHeadUrl(faceUrl);
                 body.setPersonName(dfCallBackDto.getName());
                 body.setDevicePersonId(dfCallBackDto.getEmployee_number());
                 // 定义日期格式
@@ -218,6 +224,9 @@ public class TPersonAccessRecordsController {
 
                         // 将文件内容转换为Base64编码的字符串
                         String base64Encoded = Base64.getEncoder().encodeToString(fileContent);
+                        log.info("海康人脸开始转换base64");
+                        String faceUrl = BaseImageUtils.base64ToUrl(base64Encoded, "HAIKANG/FACE");
+                        log.info("海康人脸转换完成：{}",faceUrl);
 
                         // 输出Base64编码的字符串
 //                System.out.println("Base64 encoded file content: " + base64Encoded);

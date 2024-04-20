@@ -20,7 +20,7 @@ import java.util.Base64;
 import java.util.Random;
 
 public class BaseImageUtils {
-    public String base64ToUrl(String picVehicleFileData, String path) throws IOException {
+    public static String base64ToUrl(String picVehicleFileData, String path) throws IOException {
         byte[] bfile = Base64.getDecoder().decode(picVehicleFileData);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bfile);
         // 创建HttpClient实例
