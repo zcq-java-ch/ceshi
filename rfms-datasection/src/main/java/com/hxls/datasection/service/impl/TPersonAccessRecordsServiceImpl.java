@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 /**
  * 人员出入记录表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-29
  */
 @Service
@@ -128,7 +128,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                         groupedByPersonId.forEach((accessType, records3List) -> {
                             TPersonAccessRecordsEntity tPersonAccessRecordsEntity = records3List.get(0);
                             TPersonAccessRecordsVO convert = TPersonAccessRecordsConvert.INSTANCE.convert(tPersonAccessRecordsEntity);
-                            convert.setDirectionType(convert.getAccessType().equals("1") ? "未出场" : "未入场");
+                            convert.setDirectionType("1".equals(convert.getAccessType()) ? "未出场" : "未入场");
                             convert.setTodayDetails(records3List);
                             personAccessRecordsEntityArrayList.add(convert);
                         });

@@ -29,19 +29,19 @@ public class DataDashboardsController {
         JSONObject jsonObject = new JSONObject();
         // 1. 人员信息部分
         JSONObject jsonper = dataDashboardsService.personnelInformationSection(stationId);
-        jsonObject.put("personnelInformationSection", jsonper);
+        jsonObject.putOnce("personnelInformationSection", jsonper);
         // 2. 车辆信息部分
         JSONObject jsonveh = dataDashboardsService.vehicleInformationSection(stationId);
-        jsonObject.put("vehicleInformationSection", jsonveh);
+        jsonObject.putOnce("vehicleInformationSection", jsonveh);
         // 3. 站点人员明细部分
         JSONObject jsonsite = dataDashboardsService.sitePersonnelBreakdownSection(stationId);
-        jsonObject.put("sitePersonnelBreakdownSection", jsonsite);
+        jsonObject.putOnce("sitePersonnelBreakdownSection", jsonsite);
         // 4. 车辆出入明细部分
         JSONObject jsonvehic = dataDashboardsService.vehicleAccessDetails(stationId);
-        jsonObject.put("vehicleAccessDetails", jsonvehic);
+        jsonObject.putOnce("vehicleAccessDetails", jsonvehic);
         // 5. 外部预约人员明细部分
         JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
-        jsonObject.put("breakdownOfExternalAppointments", jsonbreak);
+        jsonObject.putOnce("breakdownOfExternalAppointments", jsonbreak);
 
         return Result.ok(jsonObject);
     }
@@ -53,13 +53,13 @@ public class DataDashboardsController {
         JSONObject jsonObject = new JSONObject();
         // 1. 基本信息部分
         JSONObject jsonper = dataDashboardsService.basicInformationSection();
-        jsonObject.put("basicInformationSection", jsonper);
+        jsonObject.putOnce("basicInformationSection", jsonper);
         // 2. 实名制信息部分
         JSONObject jsonveh = dataDashboardsService.realNameInformationSection();
-        jsonObject.put("realNameInformationSection", jsonveh);
+        jsonObject.putOnce("realNameInformationSection", jsonveh);
         // 3. 地图部分
         JSONObject jsonsite = dataDashboardsService.mapSection();
-        jsonObject.put("mapSection", jsonsite);
+        jsonObject.putOnce("mapSection", jsonsite);
 
         return Result.ok(jsonObject);
     }

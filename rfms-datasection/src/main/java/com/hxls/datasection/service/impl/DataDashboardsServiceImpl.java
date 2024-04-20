@@ -68,7 +68,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 //        jsonObjectType.put("钢筋工", "10"); // 钢筋工
 //        jsonObjectType.put("xx工", "10"); // xx工
 
-        jsonObject.put("jobs", postAll); // 工种人员数量集合
+        jsonObject.putOnce("jobs", postAll); // 工种人员数量集合
 
         return jsonObject;
     }
@@ -78,10 +78,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     @Override
     public JSONObject vehicleInformationSection(Long stationId) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("totalNumberOfRegisteredVehicles", "10"); // 在册车辆总数
-        jsonObject.put("realTimeTotals", "10"); // 实时总数
-        jsonObject.put("numberOfTrolleys", "10"); // 小车数量
-        jsonObject.put("theNumberOfShipments", "10"); // 货运数量
+        jsonObject.putOnce("totalNumberOfRegisteredVehicles", "10"); // 在册车辆总数
+        jsonObject.putOnce("realTimeTotals", "10"); // 实时总数
+        jsonObject.putOnce("numberOfTrolleys", "10"); // 小车数量
+        jsonObject.putOnce("theNumberOfShipments", "10"); // 货运数量
         return jsonObject;
     }
     /**
@@ -91,16 +91,16 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     public JSONObject sitePersonnelBreakdownSection(Long stationId) {
         JSONArray objects = new JSONArray();
         JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.put("serialNumber", "1"); // 序号
-        jsonObject1.put("name", "1"); // 姓名
-        jsonObject1.put("firm", "1"); // 公司
-        jsonObject1.put("post", "1"); // 岗位
-        jsonObject1.put("region", "1"); // 所在区域
+        jsonObject1.putOnce("serialNumber", "1"); // 序号
+        jsonObject1.putOnce("name", "1"); // 姓名
+        jsonObject1.putOnce("firm", "1"); // 公司
+        jsonObject1.putOnce("post", "1"); // 岗位
+        jsonObject1.putOnce("region", "1"); // 所在区域
 
         objects.add(jsonObject1);
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("sitePersonnelDetails", objects); // 站点人员明细
+        jsonObject.putOnce("sitePersonnelDetails", objects); // 站点人员明细
         return jsonObject;
     }
     /**
@@ -110,18 +110,18 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     public JSONObject vehicleAccessDetails(Long stationId) {
         JSONArray objects = new JSONArray();
         JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.put("serialNumber", "1"); // 序号
-        jsonObject1.put("licensePlateNumber", "1"); // 车牌号
-        jsonObject1.put("driver", "1"); // 司机
-        jsonObject1.put("models", "1"); // 车型
-        jsonObject1.put("emissionStandards", "1"); // 排放标准
-        jsonObject1.put("time", "1"); // 时间
-        jsonObject1.put("typeOfEntryAndExit", "1"); // 进出类型
+        jsonObject1.putOnce("serialNumber", "1"); // 序号
+        jsonObject1.putOnce("licensePlateNumber", "1"); // 车牌号
+        jsonObject1.putOnce("driver", "1"); // 司机
+        jsonObject1.putOnce("models", "1"); // 车型
+        jsonObject1.putOnce("emissionStandards", "1"); // 排放标准
+        jsonObject1.putOnce("time", "1"); // 时间
+        jsonObject1.putOnce("typeOfEntryAndExit", "1"); // 进出类型
 
         objects.add(jsonObject1);
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("vehicleEntryAndExitDetails", objects); // 车辆出入明细
+        jsonObject.putOnce("vehicleEntryAndExitDetails", objects); // 车辆出入明细
         return jsonObject;
     }
     /**
@@ -131,16 +131,16 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     public JSONObject breakdownOfExternalAppointments(Long stationId) {
         JSONArray objects = new JSONArray();
         JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.put("serialNumber", "1"); // 序号
-        jsonObject1.put("thePersonWhoMadeTheReservation", "1"); // 预约人
-        jsonObject1.put("totalNumberOfPeople", "1"); // 总人数
-        jsonObject1.put("firm", "1"); // 公司
-        jsonObject1.put("reasonForEnteringTheFactory", "1"); // 入厂事由
+        jsonObject1.putOnce("serialNumber", "1"); // 序号
+        jsonObject1.putOnce("thePersonWhoMadeTheReservation", "1"); // 预约人
+        jsonObject1.putOnce("totalNumberOfPeople", "1"); // 总人数
+        jsonObject1.putOnce("firm", "1"); // 公司
+        jsonObject1.putOnce("reasonForEnteringTheFactory", "1"); // 入厂事由
 
         objects.add(jsonObject1);
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("detailsOfExternalReservationStaff", objects); // 外部预约员明细
+        jsonObject.putOnce("detailsOfExternalReservationStaff", objects); // 外部预约员明细
         return jsonObject;
     }
 
@@ -150,13 +150,13 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     @Override
     public JSONObject basicInformationSection() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("numberOfSites", "10"); // 站点数量
-        jsonObject.put("vehicularAccess", "10"); // 车辆通道
-        jsonObject.put("personnelAccess", "10"); // 人员通道
-        jsonObject.put("licensePlateRecognitionOnline", "10"); // 车牌识别（在线）
-        jsonObject.put("licensePlateRecognitionOffline", "10"); // 车牌识别（离线）
-        jsonObject.put("faceRecognitionOnline", "10"); // 人脸识别（在线）
-        jsonObject.put("faceRecognitionOffline", "10"); // 人脸识别（离线）
+        jsonObject.putOnce("numberOfSites", "10"); // 站点数量
+        jsonObject.putOnce("vehicularAccess", "10"); // 车辆通道
+        jsonObject.putOnce("personnelAccess", "10"); // 人员通道
+        jsonObject.putOnce("licensePlateRecognitionOnline", "10"); // 车牌识别（在线）
+        jsonObject.putOnce("licensePlateRecognitionOffline", "10"); // 车牌识别（离线）
+        jsonObject.putOnce("faceRecognitionOnline", "10"); // 人脸识别（在线）
+        jsonObject.putOnce("faceRecognitionOffline", "10"); // 人脸识别（离线）
 
         return jsonObject;
     }
@@ -167,18 +167,18 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     @Override
     public JSONObject realNameInformationSection() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("numberOfFactoryStation", "10"); // 厂站实时总人数
-        jsonObject.put("numberOfPeopleReadyToMix", "10"); // 预拌人数
-        jsonObject.put("preMadeNumberOfPeople", "10"); // 预制人数
-        jsonObject.put("numberOfPipePiles", "10"); // 管桩人数
-        jsonObject.put("numberOfResources", "10"); // 资源人数
-        jsonObject.put("numberOfPeopleInTheSupplyChain", "10"); // 供应链人数
-        jsonObject.put("numberOfEngineers", "10"); // 工程人数
-        jsonObject.put("numberOfCarStation", "10"); // 厂站实时车辆总数
-        jsonObject.put("numberOfPassengerCars", "10"); // 小客车数量
-        jsonObject.put("numberOfFreightTrucks", "10"); // 货运车数量
-        jsonObject.put("numberOfResidents", "10"); // 派驻人数
-        jsonObject.put("numberOfExternalAppointments", "10"); // 外部预约人数
+        jsonObject.putOnce("numberOfFactoryStation", "10"); // 厂站实时总人数
+        jsonObject.putOnce("numberOfPeopleReadyToMix", "10"); // 预拌人数
+        jsonObject.putOnce("preMadeNumberOfPeople", "10"); // 预制人数
+        jsonObject.putOnce("numberOfPipePiles", "10"); // 管桩人数
+        jsonObject.putOnce("numberOfResources", "10"); // 资源人数
+        jsonObject.putOnce("numberOfPeopleInTheSupplyChain", "10"); // 供应链人数
+        jsonObject.putOnce("numberOfEngineers", "10"); // 工程人数
+        jsonObject.putOnce("numberOfCarStation", "10"); // 厂站实时车辆总数
+        jsonObject.putOnce("numberOfPassengerCars", "10"); // 小客车数量
+        jsonObject.putOnce("numberOfFreightTrucks", "10"); // 货运车数量
+        jsonObject.putOnce("numberOfResidents", "10"); // 派驻人数
+        jsonObject.putOnce("numberOfExternalAppointments", "10"); // 外部预约人数
         return jsonObject;
     }
 
@@ -190,15 +190,15 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
         JSONArray locationArrays = new JSONArray();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("siteName", "崇州站"); // 站点名称
-        jsonObject.put("longitudeOfTheSite", "103.677481"); // 站点经度
-        jsonObject.put("siteLatitude", "30.637758"); // 站点纬度
-        jsonObject.put("numberOfPeopleAtTheSite", "10"); // 站点人数
-        jsonObject.put("numberOfStops", "10"); // 站点车数
+        jsonObject.putOnce("siteName", "崇州站"); // 站点名称
+        jsonObject.putOnce("longitudeOfTheSite", "103.677481"); // 站点经度
+        jsonObject.putOnce("siteLatitude", "30.637758"); // 站点纬度
+        jsonObject.putOnce("numberOfPeopleAtTheSite", "10"); // 站点人数
+        jsonObject.putOnce("numberOfStops", "10"); // 站点车数
         locationArrays.add(jsonObject);
 
         JSONObject jsonObjectReturn = new JSONObject();
-        jsonObjectReturn.put("sitelocation", locationArrays);
+        jsonObjectReturn.putOnce("sitelocation", locationArrays);
         return jsonObjectReturn;
     }
 }
