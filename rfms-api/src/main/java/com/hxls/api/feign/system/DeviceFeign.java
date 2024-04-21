@@ -27,4 +27,7 @@ public interface DeviceFeign {
 
     @PostMapping(value = "api/system/queryInformationOnkanbanPersonnelStation")
     public JSONObject queryInformationOnkanbanPersonnelStation(@RequestParam("siteId") Long siteId);
+
+    @PostMapping(value = "api/system/checkTheTotalNumberOfRegisteredVehicles")
+    public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId);
 }

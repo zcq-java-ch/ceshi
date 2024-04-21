@@ -6,6 +6,7 @@ import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
+import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.AllArgsConstructor;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     private TPersonAccessRecordsService tPersonAccessRecordsService;
 
     private final AppointmentFeign appointmentFeign;
+
+    @Autowired
+    private TVehicleAccessRecordsService tVehicleAccessRecordsService;
     /**
      * 人员信息部分
      * */
@@ -50,13 +54,13 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         Long nbzc = jsonObject2.get("nbzc", Long.class);
         Long wbzp = jsonObject2.get("wbzp", Long.class);
 
-        jsonObject1.get("jobs", JSONObject.class);
+        JSONObject entries = jsonObject1.get("jobs", JSONObject.class);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum); // 在册人数
         jsonObject.putOnce("inTheRegisteredFactory", zccn); // 在册厂内
         jsonObject.putOnce("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn); // 在册厂外
-        jsonObject.putOnce("numberOfPeopleReadyToMix", jsonObject1); // 预拌人数 预制人数 等业务与人数
+        jsonObject.putOnce("numberOfPeopleReadyToMix", entries); // 预拌人数 预制人数 等业务与人数
 //        jsonObject.putOnce("preMadeNumberOfPeople", "10"); //
 
         jsonObject.putOnce("realTimeTotalNumberOfPeople", realTimeTotalNumberOfPeople); // 实时总人数
@@ -77,11 +81,21 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject vehicleInformationSection(Long stationId) {
+        // 查询在册车辆总数
+        JSONObject entries = deviceFeign.checkTheTotalNumberOfRegisteredVehicles(stationId);
+        Long siteCarNumberTotal = entries.get("siteCarNumberTotal", Long.class);
+
+        // 实时总数,小车数量,货车数量
+        JSONObject entries1 = tVehicleAccessRecordsService.QueryRealtimeTotalAndNumberVariousClasses(stationId);
+        Long realTimeTotals = entries1.get("realTimeTotals", Long.class);
+        Long numberOfTrolleys = entries1.get("numberOfTrolleys", Long.class);
+        Long theNumberOfShipments = entries1.get("theNumberOfShipments", Long.class);
+
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("totalNumberOfRegisteredVehicles", "10"); // 在册车辆总数
-        jsonObject.putOnce("realTimeTotals", "10"); // 实时总数
-        jsonObject.putOnce("numberOfTrolleys", "10"); // 小车数量
-        jsonObject.putOnce("theNumberOfShipments", "10"); // 货运数量
+        jsonObject.putOnce("totalNumberOfRegisteredVehicles", siteCarNumberTotal); // 在册车辆总数
+        jsonObject.putOnce("realTimeTotals", realTimeTotals); // 实时总数
+        jsonObject.putOnce("numberOfTrolleys", numberOfTrolleys); // 小车数量
+        jsonObject.putOnce("theNumberOfShipments", theNumberOfShipments); // 货运数量
         return jsonObject;
     }
     /**

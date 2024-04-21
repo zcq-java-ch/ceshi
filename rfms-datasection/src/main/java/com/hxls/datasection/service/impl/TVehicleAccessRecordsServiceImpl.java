@@ -25,13 +25,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 车辆出入记录表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-29
  */
 @Service
@@ -145,6 +146,87 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                 }
             }
         }
+    }
 
+    /**
+     * @author: Mryang
+     * @Description: 查询车辆通行记录表,并查询指定站点
+     *                  查询最后一条通行记录为入的 所有车辆数据合计
+     *                  再将查询到的车辆,区分车辆类型
+     * @Date: 2024/4/21 23:00
+     * @param
+     * @return:
+     */
+    @Override
+    public JSONObject QueryRealtimeTotalAndNumberVariousClasses(Long stationId) {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+
+        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper2.between(TVehicleAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper2);
+        int inAllNumer = 0;
+        int numberOfTrolleys = 0;
+        int theNumberOfShipments = 0;
+
+        // 按照车牌进行分组
+        Map<String, List<TVehicleAccessRecordsEntity>> groupedByDevicePersonId2 = tVehicleAccessRecordsEntities.stream()
+                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
+
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TVehicleAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
+            String devicePersonId = entry.getKey();
+            List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
+
+            System.out.println("车牌: " + devicePersonId);
+            System.out.println("Records:");
+            System.out.println("---------------------------------");
+
+            // 找出每个分组中按照时间排序的最后一条数据
+            TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                inAllNumer += 1;
+            } else {
+                // 最后一次为出厂
+            }
+            if ("1".equals(lastRecord.getVehicleModel())){
+                // 小客车
+                numberOfTrolleys += 1;
+            }else if("2".equals(lastRecord.getVehicleModel())){
+                // 货车
+                theNumberOfShipments += 1;
+            }else if ("3".equals(lastRecord.getVehicleModel())){
+                // 罐车
+                theNumberOfShipments += 1;
+            }else {
+
+            }
+        }
+        JSONObject entries = new JSONObject();
+        entries.putOnce("realTimeTotals", inAllNumer);
+        entries.putOnce("numberOfTrolleys", numberOfTrolleys);
+        entries.putOnce("theNumberOfShipments", theNumberOfShipments);
+        return null;
+    }
+
+    private Date getTodayStart() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    private Date getTodayEnd() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTime();
     }
 }

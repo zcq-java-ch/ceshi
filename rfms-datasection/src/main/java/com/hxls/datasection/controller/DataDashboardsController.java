@@ -21,6 +21,13 @@ public class DataDashboardsController {
     private final DataDashboardsService dataDashboardsService;
     private final AppointmentFeign appointmentFeign;
 
+    /**
+      * @author: Mryang
+      * @Description: PC端-数据看板-厂站看板
+      * @Date: 15:05 2024/4/21
+      * @Param:
+      * @return:
+      */
     @GetMapping("/factoryStationKanban")
     @Operation(summary = "数据看板-厂站看板")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
@@ -46,6 +53,13 @@ public class DataDashboardsController {
         return Result.ok(jsonObject);
     }
 
+    /**
+      * @author: Mryang
+      * @Description: PC端-数据看板-公司看板
+      * @Date: 22:38 2024/4/21
+      * @Param:
+      * @return:
+      */
     @GetMapping("/companyKanban")
     @Operation(summary = "数据看板-公司看板")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")

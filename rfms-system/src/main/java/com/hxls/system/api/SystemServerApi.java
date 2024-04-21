@@ -278,4 +278,29 @@ public class SystemServerApi implements DeviceFeign {
         return entries;
     }
 
+    /**
+     * @author: Mryang
+     * @Description: 用于查询 通用车辆管理表中，指定站点的车辆总数
+     * @Date: 2024/4/21 22:53
+     * @param siteId
+     * @return: JSONObject
+     */
+    @PostMapping(value = "/checkTheTotalNumberOfRegisteredVehicles")
+    @Override
+    public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId){
+        LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getSiteId, siteId);
+        List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtil.isNotEmpty(tVehicleEntities)){
+            // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
+            entries.putOnce("siteCarNumberTotal", tVehicleEntities.size());
+
+        }
+        return entries;
+    }
+
+
 }
