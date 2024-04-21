@@ -136,7 +136,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
            }
         }
-        wrapper.in(CollectionUtils.isNotEmpty(manageStation),TAppointmentEntity::getSiteId, query.getSiteId());
+        wrapper.in(CollectionUtils.isNotEmpty(manageStation),TAppointmentEntity::getSiteId, manageStation);
         wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteId());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());

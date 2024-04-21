@@ -1,12 +1,17 @@
 package com.hxls.appointment.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,6 +34,11 @@ public class ApplicationController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('supplier:person:page')")
     public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException(ErrorCode.FORBIDDEN);
+        }
+        query.setSupplierName(user.getOrgId().toString());
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
     }
