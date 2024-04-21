@@ -24,6 +24,7 @@ import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.PageResult;
@@ -78,10 +79,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
         UserDetail user = SecurityUser.getUser();
         if (ObjectUtil.isNull(user)) {
-            throw new ServerException("请登陆");
+            throw new ServerException(ErrorCode.FORBIDDEN);
         }
         Set<Long> manageStation = user.getManageStation();
-
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, manageStation));
 
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
@@ -576,7 +576,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", device);
                         sendData.set("startTime", "2024-04-01 00:00:00");
-                        sendData.set("deadline", "2074-04-01 00:00:00");
+                        sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("carNumber", licensePlate);
                         sendData.set("status", "add");
                         sendData.set("masterIp", jsonObject.get("master_ip"));

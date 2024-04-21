@@ -26,6 +26,11 @@ public class TAppointmentPersonnelVO implements Serializable {
     private Long appointmentId;
 
     /**
+     * 对应补录单
+     */
+    private Long supplementaryId;
+
+    /**
      * 预约人id
      */
     @Schema(description = "预约人id")

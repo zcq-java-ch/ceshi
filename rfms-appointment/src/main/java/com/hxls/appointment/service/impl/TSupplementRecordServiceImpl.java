@@ -40,7 +40,6 @@ import java.util.List;
 public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRecordMapper, TSupplementRecord>
         implements TSupplementRecordService {
 
-
     private final TAppointmentPersonnelService tAppointmentPersonnelService;
     private final TAppointmentDao appointmentDao;
 
@@ -50,10 +49,9 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
         List<TSupplementRecordVO> tSupplementRecordVOS = TRecordSupplementConvert.INSTANCE.convertList(page.getRecords());
         for (TSupplementRecordVO tSupplementRecordVO : tSupplementRecordVOS) {
             Long id = tSupplementRecordVO.getId();
-            List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id));
+            List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getSupplementaryId, id));
             List<TAppointmentPersonnelVO> tAppointmentPersonnelVOS = TAppointmentPersonnelConvert.INSTANCE.convertList(list);
             tSupplementRecordVO.setRemark1(tAppointmentPersonnelVOS);
-
             Long submitter = tSupplementRecordVO.getCreator();
 
             String name = appointmentDao.getNameById(submitter);
@@ -80,7 +78,6 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     tSupplementRecordVO.setSubmitterOrgName(postName);
                 }
             }
-
         }
         return new PageResult<>(tSupplementRecordVOS, page.getTotal());
     }
@@ -98,7 +95,7 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                 List<TAppointmentPersonnel> appointmentPersonnels = remark.stream().map(item -> {
                     TAppointmentPersonnel tAppointmentPersonnel = new TAppointmentPersonnel();
                     BeanUtil.copyProperties(item, tAppointmentPersonnel);
-                    tAppointmentPersonnel.setAppointmentId(entity.getId());
+                    tAppointmentPersonnel.setSupplementaryId(entity.getId());
                     return tAppointmentPersonnel;
                 }).toList();
                 tAppointmentPersonnelService.saveBatch(appointmentPersonnels);
@@ -114,13 +111,13 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
         if (vo.getPerson()) {
             Long id = vo.getId();
-            tAppointmentPersonnelService.remove(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id));
+            tAppointmentPersonnelService.remove(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getSupplementaryId, id));
             List<TAppointmentPersonnelVO> remark = vo.getRemark1();
             if (CollectionUtils.isNotEmpty(remark)) {
                 List<TAppointmentPersonnel> appointmentPersonnels = remark.stream().map(item -> {
                     TAppointmentPersonnel tAppointmentPersonnel = new TAppointmentPersonnel();
                     BeanUtil.copyProperties(item, tAppointmentPersonnel);
-                    tAppointmentPersonnel.setAppointmentId(vo.getId());
+                    tAppointmentPersonnel.setSupplementaryId(vo.getId());
                     return tAppointmentPersonnel;
                 }).toList();
                 tAppointmentPersonnelService.saveBatch(appointmentPersonnels);
@@ -153,7 +150,7 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
         if (ObjectUtil.isNull(byId)) {
             throw new ServerException("查找的数据已删除，或不存在");
         }
-        List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id));
+        List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getSupplementaryId, id));
         convert.setRemark1(TAppointmentPersonnelConvert.INSTANCE.convertList(list));
         return convert;
 

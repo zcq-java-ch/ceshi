@@ -23,6 +23,11 @@ public class TAppointmentPersonnel extends BaseEntity {
     private Long appointmentId;
 
     /**
+     * 对应补录单
+     */
+    private Long supplementaryId;
+
+    /**
      * 预约人id
      */
     private Long userId;
