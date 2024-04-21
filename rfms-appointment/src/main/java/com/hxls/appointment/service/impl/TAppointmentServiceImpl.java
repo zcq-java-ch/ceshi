@@ -528,7 +528,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //人脸进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("orgId");
+                String stationId = entries.getStr("stationId");
                 //realName  真实姓名
                 String peopleName = entries.getStr("realName");
                 //人脸地址  avatar
@@ -564,7 +564,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("orgId");
+                String stationId = entries.getStr("stationId");
                 //车牌号
                 String licensePlate = entries.getStr("licensePlate");
 

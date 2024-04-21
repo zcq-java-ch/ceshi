@@ -84,4 +84,23 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
    List<JSONObject> selectMasterById(@Param("code") String code ,@Param("type")String type);
 
+   /**
+    * 获取所有的厂站
+    * @return
+    */
+   List<JSONObject> getAllSite();
+
+
+   /**
+    * 获取所有区域
+    * @return
+    */
+   List<JSONObject> getAllChannel();
+
+
+   /**
+    * 根据类型返回字典集合
+    * @return
+    */
+   List<JSONObject> getAllDictByType(@Param("type")int i);
 }

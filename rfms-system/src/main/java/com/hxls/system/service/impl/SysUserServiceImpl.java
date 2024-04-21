@@ -135,7 +135,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         baseMapper.insert(entity);
 
         //TODO  添加用户的时候人脸下发  还需要判断是否有场站
-        if (entity.getOrgId() !=null) {
+        if (entity.getStationId() !=null) {
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));

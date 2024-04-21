@@ -101,5 +101,18 @@
         SELECT DISTINCT master_ip,master_sn ,master_account ,master_password   FROM t_device_management where device_type = #{type}  and  manufacturer_code = #{code} and deleted = 0
     </select>
 
+    <select id="getAllSite" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT id , name FROM sys_org where property = 4 and deleted = 0
+
+    </select>
+    <select id="getAllChannel" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT id , area_name FROM sys_org where deleted = 0
+    </select>
+    <select id="getAllDictByType" resultType="com.alibaba.fastjson.JSONObject">
+
+        SELECT dict_label , dict_value FROM sys_dict_data where dict_type_id = #{type}  and deleted = 0
+
+    </select>
+
 
 </mapper>

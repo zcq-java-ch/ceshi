@@ -2,6 +2,7 @@ package com.hxls.appointment.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -15,11 +16,14 @@ import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TSupplementRecord;
 import com.hxls.appointment.pojo.query.TSupplementRecordQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
+import com.hxls.appointment.pojo.vo.TSupplementRecordExcelVO;
 import com.hxls.appointment.pojo.vo.TSupplementRecordVO;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TSupplementRecordService;
 import com.hxls.appointment.dao.TSupplementRecordMapper;
+import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import lombok.AllArgsConstructor;
@@ -27,8 +31,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author admin
@@ -155,6 +162,75 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
         return convert;
 
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void export(MultipartFile file) {
+        ExcelUtils.readAnalysis(file, TSupplementRecordExcelVO.class, new ExcelFinishCallBack<TSupplementRecordExcelVO>() {
+            @Override
+            public void doAfterAllAnalysed(List<TSupplementRecordExcelVO> result) {
+                saveUser(result);
+            }
+
+            @Override
+            public void doSaveBatch(List<TSupplementRecordExcelVO> result) {
+                saveUser(result);
+            }
+
+            private void saveUser(List<TSupplementRecordExcelVO> result) {
+
+                if (CollectionUtils.isEmpty(result)){
+                    return;
+                }
+                TSupplementRecord tSupplementRecord = new TSupplementRecord();
+                //解析传入的参数是否正确
+                //获取所有的厂站
+                List<JSONObject> allSite = appointmentDao.getAllSite();
+
+                Map<String, String> siteMap = allSite.stream()
+                        .collect(Collectors.toMap(
+                                jsonObject -> jsonObject.getString("name"), // 使用"name"作为key
+                                jsonObject -> jsonObject.getString("id") // 使用"id"作为value
+                        ));
+                //获取所有的区域 area_name
+                List<JSONObject> allChannel = appointmentDao.getAllChannel();
+                Map<String, String> channelMap = allChannel.stream()
+                        .collect(Collectors.toMap(
+                                jsonObject -> jsonObject.getString("area_name"), // 使用"area_name"作为key
+                                jsonObject -> jsonObject.getString("id") // 使用"id"作为value
+                        ));
+                //获取所有的出入类型
+                List<JSONObject> allDictByType = appointmentDao.getAllDictByType(19);
+                Map<String, String> map1 = allDictByType.stream()
+                        .collect(Collectors.toMap(
+                                jsonObject -> jsonObject.getString("dict_label"), // 使用"dict_label"作为key
+                                jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
+                        ));
+                //获取所有的预约类型
+                List<JSONObject> allDictByType1 = appointmentDao.getAllDictByType(18);
+                Map<String, String> map2 = allDictByType1.stream()
+                        .collect(Collectors.toMap(
+                                jsonObject -> jsonObject.getString("dict_label"), // 使用"dict_label"作为key
+                                jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
+                        ));
+
+//                List<TSupplementRecord> collect = result.stream().map(item -> {
+//
+//
+//
+//                    siteMap.get(item.getSiteName()) == null?
+//
+//                    return ;
+//
+//                }).collect(Collectors.toList());
+//                saveBatch(collect);
+            }
+        });
+
+
+
+    }
+
 
 }
 

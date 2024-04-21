@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,8 +45,6 @@ public class RecordSupplementController {
         return Result.ok();
     }
 
-
-
     @GetMapping("{id}")
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('record:appointment:info')")
@@ -72,5 +71,19 @@ public class RecordSupplementController {
         return Result.ok();
     }
 
+
+    @PostMapping("import")
+    @Operation(summary = "导入")
+    @OperateLog(type = OperateTypeEnum.INSERT)
+    @PreAuthorize("hasAuthority('record:appointment:import')")
+    public Result<String> importData(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        service.export(file);
+        return Result.ok();
+    }
+
+    //import  export
 
 }

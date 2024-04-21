@@ -5,6 +5,7 @@ import com.hxls.appointment.pojo.query.TSupplementRecordQuery;
 import com.hxls.appointment.pojo.vo.TSupplementRecordVO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,4 +47,10 @@ public interface TSupplementRecordService extends BaseService<TSupplementRecord>
      * @return
      */
     TSupplementRecordVO getDetailById(Long id);
+
+    /**
+     * 导入文件
+     * @param file
+     */
+    void export(MultipartFile file);
 }
