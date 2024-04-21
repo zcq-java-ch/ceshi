@@ -12,7 +12,7 @@ import java.util.List;
 /**
 * 预约信息表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-15
 */
 @Mapper
@@ -78,5 +78,10 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
    List<JSONObject> selectDeviceList(@Param("code") String code);
 
+
+   /**
+    * 通过code查询场站主机ip和账号密码
+    */
+   List<JSONObject> selectMasterById(@Param("code") String code ,@Param("type")String type);
 
 }

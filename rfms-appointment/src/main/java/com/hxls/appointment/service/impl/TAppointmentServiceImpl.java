@@ -392,8 +392,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                 List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "2");
                 for (String device : strings) {
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "2");
-                    for (String masterIp : masterIpById) {
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectMasterById(device, "2");
+                    for (com.alibaba.fastjson.JSONObject jsonObject : jsonObjects) {
                         for (TAppointmentVehicle tAppointmentVehicle : list) {
                             JSONObject entries = new JSONObject();
                             entries.set("type", device);
@@ -401,7 +401,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                             entries.set("carNumber", tAppointmentVehicle.getPlateNumber());
                             entries.set("status", "add");
-                            entries.set("masterIp", masterIp);
+                            entries.set("masterIp", jsonObject.get("master_ip"));
+                            entries.set("databaseName",jsonObject.get("master_sn"));
+                            entries.set("username",jsonObject.get("master_account"));
+                            entries.set("password",jsonObject.get("master_password"));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                         }
                     }
@@ -519,15 +522,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     @Override
     public void issuedPeople(JSONObject data) {
-        //开始下发
-//        String siteCode = data.getStr("siteCode");
-//        String sendType = data.getStr("sendType");
-//        switch (sendType){
-//            case "1" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_FACE_TOAGENT , data);
-//            case "2" -> rabbitMQTemplate.convertAndSend(siteCode+Constant.EXCHANGE , siteCode+Constant.SITE_ROUTING_CAR_TOAGENT , data);
-//            default -> throw new ServerException("类型参数不对");
-//        }
-
         String sendType = data.getStr("sendType");
         switch (sendType) {
             case "1" -> {
@@ -577,16 +571,20 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 List<String> strings = appointmentDao.selectManuFacturerIdById(Long.parseLong(stationId), "2");
                 for (String device : strings) {
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "2");
-                    for (String masterIp : masterIpById) {
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectMasterById(device, "2");
+                    for (com.alibaba.fastjson.JSONObject jsonObject : jsonObjects) {
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", device);
                         sendData.set("startTime", "2024-04-01 00:00:00");
                         sendData.set("deadline", "2074-04-01 00:00:00");
                         sendData.set("carNumber", licensePlate);
                         sendData.set("status", "add");
-                        sendData.set("masterIp", masterIp);
+                        sendData.set("masterIp", jsonObject.get("master_ip"));
+                        sendData.set("databaseName",jsonObject.get("master_sn"));
+                        sendData.set("username",jsonObject.get("master_account"));
+                        sendData.set("password",jsonObject.get("master_password"));
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
+
                     }
                 }
             }

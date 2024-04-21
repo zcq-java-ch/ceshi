@@ -15,7 +15,7 @@ public class RabbitMqProperties {
     private String ip;
 
     /**
-     * host
+     * post
      */
     private String post;
 
