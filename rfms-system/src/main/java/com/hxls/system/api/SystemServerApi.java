@@ -6,9 +6,11 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.framework.common.utils.Result;
 import com.hxls.system.controller.TVehicleController;
 import com.hxls.system.entity.*;
 import com.hxls.system.service.*;
+import com.hxls.system.vo.SysNoticeVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -19,9 +21,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import oshi.driver.mac.net.NetStat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,6 +45,12 @@ public class SystemServerApi implements DeviceFeign {
     private TVehicleService tVehicleService;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private SysNoticeService sysNoticeService;
+    @Autowired
+    private SysOrgService sysOrgService;
+
+
     @PostMapping("/queryAllDeviceList")
     @Operation(summary = "查询所有站点的编码和主ip")
     @Override
@@ -300,6 +311,44 @@ public class SystemServerApi implements DeviceFeign {
 
         }
         return entries;
+    }
+
+
+    /**
+     * @author: zhaohong
+     * @Description: 根据站点和预约类型进行系统消息通知
+     * @Date: 2024年4月22日17:38:32
+     * @param type 预约类型
+     * @param siteId 需要通知的站点（通过站点找到站点管理员）
+     * @return: JSONObject
+     */
+    @PostMapping(value = "/sendSystemMessage")
+    @Override
+    public JSONObject sendSystemMessage(@RequestParam("type") int type,@RequestParam("siteId") Long siteId){
+        //根据站点id获取站点管理员列表
+        SysOrgEntity byId = sysOrgService.getById(siteId);
+        //判断是否设置站点管理
+        String siteAdminIds = byId.getSiteAdminIds();
+        List<Long> adminIds = new ArrayList<>();
+
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(siteAdminIds);
+
+        while (matcher.find()) {
+            adminIds.add(Long.parseLong(matcher.group()));
+        }
+
+        if (adminIds != null && !adminIds.isEmpty()) {
+            for (Long id : adminIds) {
+                // 通知每一个站点管理员
+                SysNoticeVO sysNoticeVO = new SysNoticeVO();
+                sysNoticeVO.setStatus(0);
+                sysNoticeVO.setReceiverId(id);
+                sysNoticeVO.setNoticeTitle(type+"");
+                sysNoticeService.save(sysNoticeVO);
+            }
+        }
+        return new JSONObject(Result.ok());
     }
 
 
