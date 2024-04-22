@@ -48,6 +48,8 @@ public class SysRoleController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:role:page')")
     public Result<PageResult<SysRoleVO>> page(@ParameterObject @Valid SysRoleQuery query) {
+        query.setOrder("sort");
+        query.setAsc(true);
         PageResult<SysRoleVO> page = sysRoleService.page(query);
 
         //添加创建人
