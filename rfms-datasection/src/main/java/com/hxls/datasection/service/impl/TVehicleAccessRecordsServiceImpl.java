@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
@@ -45,6 +46,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     private final TVehicleAccessLedgerDao tVehicleAccessLedgerDao;
 
     private final DeviceFeign deviceFeign;
+    private final VehicleFeign vehicleFeign;
     @Override
     public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser) {
         IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
@@ -111,7 +113,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
             // 先通过车牌查询平台通用车辆管理数据，如果有才执行存储操作，如果没有则不进行操作
             String plateNumber = tVehicleAccessRecordsEntity.getPlateNumber();
-            JSONObject jsonObject = deviceFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
+            JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
             if (ObjectUtils.isNotEmpty(jsonObject)){
                 if ("1".equals(tVehicleAccessRecordsEntity.getAccessType())){
                     // 如果是入的记录 则直接插入一条

@@ -4,11 +4,15 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.StationFeign;
+import com.hxls.api.feign.system.UserFeign;
+import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.AllArgsConstructor;
 import org.apache.ibatis.annotations.Delete;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +24,9 @@ import java.util.List;
 @AllArgsConstructor
 public class DataDashboardsServiceImpl implements DataDashboardsService {
 
-    private final DeviceFeign deviceFeign;
+    private final UserFeign userFeign;
+    private final VehicleFeign vehicleFeign;
+    private final StationFeign stationFeign;
     @Autowired
     private TPersonAccessRecordsService tPersonAccessRecordsService;
 
@@ -35,7 +41,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     public JSONObject personnelInformationSection(Long stationId) {
 
         // 内部员工数量与id集合
-        JSONObject jsonObject1 = deviceFeign.queryInformationOnkanbanPersonnelStation(stationId);
+        JSONObject jsonObject1 = userFeign.queryInformationOnkanbanPersonnelStation(stationId);
         List<Long> numberOfPeopleRegisteredIdList = jsonObject1.get("numberOfPeopleRegisteredIdList", ArrayList.class);
         Integer numberOfPeopleRegistered = jsonObject1.get("numberOfPeopleRegistered", Integer.class);
         List<Long> postobjects = jsonObject1.get("postobjects", ArrayList.class);
@@ -83,7 +89,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     @Override
     public JSONObject vehicleInformationSection(Long stationId) {
         // 查询在册车辆总数
-        JSONObject entries = deviceFeign.checkTheTotalNumberOfRegisteredVehicles(stationId);
+        JSONObject entries = vehicleFeign.checkTheTotalNumberOfRegisteredVehicles(stationId);
         Long siteCarNumberTotal = entries.get("siteCarNumberTotal", Long.class);
 
         // 实时总数,小车数量,货车数量
@@ -179,17 +185,28 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     /**
      * 基本信息部分
      * */
+    @SuppressWarnings("checkstyle:Indentation")
     @Override
     public JSONObject basicInformationSection() {
+        // 查询站点数量，车辆通道数量，人员通道数据量
+        //查询站点数量和通道数量
+        JSONObject sitenum = stationFeign.querySiteNumAndChannelNum();
+        Integer numberOfSites = sitenum.get("numberOfSites", Integer.class);
+        Integer vehicularAccess = sitenum.get("vehicularAccess", Integer.class);
+        Integer personnelAccess = sitenum.get("personnelAccess", Integer.class);
+        return getEntries(numberOfSites, vehicularAccess, personnelAccess);
+    }
+
+    @NotNull
+    private static JSONObject getEntries(Integer numberOfSites, Integer vehicularAccess, Integer personnelAccess) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("numberOfSites", "10"); // 站点数量
-        jsonObject.putOnce("vehicularAccess", "10"); // 车辆通道
-        jsonObject.putOnce("personnelAccess", "10"); // 人员通道
+        jsonObject.putOnce("numberOfSites", numberOfSites); // 站点数量
+        jsonObject.putOnce("vehicularAccess", vehicularAccess); // 车辆通道
+        jsonObject.putOnce("personnelAccess", personnelAccess); // 人员通道
         jsonObject.putOnce("licensePlateRecognitionOnline", "10"); // 车牌识别（在线）
         jsonObject.putOnce("licensePlateRecognitionOffline", "10"); // 车牌识别（离线）
         jsonObject.putOnce("faceRecognitionOnline", "10"); // 人脸识别（在线）
         jsonObject.putOnce("faceRecognitionOffline", "10"); // 人脸识别（离线）
-
         return jsonObject;
     }
 

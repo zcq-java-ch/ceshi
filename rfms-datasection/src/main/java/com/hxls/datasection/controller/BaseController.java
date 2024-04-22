@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.util.Map;
 
 public class BaseController {
+    /**
+     * @param request HttpServletRequest
+     * @return UserDetail
+     * */
     @ModelAttribute("baseUser")
-    protected UserDetail getBaseUser(HttpServletRequest request) {
+    protected UserDetail getBaseUser(final HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (StringUtils.isBlank(token)) {
             throw new RuntimeException("服务端未获取到Token信息，请重新登录");

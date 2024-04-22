@@ -8,7 +8,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = ServerNames.SYSTEM_SERVER_NAME)
+@FeignClient(name = ServerNames.SYSTEM_SERVER_NAME, contextId = "device")
 public interface DeviceFeign {
 
     @PostMapping(value = "api/system/queryAllDeviceList")
@@ -22,15 +22,4 @@ public interface DeviceFeign {
     @PostMapping(value = "api/system/useTheIpaddressToQueryDeviceInformation")
     public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress);
 
-    @PostMapping(value = "api/system/queryVehicleInformationByLicensePlateNumber")
-    public JSONObject queryVehicleInformationByLicensePlateNumber(@RequestParam("licensePlates") String licensePlates);
-
-    @PostMapping(value = "api/system/queryInformationOnkanbanPersonnelStation")
-    public JSONObject queryInformationOnkanbanPersonnelStation(@RequestParam("siteId") Long siteId);
-
-    @PostMapping(value = "api/system/checkTheTotalNumberOfRegisteredVehicles")
-    public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId);
-
-    @PostMapping(value = "api/system/sendSystemMessage")
-    public JSONObject sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId);
 }
