@@ -103,15 +103,20 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject sitePersonnelBreakdownSection(Long stationId) {
+        JSONArray siteArray = tPersonAccessRecordsService.queryTheDetailsOfSitePersonnel(stationId);
         JSONArray objects = new JSONArray();
-        JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.putOnce("serialNumber", "1"); // 序号
-        jsonObject1.putOnce("name", "1"); // 姓名
-        jsonObject1.putOnce("firm", "1"); // 公司
-        jsonObject1.putOnce("post", "1"); // 岗位
-        jsonObject1.putOnce("region", "1"); // 所在区域
-
-        objects.add(jsonObject1);
+        int serialNumber = 0;
+        for (int i = 0; i < siteArray.size(); i++) {
+            JSONObject jsonObject = siteArray.get(i, JSONObject.class);
+            JSONObject jsonObject1 = new JSONObject();
+            serialNumber += 1;
+            jsonObject1.putOnce("serialNumber", serialNumber); // 序号
+            jsonObject1.putOnce("name", jsonObject.get("name", String.class)); // 姓名
+            jsonObject1.putOnce("firm", jsonObject.get("fire", String.class)); // 公司
+            jsonObject1.putOnce("post", jsonObject.get("post", String.class)); // 岗位
+            jsonObject1.putOnce("region", jsonObject.get("region", String.class)); // 所在区域
+            objects.add(jsonObject1);
+        }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("sitePersonnelDetails", objects); // 站点人员明细
@@ -122,17 +127,23 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject vehicleAccessDetails(Long stationId) {
-        JSONArray objects = new JSONArray();
-        JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.putOnce("serialNumber", "1"); // 序号
-        jsonObject1.putOnce("licensePlateNumber", "1"); // 车牌号
-        jsonObject1.putOnce("driver", "1"); // 司机
-        jsonObject1.putOnce("models", "1"); // 车型
-        jsonObject1.putOnce("emissionStandards", "1"); // 排放标准
-        jsonObject1.putOnce("time", "1"); // 时间
-        jsonObject1.putOnce("typeOfEntryAndExit", "1"); // 进出类型
+        JSONArray siteArray = tVehicleAccessRecordsService.queryTheDetailsOfSiteCar(stationId);
 
-        objects.add(jsonObject1);
+        JSONArray objects = new JSONArray();
+        int serialNumber = 0;
+        for (int i = 0; i < siteArray.size(); i++) {
+            JSONObject jsonObject = siteArray.get(i, JSONObject.class);
+            JSONObject jsonObject1 = new JSONObject();
+            serialNumber += 1;
+            jsonObject1.putOnce("serialNumber", serialNumber); // 序号
+            jsonObject1.putOnce("licensePlateNumber", jsonObject.get("licensePlateNumber", String.class)); // 车牌
+            jsonObject1.putOnce("driver", jsonObject.get("driver", String.class)); // 司机
+            jsonObject1.putOnce("models", jsonObject.get("models", String.class)); // 车型
+            jsonObject1.putOnce("emissionStandards", jsonObject.get("emissionStandards", String.class)); // 排放标准
+            jsonObject1.putOnce("time", jsonObject.get("time", String.class)); // 时间
+            jsonObject1.putOnce("typeOfEntryAndExit", jsonObject.get("typeOfEntryAndExit", String.class)); // 进出类型
+            objects.add(jsonObject1);
+        }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("vehicleEntryAndExitDetails", objects); // 车辆出入明细
@@ -143,18 +154,22 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject breakdownOfExternalAppointments(Long stationId) {
-        JSONArray objects = new JSONArray();
-        JSONObject jsonObject1 = new JSONObject();
-        jsonObject1.putOnce("serialNumber", "1"); // 序号
-        jsonObject1.putOnce("thePersonWhoMadeTheReservation", "1"); // 预约人
-        jsonObject1.putOnce("totalNumberOfPeople", "1"); // 总人数
-        jsonObject1.putOnce("firm", "1"); // 公司
-        jsonObject1.putOnce("reasonForEnteringTheFactory", "1"); // 入厂事由
+        JSONArray objects1 = appointmentFeign.checkTheDetailsOfExternalAppointments(stationId, 1, 999);
 
-        objects.add(jsonObject1);
+        int serialNumber = 0;
+        for (int i = 0; i < objects1.size(); i++) {
+            JSONObject jsonObject = objects1.get(i, JSONObject.class);
+            serialNumber += 1;
+            jsonObject.putOnce("serialNumber", serialNumber); // 序号
+            jsonObject.putOnce("thePersonWhoMadeTheReservation", jsonObject.get("thePersonWhoMadeTheReservation", String.class)); // 预约人
+            jsonObject.putOnce("totalNumberOfPeople", jsonObject.get("totalNumberOfPeople", Long.class)); // 总人数
+            jsonObject.putOnce("firm", jsonObject.get("firm", String.class)); // 公司
+            jsonObject.putOnce("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory", String.class)); // 入厂事由
+            objects1.add(jsonObject);
+        }
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("detailsOfExternalReservationStaff", objects); // 外部预约员明细
+        jsonObject.putOnce("detailsOfExternalReservationStaff", objects1); // 外部预约员明细
         return jsonObject;
     }
 

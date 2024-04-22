@@ -1,5 +1,6 @@
 package com.hxls.datasection.service;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
@@ -31,4 +32,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     void saveLedger(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity);
 
     JSONObject QueryRealtimeTotalAndNumberVariousClasses(Long stationId);
+
+    JSONArray queryTheDetailsOfSiteCar(Long stationId);
 }

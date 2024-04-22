@@ -1,5 +1,6 @@
 package com.hxls.appointment.service;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
@@ -104,4 +105,6 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param data
      */
     void issuedPeople(JSONObject data);
+
+    JSONArray querOtherAppointmentService(Long siteId, Integer page, Integer limit);
 }

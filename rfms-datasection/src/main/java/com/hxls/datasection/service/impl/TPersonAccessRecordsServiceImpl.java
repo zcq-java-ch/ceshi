@@ -1,6 +1,7 @@
 package com.hxls.datasection.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -356,5 +357,47 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
         return calendar.getTime();
+    }
+
+
+    @Override
+    public JSONArray queryTheDetailsOfSitePersonnel(Long stationId) {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities2 = baseMapper.selectList(objectLambdaQueryWrapper2);
+
+        JSONArray objects = new JSONArray();
+        // 按照姓名id进行分组
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
+            String devicePersonId = entry.getKey();
+            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+
+            System.out.println("用户id: " + devicePersonId);
+            System.out.println("Records:");
+            //recordsList.forEach(System.out::println);
+            System.out.println("---------------------------------");
+
+            // 找出每个分组中按照时间排序的最后一条数据
+            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.putOnce("name", lastRecord.getPersonName());
+                jsonObject.putOnce("fire", lastRecord.getCompanyName());
+                jsonObject.putOnce("post", lastRecord.getPositionName());
+                jsonObject.putOnce("region", lastRecord.getChannelName());
+                objects.add(jsonObject);
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        return objects;
     }
 }

@@ -2,8 +2,10 @@ package com.hxls.appointment.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -43,6 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import com.hxls.framework.common.query.Query;
+
 
 /**
  * 预约信息表
@@ -589,6 +593,55 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 }
             }
         }
+    }
 
+    @Override
+    public JSONArray querOtherAppointmentService(Long siteId, Integer page, Integer limit) {
+
+        JSONArray objects = new JSONArray();
+
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException(ErrorCode.FORBIDDEN);
+        }
+        Query query = new Query();
+        query.setPage(page);
+        query.setLimit(limit);
+        IPage<TAppointmentEntity> pageList = baseMapper.selectPage(getPage(query), getWrapperByHttp(siteId));
+
+        List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(pageList.getRecords());
+        for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
+            JSONObject jsonObject = new JSONObject();
+            Long id = tAppointmentVO.getId();
+            Long submitter = tAppointmentVO.getSubmitter();
+
+            String name = appointmentDao.getNameById(submitter);
+            tAppointmentVO.setCreatorName(name);
+
+            TAppointmentPersonnel one = tAppointmentPersonnelService.getOne(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, id)
+                    .eq(TAppointmentPersonnel::getUserId, submitter));
+
+            LambdaQueryWrapper<TAppointmentPersonnel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            objectLambdaQueryWrapper.eq(TAppointmentPersonnel::getAppointmentId, id);
+            List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(objectLambdaQueryWrapper);
+
+            jsonObject.putOnce("thePersonWhoMadeTheReservation", one.getExternalPersonnel());
+            jsonObject.putOnce("totalNumberOfPeople", list.size());
+            jsonObject.putOnce("firm", tAppointmentVO.getCompanyName());
+            jsonObject.putOnce("reasonForEnteringTheFactory", tAppointmentVO.getPurpose());
+            objects.add(jsonObject);
+
+        }
+        return objects;
+    }
+
+    private Wrapper<TAppointmentEntity> getWrapperByHttp(Long siteId) {
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
+        List<String> list = Stream.of("3", "4", "5").toList();
+        wrapper.eq(TAppointmentEntity::getStatus, 1);
+        wrapper.eq(TAppointmentEntity::getDeleted, 0);
+        wrapper.in(TAppointmentEntity::getAppointmentType, list);
+        wrapper.eq(TAppointmentEntity::getSiteId, siteId);
+        return wrapper;
     }
 }

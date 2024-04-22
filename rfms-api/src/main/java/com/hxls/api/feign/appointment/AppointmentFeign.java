@@ -1,16 +1,14 @@
 package com.hxls.api.feign.appointment;
 
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.ServerNames;
 import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @FeignClient(name = ServerNames.APPOINTMENT_SERVER_NAME)
@@ -70,4 +68,7 @@ public interface AppointmentFeign {
 
     @PostMapping("api/appointment/queryTheNumberOfResidencies")
     JSONObject queryTheNumberOfResidencies(@RequestParam Long siteId);
+
+    @PostMapping("api/appointment/checkTheDetailsOfExternalAppointments")
+    JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId,@RequestParam Integer page,@RequestParam Integer limit);
 }

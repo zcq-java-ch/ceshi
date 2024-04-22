@@ -1,6 +1,7 @@
 package com.hxls.appointment.controller.api;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.dto.appointment.AppointmentDTO;
@@ -178,5 +179,10 @@ public class AppointmentApiController {
         return Result.ok(page);
     }
 
-
+    @PostMapping("checkTheDetailsOfExternalAppointments")
+    @Operation(summary = "查询外部预约人员明细")
+    public JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId,@RequestParam Integer page,@RequestParam Integer limit) {
+        JSONArray objects = tAppointmentService.querOtherAppointmentService(siteId, page, limit);
+        return objects;
+    }
 }
