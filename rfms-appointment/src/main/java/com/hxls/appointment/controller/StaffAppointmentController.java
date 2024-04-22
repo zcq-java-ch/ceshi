@@ -1,15 +1,21 @@
 package com.hxls.appointment.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,7 +24,9 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("appointment/staff")
@@ -32,6 +40,20 @@ public class StaffAppointmentController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('system:appointment:page')")
     public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException(ErrorCode.FORBIDDEN);
+        }
+        if (user.getSuperAdmin()<1) {
+            List<Long> dataScopeList = user.getDataScopeList();
+            if (CollectionUtils.isNotEmpty(dataScopeList)){
+                query.setSiteIds(dataScopeList);
+            }else {
+                query.setCreator(user.getId());
+            }
+        }
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
     }
@@ -71,5 +93,28 @@ public class StaffAppointmentController {
         return Result.ok();
     }
 
+
+
+    @GetMapping("auditPage")
+    @Operation(summary = "主页查询")
+    public Result<PageResult<TAppointmentVO>> auditPage(@ParameterObject @Valid TAppointmentQuery query) {
+
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException(ErrorCode.FORBIDDEN);
+        }
+        if (user.getSuperAdmin() < 1) {
+            List<Long> dataScopeList = user.getDataScopeList();
+            if (CollectionUtils.isNotEmpty(dataScopeList)) {
+                query.setSiteIds(dataScopeList);
+            } else {
+                query.setCreator(user.getId());
+            }
+        }
+
+        PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
+        return Result.ok(page);
+    }
 
 }

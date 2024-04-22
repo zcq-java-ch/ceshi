@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -142,6 +143,8 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
     private LambdaQueryWrapper<TSupplementRecord> getWrapper(TSupplementRecordQuery query) {
         LambdaQueryWrapper<TSupplementRecord> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(query.getSiteId() != null, TSupplementRecord::getSiteId, query.getSiteId());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()) , TSupplementRecord::getSiteId,query.getSiteIds());
+        wrapper.eq(query.getCreator()!=null , TSupplementRecord::getCreator ,query.getCreator());
         wrapper.between(ArrayUtils.isNotEmpty(query.getSupplementTime()), TSupplementRecord::getSupplementTime, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[0] : null, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getAccessType()), TSupplementRecord::getAccessType, query.getAccessType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplementType()), TSupplementRecord::getSupplementType, query.getSupplementType());
@@ -157,6 +160,15 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
         if (ObjectUtil.isNull(byId)) {
             throw new ServerException("查找的数据已删除，或不存在");
         }
+
+        //做翻译
+        //区域
+        String channel = convert.getChannel();
+        convert.setChannelName(appointmentDao.selectAreaNameById(Long.parseLong(channel)));
+        //站点
+        Long siteId = convert.getSiteId();
+        convert.setSiteName(appointmentDao.selectSiteNameById(siteId));
+
         List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getSupplementaryId, id));
         convert.setRemark1(TAppointmentPersonnelConvert.INSTANCE.convertList(list));
         return convert;
@@ -165,7 +177,9 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void export(MultipartFile file) {
+    public Long export(MultipartFile file) {
+
+        final Long[] resultId = new Long[1];
         ExcelUtils.readAnalysis(file, TSupplementRecordExcelVO.class, new ExcelFinishCallBack<TSupplementRecordExcelVO>() {
             @Override
             public void doAfterAllAnalysed(List<TSupplementRecordExcelVO> result) {
@@ -214,22 +228,65 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                                 jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
                         ));
 
-//                List<TSupplementRecord> collect = result.stream().map(item -> {
-//
-//
-//
-//                    siteMap.get(item.getSiteName()) == null?
-//
-//                    return ;
-//
-//                }).collect(Collectors.toList());
-//                saveBatch(collect);
+                List<TAppointmentPersonnel> personnelList = new ArrayList<>();
+
+                result.forEach(item ->{
+
+                    if (siteMap.get( item.getSiteName()) ==null) {
+                        throw new ServerException("填写错误 ：" +item.getSiteName() );
+                    }
+
+
+                    if (map1.get( item.getAccessType()) ==null) {
+                        throw new ServerException("填写错误 ：" +item.getAccessType() );
+                    }
+                    if (channelMap.get( item.getChannel()) ==null) {
+                        throw new ServerException("填写错误 ：" +item.getChannel() );
+                    }
+                    if (map2.get( item.getSupplementType()) ==null) {
+                        throw new ServerException("填写错误 ：" +item.getSupplementType() );
+                    }
+                    tSupplementRecord.setSiteId(Long.parseLong(siteMap.get( item.getSiteName())));
+                    tSupplementRecord.setAccessType(map1.get( item.getAccessType()));
+                    tSupplementRecord.setChannel(channelMap.get( item.getChannel()));
+                    tSupplementRecord.setSupplementType(map2.get( item.getSupplementType()));
+                    tSupplementRecord.setSupplementTime(item.getSupplementTime());
+
+                    TAppointmentPersonnel tAppointmentPersonnel = new TAppointmentPersonnel();
+
+                    //内部预约查询人员的基础信息
+                    if (tSupplementRecord.getSupplementType().equals("1") || tSupplementRecord.getSupplementType().equals("2")){
+                        if ( StringUtils.isEmpty(item.getPhone())) {
+                            throw new ServerException("填写错误 ：" +item.getPhone() );
+                        }
+                        JSONObject jsonObject = appointmentDao.selectByPhone(item.getPhone());
+                        if (jsonObject ==null)throw new ServerException("填写错误 ：" +item.getPhone() );
+                        tAppointmentPersonnel.setIdCardNumber(jsonObject.getString("id_card"));
+                        tAppointmentPersonnel.setUserId(jsonObject.getLong("id"));
+                        tAppointmentPersonnel.setSupervisorName(jsonObject.getString("supervisor"));
+                        tAppointmentPersonnel.setOrgCode(jsonObject.getString("org_id"));
+                        tAppointmentPersonnel.setPostCode(jsonObject.getString("post_id"));
+                    }else {
+                        tAppointmentPersonnel.setExternalPersonnel(item.getUserName());
+                        tAppointmentPersonnel.setPhone(item.getPhone());
+                        tAppointmentPersonnel.setIdCardNumber(item.getIdCardNumber());
+                        tAppointmentPersonnel.setPositionName(item.getPositionName());
+                    }
+                    personnelList.add(tAppointmentPersonnel);
+                });
+
+                boolean save = save(tSupplementRecord);
+                if (save){
+                    Long id = tSupplementRecord.getId();
+                    personnelList.forEach(item-> item.setSupplementaryId(id));
+                    tAppointmentPersonnelService.saveBatch(personnelList);
+                    resultId[0] = id;
+                }
             }
         });
-
-
-
+        return resultId[0];
     }
+
 
 
 }

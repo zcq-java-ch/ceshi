@@ -52,5 +52,5 @@ public interface TSupplementRecordService extends BaseService<TSupplementRecord>
      * 导入文件
      * @param file
      */
-    void export(MultipartFile file);
+    Long export(MultipartFile file);
 }

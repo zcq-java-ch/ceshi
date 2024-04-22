@@ -1,9 +1,11 @@
 package com.hxls.appointment.controller.api;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
@@ -13,10 +15,14 @@ import com.hxls.appointment.server.RabbitMqManager;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -121,9 +127,9 @@ public class AppointmentApiController {
     @Operation(summary = "下发信息")
     public Boolean issuedPeople(@RequestBody JSONObject data) {
         System.out.println("下发信息");
-        try{
+        try {
             tAppointmentService.issuedPeople(data);
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
 
@@ -143,7 +149,7 @@ public class AppointmentApiController {
         List<TAppointmentEntity> tAppointmentEntities = tAppointmentService.list(tAppointmentEntityLambdaQueryWrapper);
         List<Long> wpPersonnel = new ArrayList<>();
         List<TAppointmentPersonnel> AllpersonnelList = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(tAppointmentEntities)){
+        if (CollectionUtil.isNotEmpty(tAppointmentEntities)) {
             for (int i = 0; i < tAppointmentEntities.size(); i++) {
                 TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
                 List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, tAppointmentEntity.getId()));
@@ -172,16 +178,10 @@ public class AppointmentApiController {
     }
 
 
-    @GetMapping("auditPage")
-    @Operation(summary = "主页查询")
-    public Result<PageResult<TAppointmentVO>> auditPage(@ParameterObject @Valid TAppointmentQuery query) {
-        PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
-        return Result.ok(page);
-    }
 
     @PostMapping("checkTheDetailsOfExternalAppointments")
     @Operation(summary = "查询外部预约人员明细")
-    public JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId,@RequestParam Integer page,@RequestParam Integer limit) {
+    public JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId, @RequestParam Integer page, @RequestParam Integer limit) {
         JSONArray objects = tAppointmentService.querOtherAppointmentService(siteId, page, limit);
         return objects;
     }

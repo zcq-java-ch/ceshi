@@ -1,6 +1,7 @@
 package com.hxls.appointment.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.service.TAppointmentService;
@@ -38,7 +39,14 @@ public class ApplicationController {
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        query.setSupplierName(user.getOrgId().toString());
+        if (user.getSuperAdmin()<1) {
+            List<Long> dataScopeList = user.getDataScopeList();
+            if (CollectionUtils.isNotEmpty(dataScopeList)){
+                query.setSiteIds(dataScopeList);
+            }else {
+                query.setCreator(user.getId());
+            }
+        }
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
     }

@@ -2,6 +2,7 @@ package com.hxls.appointment.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/record")
@@ -96,6 +98,10 @@ public class LeadingEnterpriseController {
                 getBasicInformation(recordInfos, carNumberList , data);
             }
 
+            if (StrUtil.isNotEmpty(data.getCdName())){
+                recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
+            }
+
             List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
             //创建时间等于出场时间加1s
             recordInfos1.forEach(item -> {
@@ -117,6 +123,10 @@ public class LeadingEnterpriseController {
     private Result<?> CacheData(PageParams data) {
 
         List<recordInfo> recordInfos = map1.get(data.getStartTime() + data.getEndTime());
+
+        if (StrUtil.isNotEmpty(data.getCdName())){
+            recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
+        }
 
         int startIndex = (data.getPage() - 1) * data.getPageSize();
         PageInfo pageInfo = new PageInfo();

@@ -4,12 +4,14 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
+import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.List;
@@ -107,4 +109,10 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
     void issuedPeople(JSONObject data);
 
     JSONArray querOtherAppointmentService(Long siteId, Integer page, Integer limit);
+
+    /**
+     * 导入车辆入场申请
+     * @param file
+     */
+    List<TAppointmentVehicle> importData(MultipartFile file);
 }
