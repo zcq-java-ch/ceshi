@@ -32,5 +32,10 @@ public class TVehicleAccessLedgerQuery extends Query {
     @Schema(description = "出场时间段")
     private List<String> outRecordTimeArr;
 
+    @Schema(description = "车型")
+    private String vehicleModel;
+
+    @Schema(description = "车队名称")
+    private String fleetName;
 
 }

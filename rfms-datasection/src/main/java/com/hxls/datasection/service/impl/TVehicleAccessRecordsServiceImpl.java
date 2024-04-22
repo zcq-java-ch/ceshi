@@ -9,6 +9,8 @@ import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
+import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -19,7 +21,6 @@ import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.datasection.dao.TVehicleAccessRecordsDao;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -44,13 +45,13 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
     private final DeviceFeign deviceFeign;
     @Override
-    public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query) {
-        IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+    public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser) {
+        IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
 
         return new PageResult<>(TVehicleAccessRecordsConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
-    private LambdaQueryWrapper<TVehicleAccessRecordsEntity> getWrapper(TVehicleAccessRecordsQuery query){
+    private LambdaQueryWrapper<TVehicleAccessRecordsEntity> getWrapper(TVehicleAccessRecordsQuery query, UserDetail baseUser){
         LambdaQueryWrapper<TVehicleAccessRecordsEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(ObjectUtils.isNotEmpty(query.getSiteId()), TVehicleAccessRecordsEntity::getSiteId, query.getSiteId());
         wrapper.eq(StringUtils.isNotEmpty(query.getAccessType()), TVehicleAccessRecordsEntity::getAccessType, query.getAccessType());
@@ -58,6 +59,12 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         wrapper.between(StringUtils.isNotEmpty(query.getStartRecordTime()) && StringUtils.isNotEmpty(query.getEndRecordTime()), TVehicleAccessRecordsEntity::getRecordTime, query.getStartRecordTime(), query.getEndRecordTime());
         wrapper.like(StringUtils.isNotEmpty(query.getPlateNumber()), TVehicleAccessRecordsEntity::getPlateNumber, query.getPlateNumber());
         wrapper.like(StringUtils.isNotEmpty(query.getDriverName()), TVehicleAccessRecordsEntity::getDriverName, query.getDriverName());
+        if (baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+
+        }else {
+            List<Long> dataScopeList = baseUser.getDataScopeList();
+            wrapper.in(TVehicleAccessRecordsEntity::getSiteId, dataScopeList);
+        }
         return wrapper;
     }
 

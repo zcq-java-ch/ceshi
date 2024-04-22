@@ -8,6 +8,7 @@ import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,7 +60,7 @@ import java.util.List;
 @Tag(name="车辆出入记录表")
 @AllArgsConstructor
 @Slf4j
-public class TVehicleAccessRecordsController {
+public class TVehicleAccessRecordsController extends BaseController {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     @Autowired
     private DeviceFeign deviceFeign;
@@ -68,8 +69,8 @@ public class TVehicleAccessRecordsController {
     @GetMapping("/pageTVehicleAccessRecords")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:page')")
-    public Result<PageResult<TVehicleAccessRecordsVO>> page(@ParameterObject @Valid TVehicleAccessRecordsQuery query){
-        PageResult<TVehicleAccessRecordsVO> page = tVehicleAccessRecordsService.page(query);
+    public Result<PageResult<TVehicleAccessRecordsVO>> page(@ParameterObject @Valid TVehicleAccessRecordsQuery query, @ModelAttribute("baseUser") UserDetail baseUser){
+        PageResult<TVehicleAccessRecordsVO> page = tVehicleAccessRecordsService.page(query,baseUser);
 
         return Result.ok(page);
     }

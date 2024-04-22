@@ -6,6 +6,7 @@ import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
+import com.hxls.framework.security.user.UserDetail;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccessRecordsEntity> {
 
-    PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query);
+    PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser);
 
     void save(TVehicleAccessRecordsVO vo);
 

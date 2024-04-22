@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -39,13 +41,13 @@ import java.util.stream.Collectors;
 public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAccessRecordsDao, TPersonAccessRecordsEntity> implements TPersonAccessRecordsService {
 
     @Override
-    public PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query) {
-        IPage<TPersonAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+    public PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query, UserDetail baseUser) {
+        IPage<TPersonAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
 
         return new PageResult<>(TPersonAccessRecordsConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
-    private LambdaQueryWrapper<TPersonAccessRecordsEntity> getWrapper(TPersonAccessRecordsQuery query){
+    private LambdaQueryWrapper<TPersonAccessRecordsEntity> getWrapper(TPersonAccessRecordsQuery query, UserDetail baseUser){
         LambdaQueryWrapper<TPersonAccessRecordsEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.like(StringUtils.isNotBlank(query.getPersonName()),TPersonAccessRecordsEntity::getPersonName, query.getPersonName());
         wrapper.eq(ObjectUtils.isNotEmpty(query.getSiteId()), TPersonAccessRecordsEntity::getSiteId, query.getSiteId());
@@ -54,6 +56,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         wrapper.between(ObjectUtils.isNotEmpty(query.getStartRecordTime()) && ObjectUtils.isNotEmpty(query.getEndRecordTime()), TPersonAccessRecordsEntity::getRecordTime, query.getStartRecordTime(), query.getEndRecordTime());
         wrapper.eq(TPersonAccessRecordsEntity::getStatus, 1);
         wrapper.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        if (baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+
+        }else {
+            List<Long> dataScopeList = baseUser.getDataScopeList();
+            wrapper.in(TPersonAccessRecordsEntity::getSiteId, dataScopeList);
+        }
         return wrapper;
     }
 
@@ -78,7 +86,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     }
 
     @Override
-    public PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query) {
+    public PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query, UserDetail baseUser) {
         LocalDate today = LocalDate.now();
         // 获取今天的开始时间（00:00:00）
         LocalDateTime startOfDay = today.atStartOfDay();
@@ -93,7 +101,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         query.setStartRecordTime(startOfDayString);
         query.setEndRecordTime(endOfDayString);
-        LambdaQueryWrapper<TPersonAccessRecordsEntity> wrapper = getWrapper(query);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> wrapper = getWrapper(query, baseUser);
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(tPersonAccessRecordsEntities)){
 

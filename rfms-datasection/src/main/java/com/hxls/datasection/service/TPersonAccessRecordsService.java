@@ -6,6 +6,7 @@ import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
+import com.hxls.framework.security.user.UserDetail;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRecordsEntity> {
 
-    PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query);
+    PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query, UserDetail baseUser);
 
     void save(TPersonAccessRecordsVO vo);
 
@@ -25,7 +26,7 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
 
     void delete(List<Long> idList);
 
-    PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query);
+    PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query, UserDetail baseUser);
 
     boolean whetherItExists(String recordsId);
 

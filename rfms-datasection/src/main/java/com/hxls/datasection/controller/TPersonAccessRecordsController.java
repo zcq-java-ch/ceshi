@@ -5,13 +5,10 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
-import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
-import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.util.BaseImageUtils;
-import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
-import com.hxls.framework.rabbitmq.domain.MessageSendDto;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -24,10 +21,7 @@ import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.C;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,14 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 /**
 * 人员出入记录表
@@ -59,7 +48,7 @@ import java.util.UUID;
 @Tag(name="人员出入记录表")
 @AllArgsConstructor
 @Slf4j
-public class TPersonAccessRecordsController {
+public class TPersonAccessRecordsController extends BaseController {
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
     @Autowired
     private DeviceFeign deviceFeign;
@@ -67,8 +56,10 @@ public class TPersonAccessRecordsController {
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
-    public Result<PageResult<TPersonAccessRecordsVO>> page(@ParameterObject @Valid TPersonAccessRecordsQuery query){
-        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query);
+    public Result<PageResult<TPersonAccessRecordsVO>> page(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
+        log.info("获取到token用户信息：{}",baseUser);
+        List<Long> dataScopeList = baseUser.getDataScopeList();
+        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query, baseUser);
 
         return Result.ok(page);
     }
@@ -126,9 +117,9 @@ public class TPersonAccessRecordsController {
     @GetMapping("/pageUnidirectionalTpersonAccessRecords")
     @Operation(summary = "查询单向通行记录")
 //    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
-    public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query){
+    public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
 
-        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query);
+        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query,baseUser);
         return Result.ok(page);
     }
 
