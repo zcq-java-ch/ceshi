@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hxls.api.dto.appointment.AppointmentDTO;
+import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
 import com.hxls.appointment.convert.TAppointmentVehicleConvert;
@@ -81,6 +82,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      */
     private final AmqpTemplate rabbitMQTemplate;
 
+    /*
+     * 发送消息feign
+     */
+    private final DeviceFeign deviceFeign;
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
@@ -212,6 +217,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     tAppointmentVehicleService.saveBatch(tAppointmentVehicles);
                 }
             }
+
+            //发送消息
+            deviceFeign.sendSystemMessage(entity.getAppointmentType() , entity.getSiteId());
         }
     }
 

@@ -32,5 +32,5 @@ public interface DeviceFeign {
     public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId);
 
     @PostMapping(value = "api/system/sendSystemMessage")
-    public JSONObject sendSystemMessage(@RequestParam("type") int type,@RequestParam("siteId") Long siteId);
+    public JSONObject sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId);
 }

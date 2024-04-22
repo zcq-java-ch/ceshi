@@ -20,7 +20,6 @@ import java.util.Date;
 @Data
 public class SysUserExcelVO implements Serializable, TransPojo {
     private static final long serialVersionUID = 1L;
-
     /**
      * 本属性对于导出无用，只是用于翻译
      */

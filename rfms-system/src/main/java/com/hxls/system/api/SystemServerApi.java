@@ -324,7 +324,7 @@ public class SystemServerApi implements DeviceFeign {
      */
     @PostMapping(value = "/sendSystemMessage")
     @Override
-    public JSONObject sendSystemMessage(@RequestParam("type") int type,@RequestParam("siteId") Long siteId){
+    public JSONObject sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId){
         //根据站点id获取站点管理员列表
         SysOrgEntity byId = sysOrgService.getById(siteId);
         //判断是否设置站点管理
@@ -344,7 +344,7 @@ public class SystemServerApi implements DeviceFeign {
                 SysNoticeVO sysNoticeVO = new SysNoticeVO();
                 sysNoticeVO.setStatus(0);
                 sysNoticeVO.setReceiverId(id);
-                sysNoticeVO.setNoticeTitle(type+"");
+                sysNoticeVO.setNoticeTitle(type);
                 sysNoticeService.save(sysNoticeVO);
             }
         }
