@@ -53,6 +53,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
     private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query){
         LambdaQueryWrapper<SysOrgEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(SysOrgEntity::getDeleted, 0);
+        wrapper.eq(SysOrgEntity::getStatus, 1);
         wrapper.like(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
         wrapper.like(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
