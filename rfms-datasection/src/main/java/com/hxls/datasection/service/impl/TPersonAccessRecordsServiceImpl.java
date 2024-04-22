@@ -199,35 +199,33 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
-        objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getPersonId, allnbNumids);
-        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
-
         Integer inNumer = 0;
+        if(CollectionUtil.isNotEmpty(allnbNumids)){
+            objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getPersonId, allnbNumids);
+            List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+            // 按照姓名id进行分组
+            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
+                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+            // 打印每个分组并更新inNumer变量
+            for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId.entrySet()) {
+                String devicePersonId = entry.getKey();
+                List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-        // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+                System.out.println("用户id: " + devicePersonId);
+                System.out.println("Records:");
+                //recordsList.forEach(System.out::println);
+                System.out.println("---------------------------------");
 
-        // 打印每个分组并更新inNumer变量
-        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId.entrySet()) {
-            String devicePersonId = entry.getKey();
-            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
-
-            System.out.println("用户id: " + devicePersonId);
-            System.out.println("Records:");
-            //recordsList.forEach(System.out::println);
-            System.out.println("---------------------------------");
-
-            // 找出每个分组中按照时间排序的最后一条数据
-            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
-            if ("1".equals(lastRecord.getAccessType())) {
-                // 最后一次为入厂
-                inNumer += 1;
-            } else {
-                // 最后一次为出厂
+                // 找出每个分组中按照时间排序的最后一条数据
+                TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+                if ("1".equals(lastRecord.getAccessType())) {
+                    // 最后一次为入厂
+                    inNumer += 1;
+                } else {
+                    // 最后一次为出厂
+                }
             }
         }
-
 
         /**
          * 实时总人数

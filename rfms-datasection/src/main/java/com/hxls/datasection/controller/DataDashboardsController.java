@@ -47,8 +47,8 @@ public class DataDashboardsController {
         JSONObject jsonvehic = dataDashboardsService.vehicleAccessDetails(stationId);
         jsonObject.putOnce("vehicleAccessDetails", jsonvehic);
         // 5. 外部预约人员明细部分
-//        JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
-//        jsonObject.putOnce("breakdownOfExternalAppointments", jsonbreak);
+        JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
+        jsonObject.putOnce("breakdownOfExternalAppointments", jsonbreak);
 
         return Result.ok(jsonObject);
     }

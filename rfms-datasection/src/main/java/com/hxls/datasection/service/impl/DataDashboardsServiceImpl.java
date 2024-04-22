@@ -157,6 +157,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     public JSONObject breakdownOfExternalAppointments(Long stationId) {
         JSONArray objects1 = appointmentFeign.checkTheDetailsOfExternalAppointments(stationId, 1, 999);
 
+        JSONArray entries = new JSONArray();
         int serialNumber = 0;
         for (int i = 0; i < objects1.size(); i++) {
             JSONObject jsonObject = objects1.get(i, JSONObject.class);
@@ -167,7 +168,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
             jsonObject1.putOnce("totalNumberOfPeople", jsonObject.get("totalNumberOfPeople", Long.class)); // 总人数
             jsonObject1.putOnce("firm", jsonObject.get("firm", String.class)); // 公司
             jsonObject1.putOnce("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory", String.class)); // 入厂事由
-            objects1.add(jsonObject1);
+            entries.add(jsonObject1);
         }
 
         JSONObject jsonObject = new JSONObject();
