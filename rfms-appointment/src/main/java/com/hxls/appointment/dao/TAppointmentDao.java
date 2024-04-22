@@ -103,4 +103,11 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     * @return
     */
    List<JSONObject> getAllDictByType(@Param("type")int i);
+
+   /**
+    * 通过手机号查询人员信息
+    * @param phone
+    * @return
+    */
+   JSONObject selectByPhone(@Param("phone")String phone);
 }

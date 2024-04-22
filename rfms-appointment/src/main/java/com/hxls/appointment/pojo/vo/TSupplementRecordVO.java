@@ -45,16 +45,27 @@ public class TSupplementRecordVO implements Serializable {
     private String accessType;
 
     /**
+     * 出入类型（数据字典）
+     */
+    @Schema(description = "出入类型（数据字典）")
+    private String accessTypeName;
+
+    /**
      * 出入通道
      */
     @Schema(description = "区域")
     private String channel;
+
+    private String channelName;
 
     /**
      * 补录类型（数据字典）
      */
     @Schema(description = "补录类型（数据字典）")
     private String supplementType;
+
+
+    private String supplementTypeName;
 
     /**
      * 补录时间

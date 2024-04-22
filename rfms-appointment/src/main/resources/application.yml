@@ -25,3 +25,12 @@ rabbit:
   post: 5672
   user: admin
   psw: 123456
+
+storage:
+  enabled: true
+  config:
+    # 存储类型：local、aliyun、tencent、qiniu、huawei、minio
+    type: local
+    domain: http://113.250.190.179:8899
+  local:
+    path: /opt/rfms/upload

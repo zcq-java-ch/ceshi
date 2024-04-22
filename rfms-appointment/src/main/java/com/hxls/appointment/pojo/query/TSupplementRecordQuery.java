@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -17,6 +18,8 @@ public class TSupplementRecordQuery extends Query {
      */
     @Schema(description = "对应站点id")
     private Long siteId;
+
+    private List<Long> siteIds;
 
     /**
      * 出入类型（数据字典）
@@ -42,6 +45,7 @@ public class TSupplementRecordQuery extends Query {
     @Schema(description = "补录时间")
     private String[] supplementTime;
 
+    private Long creator;
 
 
 }

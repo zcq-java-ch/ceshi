@@ -3,6 +3,7 @@ package com.hxls.system.controller;
 
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.TBannerQuery;
 import com.hxls.system.service.SysDictTypeService;
@@ -35,6 +36,8 @@ public class ResourceController {
 
     private final TBannerService tBannerService;
 
+    private final StorageProperties storageProperties;
+
     @GetMapping("page")
     @Operation(summary = "场站分页")
     public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
@@ -58,6 +61,29 @@ public class ResourceController {
         PageResult<TBannerVO> page = tBannerService.page(query);
 
         return Result.ok(page);
+    }
+
+    @GetMapping("export")
+    @Operation(summary = "下载补录导入模板")
+    public Result<String> export() {
+
+        String domain = storageProperties.getConfig().getDomain();
+        String path = storageProperties.getLocal().getUrl();
+
+        String dataUrl = domain + "/" + path + "/补录导入模板.xlsx";
+        return Result.ok(dataUrl);
+    }
+
+    @GetMapping("exportSupplierCar")
+    @Operation(summary = "下载车辆入场导入模板")
+    public Result<String> exportSupplierCar() {
+
+        String domain = storageProperties.getConfig().getDomain();
+
+        String path = storageProperties.getLocal().getUrl();
+
+        String dataUrl = domain + "/" + path + "/车辆入场导入模板.xlsx";
+        return Result.ok(dataUrl);
     }
 
 }

@@ -1,6 +1,8 @@
 package com.hxls.appointment.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.service.TAppointmentService;
@@ -19,6 +21,7 @@ import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,14 +37,23 @@ public class SupplierCarController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('supplierCar:appointment:page')")
     public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+        //配置查询权限
         UserDetail user = SecurityUser.getUser();
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        query.setSupplierName(user.getOrgId().toString());
+        if (user.getSuperAdmin()<1) {
+            List<Long> dataScopeList = user.getDataScopeList();
+            if (CollectionUtils.isNotEmpty(dataScopeList)){
+                query.setSiteIds(dataScopeList);
+            }else {
+                query.setCreator(user.getId());
+            }
+        }
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
     }
+
 
     @GetMapping("{id}")
     @Operation(summary = "信息")
@@ -77,6 +89,19 @@ public class SupplierCarController {
         tAppointmentService.delete(idList);
         return Result.ok();
     }
+
+    @PostMapping("import")
+    @Operation(summary = "导入")
+    @OperateLog(type = OperateTypeEnum.INSERT)
+    @PreAuthorize("hasAuthority('supplierCar:appointment:import')")
+    public Result<List<TAppointmentVehicle>> importData(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        List<TAppointmentVehicle> vehicles = tAppointmentService.importData(file);
+        return Result.ok(vehicles);
+    }
+
 
 
 }

@@ -6,6 +6,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -19,16 +20,17 @@ import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
+import com.hxls.appointment.pojo.entity.TSupplementRecord;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
-import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
-import com.hxls.appointment.pojo.vo.TAppointmentVO;
-import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
+import com.hxls.appointment.pojo.vo.*;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.user.SecurityUser;
@@ -39,11 +41,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.hxls.framework.common.query.Query;
 
@@ -81,12 +84,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
-        UserDetail user = SecurityUser.getUser();
-        if (ObjectUtil.isNull(user)) {
-            throw new ServerException(ErrorCode.FORBIDDEN);
-        }
-        Set<Long> manageStation = user.getManageStation();
-        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, manageStation));
+
+        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
 
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
@@ -129,19 +128,18 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         return new PageResult<>(tAppointmentVOS, page.getTotal());
     }
 
-    private LambdaQueryWrapper<TAppointmentEntity> getWrapper(TAppointmentQuery query, Set<Long> manageStation) {
+    private LambdaQueryWrapper<TAppointmentEntity> getWrapper(TAppointmentQuery query) {
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
         if (query.getIsFinish() != null ){
            if (query.getIsFinish()){
-               wrapper.ne(TAppointmentEntity::getReviewStatus , 0);
+               wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
            } else {
                wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
            }
         }
-        wrapper.in(CollectionUtils.isNotEmpty(manageStation),TAppointmentEntity::getSiteId, manageStation);
-        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteId());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
@@ -297,13 +295,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> pageByAuthority(TAppointmentQuery query) {
 
-        UserDetail user = SecurityUser.getUser();
-        if (ObjectUtil.isNull(user)) {
-            throw new ServerException("请登陆");
-        }
-        Set<Long> manageStation = user.getManageStation();
-        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query ,manageStation);
-       // wrapper.in(manageStation != null, TAppointmentEntity::getSiteId, manageStation);
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query );
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
@@ -636,6 +628,49 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
         }
         return objects;
+
+    }
+
+    @Override
+    public List<TAppointmentVehicle> importData(MultipartFile file) {
+
+
+        List<TAppointmentVehicle> list = new ArrayList<>();
+        try {
+            List<TAppointmentVehicleExcelVO> readAllSync = EasyExcel.read(file.getInputStream()).head(TAppointmentVehicleExcelVO.class).doReadAllSync();
+
+            if (CollectionUtils.isEmpty(readAllSync)){
+                return list;
+            }
+            //车型
+            List<com.alibaba.fastjson.JSONObject> allDictByType = appointmentDao.getAllDictByType(25);
+            Map<String, String> map1 = allDictByType.stream()
+                    .collect(Collectors.toMap(
+                            jsonObject -> jsonObject.getString("dict_label"), // 使用"dict_label"作为key
+                            jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
+                    ));
+
+            //排放标准
+            List<com.alibaba.fastjson.JSONObject> allDictByType1 = appointmentDao.getAllDictByType(15);
+            Map<String, String> map2 = allDictByType1.stream()
+                    .collect(Collectors.toMap(
+                            jsonObject -> jsonObject.getString("dict_label"), // 使用"dict_label"作为key
+                            jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
+                    ));
+            readAllSync.forEach( item->{
+                TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
+                tAppointmentVehicle.setDeliveryDate(item.getStartTime()+","+item.getEndTime());
+                tAppointmentVehicle.setPlateNumber(item.getPlateNumber());
+                tAppointmentVehicle.setVehicleModel(map1.get(item.getVehicleModel()));
+                tAppointmentVehicle.setEmissionStandard(map2.get(item.getEmissionStandard()));
+                tAppointmentVehicle.setPassenger(item.getPassenger());
+                list.add(tAppointmentVehicle);
+            } );
+            return list;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private Wrapper<TAppointmentEntity> getWrapperByHttp(Long siteId) {

@@ -106,12 +106,16 @@
 
     </select>
     <select id="getAllChannel" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT id , area_name FROM sys_org where deleted = 0
+        SELECT id , area_name FROM sys_site_area where deleted = 0
     </select>
     <select id="getAllDictByType" resultType="com.alibaba.fastjson.JSONObject">
 
         SELECT dict_label , dict_value FROM sys_dict_data where dict_type_id = #{type}  and deleted = 0
 
+    </select>
+
+    <select id="selectByPhone" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT u.id , u.id_card , u.post_id , u.post_name , u.org_id ,u.supervisor  FROM sys_user u  where u.mobile = #{phone} and u.deleted = 0
     </select>
 
 
