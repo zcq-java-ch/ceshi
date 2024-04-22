@@ -37,12 +37,13 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         // 内部员工数量与id集合
         JSONObject jsonObject1 = deviceFeign.queryInformationOnkanbanPersonnelStation(stationId);
         List<Long> numberOfPeopleRegisteredIdList = jsonObject1.get("numberOfPeopleRegisteredIdList", ArrayList.class);
-        Long numberOfPeopleRegistered = jsonObject1.get("numberOfPeopleRegistered", Long.class);
+        Integer numberOfPeopleRegistered = jsonObject1.get("numberOfPeopleRegistered", Integer.class);
         List<Long> postobjects = jsonObject1.get("postobjects", ArrayList.class);
 
         // 派驻员工数量，与id集合
         JSONObject jsonObject3 = appointmentFeign.queryTheNumberOfResidencies(stationId);
-        Long pzNum = jsonObject3.get("pzNum", Long.class);
+        Integer pzNum = 0;
+        pzNum += jsonObject3.get("pzNum", Integer.class);
         List<Long> pzAllIds = jsonObject3.get("pzAllIds", ArrayList.class);
         JSONObject postAll = jsonObject3.get("postAll", JSONObject.class);
 //        numberOfPeopleRegisteredIdList.addAll(pzAllIds);
@@ -160,12 +161,13 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         for (int i = 0; i < objects1.size(); i++) {
             JSONObject jsonObject = objects1.get(i, JSONObject.class);
             serialNumber += 1;
-            jsonObject.putOnce("serialNumber", serialNumber); // 序号
-            jsonObject.putOnce("thePersonWhoMadeTheReservation", jsonObject.get("thePersonWhoMadeTheReservation", String.class)); // 预约人
-            jsonObject.putOnce("totalNumberOfPeople", jsonObject.get("totalNumberOfPeople", Long.class)); // 总人数
-            jsonObject.putOnce("firm", jsonObject.get("firm", String.class)); // 公司
-            jsonObject.putOnce("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory", String.class)); // 入厂事由
-            objects1.add(jsonObject);
+            JSONObject jsonObject1 = new JSONObject();
+            jsonObject1.putOnce("serialNumber", serialNumber); // 序号
+            jsonObject1.putOnce("thePersonWhoMadeTheReservation", jsonObject.get("thePersonWhoMadeTheReservation", String.class)); // 预约人
+            jsonObject1.putOnce("totalNumberOfPeople", jsonObject.get("totalNumberOfPeople", Long.class)); // 总人数
+            jsonObject1.putOnce("firm", jsonObject.get("firm", String.class)); // 公司
+            jsonObject1.putOnce("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory", String.class)); // 入厂事由
+            objects1.add(jsonObject1);
         }
 
         JSONObject jsonObject = new JSONObject();

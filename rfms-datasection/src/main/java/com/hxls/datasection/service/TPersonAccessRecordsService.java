@@ -31,7 +31,7 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
 
     boolean whetherItExists(String recordsId);
 
-    JSONObject queryInformationOnkanbanPersonnelStation(Long stationId, List<Long> nbNumids,List<Long> pzNumIds, Long numberOfPeopleRegistered);
+    JSONObject queryInformationOnkanbanPersonnelStation(Long stationId, List<Long> nbNumids,List<Long> pzNumIds, Integer numberOfPeopleRegistered);
 
     JSONArray queryTheDetailsOfSitePersonnel(Long stationId);
 }

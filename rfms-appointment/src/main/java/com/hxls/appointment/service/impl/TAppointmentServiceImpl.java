@@ -600,10 +600,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
         JSONArray objects = new JSONArray();
 
-        UserDetail user = SecurityUser.getUser();
-        if (ObjectUtil.isNull(user)) {
-            throw new ServerException(ErrorCode.FORBIDDEN);
-        }
+//        UserDetail user = SecurityUser.getUser();
+//        if (ObjectUtil.isNull(user)) {
+//            throw new ServerException(ErrorCode.FORBIDDEN);
+//        }
         Query query = new Query();
         query.setPage(page);
         query.setLimit(limit);
@@ -624,8 +624,11 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             LambdaQueryWrapper<TAppointmentPersonnel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
             objectLambdaQueryWrapper.eq(TAppointmentPersonnel::getAppointmentId, id);
             List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(objectLambdaQueryWrapper);
-
-            jsonObject.putOnce("thePersonWhoMadeTheReservation", one.getExternalPersonnel());
+            StringBuilder thePersonWhoMadeTheReservation = new StringBuilder();
+            if (ObjectUtil.isNotEmpty(one)){
+                thePersonWhoMadeTheReservation.append(one.getExternalPersonnel());
+            }
+            jsonObject.putOnce("thePersonWhoMadeTheReservation", thePersonWhoMadeTheReservation);
             jsonObject.putOnce("totalNumberOfPeople", list.size());
             jsonObject.putOnce("firm", tAppointmentVO.getCompanyName());
             jsonObject.putOnce("reasonForEnteringTheFactory", tAppointmentVO.getPurpose());

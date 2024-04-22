@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -143,6 +144,7 @@ public class AppointmentApiController {
         List<TAppointmentEntity> tAppointmentEntities = tAppointmentService.list(tAppointmentEntityLambdaQueryWrapper);
         List<Long> wpPersonnel = new ArrayList<>();
         List<TAppointmentPersonnel> AllpersonnelList = new ArrayList<>();
+        JSONObject postobjects = new JSONObject();
         if (CollectionUtil.isNotEmpty(tAppointmentEntities)){
             for (int i = 0; i < tAppointmentEntities.size(); i++) {
                 TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
@@ -153,17 +155,18 @@ public class AppointmentApiController {
 
                 AllpersonnelList.addAll(personnelList);
             }
+            // 按照 busis 字段进行分组
+            Map<String, Long> postCounts = AllpersonnelList.stream()
+                    .filter(tAppointmentPersonnel -> ObjectUtils.isNotEmpty(tAppointmentPersonnel.getPostCode()))
+                    .collect(Collectors.groupingBy(TAppointmentPersonnel::getPostCode, Collectors.counting()));
+            // 打印每个类型及其数量
+            for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
+                System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
+                postobjects.putOnce(entry2.getKey(), entry2.getValue());
+            }
         }
 
-        // 按照 busis 字段进行分组
-        Map<String, Long> postCounts = AllpersonnelList.stream()
-                .collect(Collectors.groupingBy(TAppointmentPersonnel::getPostCode, Collectors.counting()));
-        // 打印每个类型及其数量
-        JSONObject postobjects = new JSONObject();
-        for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
-            System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
-            postobjects.putOnce(entry2.getKey(), entry2.getValue());
-        }
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("pzNum", pzNum);
         jsonObject.putOnce("pzAllIds", wpPersonnel);

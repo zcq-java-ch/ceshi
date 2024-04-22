@@ -180,14 +180,18 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     }
 
     @Override
-    public JSONObject queryInformationOnkanbanPersonnelStation(Long stationId, List<Long> nbNumids, List<Long> pzNumIds, Long numberOfPeopleRegistered) {
+    public JSONObject queryInformationOnkanbanPersonnelStation(Long stationId, List<Long> nbNumids, List<Long> pzNumIds, Integer numberOfPeopleRegistered) {
 
         /**
          * 在册场内 （内部+派驻）
          * */
         List<Long> allnbNumids = new ArrayList<>();
-        allnbNumids.addAll(pzNumIds);
-        allnbNumids.addAll(nbNumids);
+        if (CollectionUtils.isNotEmpty(pzNumIds)){
+            allnbNumids.addAll(pzNumIds);
+        }
+        if (CollectionUtils.isNotEmpty(nbNumids)){
+            allnbNumids.addAll(nbNumids);
+        }
         String format = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat timeformat = new SimpleDateFormat(format);
         LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -236,7 +240,9 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         Integer inAllNumer = 0;
 
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2.stream()
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
+                .stream()
+                .filter(tPersonAccessRecordsEntity -> ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         // 打印每个分组并更新inNumer变量
@@ -305,32 +311,33 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper4.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper4.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper4.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
-        objectLambdaQueryWrapper4.in(TPersonAccessRecordsEntity::getPersonId, pzNumIds);
-        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities4 = baseMapper.selectList(objectLambdaQueryWrapper4);
-
         Integer inzpNumer = 0;
+        if (ObjectUtils.isNotEmpty(pzNumIds)){
+            objectLambdaQueryWrapper4.in(TPersonAccessRecordsEntity::getPersonId, pzNumIds);
+            List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities4 = baseMapper.selectList(objectLambdaQueryWrapper4);
 
-        // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = tPersonAccessRecordsEntities4.stream()
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+            // 按照姓名id进行分组
+            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = tPersonAccessRecordsEntities4.stream()
+                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
-        // 打印每个分组并更新inNumer变量
-        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
-            String devicePersonId = entry.getKey();
-            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+            // 打印每个分组并更新inNumer变量
+            for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId4.entrySet()) {
+                String devicePersonId = entry.getKey();
+                List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-            System.out.println("用户id: " + devicePersonId);
-            System.out.println("Records:");
-            //recordsList.forEach(System.out::println);
-            System.out.println("---------------------------------");
+                System.out.println("用户id: " + devicePersonId);
+                System.out.println("Records:");
+                //recordsList.forEach(System.out::println);
+                System.out.println("---------------------------------");
 
-            // 找出每个分组中按照时间排序的最后一条数据
-            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
-            if ("1".equals(lastRecord.getAccessType())) {
-                // 最后一次为入厂
-                inzpNumer += 1;
-            } else {
-                // 最后一次为出厂
+                // 找出每个分组中按照时间排序的最后一条数据
+                TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+                if ("1".equals(lastRecord.getAccessType())) {
+                    // 最后一次为入厂
+                    inzpNumer += 1;
+                } else {
+                    // 最后一次为出厂
+                }
             }
         }
 
@@ -372,7 +379,9 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         JSONArray objects = new JSONArray();
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2.stream()
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
+                .stream()
+                .filter(tPersonAccessRecordsEntity -> ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
