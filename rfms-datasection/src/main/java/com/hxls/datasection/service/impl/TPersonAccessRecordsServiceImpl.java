@@ -447,6 +447,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         }
         // 按照 busis 字段进行分组
         Map<String, Long> typeCounts = personAccessRecordsEntityArrayList.stream()
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getBusis()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getBusis, Collectors.counting()));
         // 打印每个类型及其数量
         JSONObject busisStatistics = new JSONObject();
@@ -482,6 +483,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         }
         // 按照 busis 字段进行分组
         Map<String, Long> modelCounts = tVehicleAccessRecordsEntities.stream()
+                .filter(tVehicleAccessRecordsEntity -> StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getVehicleModel()))
                 .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getVehicleModel, Collectors.counting()));
         // 打印每个类型及其数量
         JSONObject catTypeStatistics = new JSONObject();
@@ -492,5 +494,93 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         jsonObject.put("numberOfCarStation", numberOfCarStation);
         jsonObject.put("catTypeStatistics", catTypeStatistics);
         return jsonObject;
+    }
+
+
+    @Override
+    public JSONArray numberOfAssemblersAndVehicles(JSONArray siteCoor) {
+        JSONArray siteCoorAfter = siteCoor;
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(siteCoor)){
+            for (int i = 0; i < siteCoor.size(); i++) {
+                JSONObject jsonObject = siteCoor.getJSONObject(i);
+                Long siteId = jsonObject.getLong("siteId");
+                Integer personnelOnlineTotal = querSitePersonnelOnlineTotal(siteId);
+                Integer vehicleOnlineTotal = querSiteVehicleOnlineTotal(siteId);
+                jsonObject.put("numberOfPeopleAtTheSite", personnelOnlineTotal);
+                jsonObject.put("numberOfStops", vehicleOnlineTotal);
+            }
+        }
+        return siteCoorAfter;
+    }
+
+    /**
+    * @Aouthor: Mryang
+    * @Date: 2024/4/23 16:23
+    * @describe: 查询指点站点的在厂车辆数量
+    *
+    */
+    private Integer querSiteVehicleOnlineTotal(Long siteId) {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper4 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper4.eq(TVehicleAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper4.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper4.eq(TVehicleAccessRecordsEntity::getSiteId, siteId);
+        objectLambdaQueryWrapper4.between(TVehicleAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TVehicleAccessRecordsEntity> tVehicleAccessLedgerEntities = tVehicleAccessRecordsService.list(objectLambdaQueryWrapper4);
+        int numberOfCarStation = 0;
+        // 按照车牌进行分组
+        Map<String, List<TVehicleAccessRecordsEntity>> groupPlateNumber = tVehicleAccessLedgerEntities.stream()
+                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
+
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TVehicleAccessRecordsEntity>> entry : groupPlateNumber.entrySet()) {
+            List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
+            // 找出每个分组中按照时间排序的最后一条数据
+            TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                numberOfCarStation += 1;
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        return numberOfCarStation;
+    }
+
+    /**
+    * @Aouthor: Mryang
+    * @Date: 2024/4/23 16:22
+    * @describe: 查询指定站点的在厂人员数量
+    *
+    */
+    private Integer querSitePersonnelOnlineTotal(Long siteId) {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper3 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getSiteId, siteId);
+        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
+
+        int numberOfFactoryStation = 0;
+        // 按照姓名id进行分组
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
+            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+            // 找出每个分组中按照时间排序的最后一条数据
+            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                numberOfFactoryStation += 1;
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        return numberOfFactoryStation;
     }
 }

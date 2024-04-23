@@ -1,5 +1,6 @@
 package com.hxls.api.feign.system;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.ServerNames;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -33,5 +34,8 @@ public interface StationFeign {
 
     @PostMapping(value = "api/system/querySiteNumAndChannelNum")
     JSONObject querySiteNumAndChannelNum();
+
+    @PostMapping(value = "api/system/querySiteCoordinates")
+    JSONArray querySiteCoordinates();
 
 }
