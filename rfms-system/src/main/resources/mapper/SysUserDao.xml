@@ -10,13 +10,20 @@
 			and t1.username = #{username}
 		</if>
 		<if test="mobile != null and mobile.trim() != ''">
-			and t1.mobile = #{mobile}
+			and t1.mobile like concat('%', #{mobile}, '%')
+		</if>
+		<if test="orgId != null">
+			and t1.org_id = #{orgId}
 		</if>
 		<if test="orgList != null">
 			and t1.org_id in
 			<foreach collection="orgList" item="orgId" open="(" separator="," close=")">
 				#{orgId}
 			</foreach>
+		</if>
+
+		<if test="orgName != null and orgName.trim() != ''">
+			and t1.org_id in (select t2.id from sys_org t2 where t2.deleted = 0 and t2.status = 1 and t2.name like concat('%', #{orgName}, '%'))
 		</if>
 		<if test="gender != null">
 			and t1.gender = #{gender}
@@ -53,7 +60,7 @@
 			and t1.username = #{username}
 		</if>
 		<if test="mobile != null and mobile.trim() != ''">
-			and t1.mobile = #{mobile}
+			and t1.mobile like concat('%', #{mobile}, '%')
 		</if>
 		<if test="gender != null">
 			and t1.gender = #{gender}

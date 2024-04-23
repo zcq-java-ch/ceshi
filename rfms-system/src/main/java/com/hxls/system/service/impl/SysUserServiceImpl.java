@@ -86,16 +86,11 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         params.put("code", query.getCode());
         params.put("status", query.getStatus());
         params.put("realName", query.getRealName());
+        params.put("orgName", query.getOrgName());
+        params.put("orgId", query.getOrgId());
 
         // 数据权限
         params.put(Constant.DATA_SCOPE, getDataScope("t1", null));
-
-        // 机构过滤
-        if (query.getOrgId() != null) {
-            // 查询子机构ID列表，包含本机构
-            List<Long> orgList = sysOrgService.getSubOrgIdList(query.getOrgId());
-            params.put("orgList", orgList);
-        }
 
         return params;
     }

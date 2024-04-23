@@ -27,6 +27,9 @@ public class SysUserQuery extends Query {
     @Schema(description = "机构ID")
     private Long orgId;
 
+    @Schema(description = "机构名称")
+    private String orgName;
+
     @Schema(description = "用户类型")
     private String userType;
 
