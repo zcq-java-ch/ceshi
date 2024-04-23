@@ -25,5 +25,8 @@ public interface ExcelFinishCallBack<T> {
      */
     default void doSaveBatch(List<T> result) {
     }
+
+
+
 }
 

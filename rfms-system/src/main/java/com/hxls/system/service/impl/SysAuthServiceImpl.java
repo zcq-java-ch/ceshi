@@ -197,8 +197,8 @@ public class SysAuthServiceImpl implements SysAuthService {
     @Override
     public String getOpenIdByCode(String code) {
         // 微信小程序配置
-        String appId = "wxf305c51a53760e43";
-        String secret = "4505c07f3b820532117e2ec0192be088";
+        String appId = "wx4fe6b9996206dc52";
+        String secret = "4af4a8dc72d6e78d012312de0ccfc201";
 
         OkHttpClient httpClient = new OkHttpClient();
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.weixin.qq.com/sns/jscode2session").newBuilder();

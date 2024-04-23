@@ -86,9 +86,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     /*
      * 发送消息feign
      */
-    private final DeviceFeign deviceFeign;
-
     private final UserFeign userFeign;
+
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
