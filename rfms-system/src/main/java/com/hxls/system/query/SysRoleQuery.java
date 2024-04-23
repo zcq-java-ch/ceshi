@@ -18,4 +18,7 @@ public class SysRoleQuery extends Query {
     @Schema(description = "角色名称")
     private String name;
 
+    @Schema(description = "状态")
+    private Integer status;
+
 }

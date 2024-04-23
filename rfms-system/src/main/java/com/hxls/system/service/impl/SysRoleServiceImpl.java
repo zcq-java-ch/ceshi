@@ -52,7 +52,7 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
     private Wrapper<SysRoleEntity> getWrapper(SysRoleQuery query) {
         LambdaQueryWrapper<SysRoleEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(StrUtil.isNotBlank(query.getName()), SysRoleEntity::getName, query.getName());
-
+        wrapper.eq(query.getStatus() != null, SysRoleEntity::getStatus, query.getStatus());
         // 数据权限
         dataScopeWrapper(wrapper);
 
