@@ -5,12 +5,14 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.entity.*;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.SysNoticeVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -74,7 +73,8 @@ public class SystemServerApi {
     @Autowired
     private SysSiteAreaService sysSiteAreaService;
 
-
+    @Resource
+    private RedisCache redisCache;
     /**
      * javadoc
      * */
@@ -339,15 +339,15 @@ public class SystemServerApi {
 
 
     /**
+     * @param type   预约类型
+     * @param siteId 需要通知的站点（通过站点找到站点管理员）
      * @author: zhaohong
      * @Description: 根据站点和预约类型进行系统消息通知
      * @Date: 2024年4月22日17:38:32
-     * @param type 预约类型
-     * @param siteId 需要通知的站点（通过站点找到站点管理员）
      * @return: JSONObject
      */
     @PostMapping(value = "/sendSystemMessage")
-    public Result<Object> sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId){
+    public cn.hutool.json.JSONObject sendSystemMessage(@RequestParam("type") String type, @RequestParam("siteId") Long siteId){
         //根据站点id获取站点管理员列表
         SysOrgEntity byId = sysOrgService.getById(siteId);
         //判断是否设置站点管理
@@ -371,7 +371,7 @@ public class SystemServerApi {
                 sysNoticeService.save(sysNoticeVO);
             }
         }
-        return Result.ok();
+        return new cn.hutool.json.JSONObject(Result.ok());
     }
 
     /**
@@ -416,6 +416,46 @@ public class SystemServerApi {
         entries.put("numberOfSites", sysOrgEntities.size());
         entries.put("vehicularAccess", faceChannelNum);
         entries.put("personnelAccess", carChannelNum);
+        return entries;
+    }
+
+    /**
+      * @author Mryang
+      * @description 查询车牌设备和人脸设备 在线离线情况
+      * @date 14:30 2024/4/23
+      * @param 无
+      * @return JSONObject
+      */
+    @PostMapping(value = "/QueryNumberVehiclesAndFacesOnlineAndOffline")
+    public JSONObject QueryNumberVehiclesAndFacesOnlineAndOffline() {
+        LambdaQueryWrapper<TDeviceManagementEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
+        List<TDeviceManagementEntity> deviceManagementEntityList = tDeviceManagementService.list(objectLambdaQueryWrapper);
+        List<TDeviceManagementEntity> facecollect = deviceManagementEntityList.stream()
+                .filter(tDeviceManagementEntity -> "1".equals(tDeviceManagementEntity.getDeviceType()))
+                .toList();
+        List<TDeviceManagementEntity> carcollect = deviceManagementEntityList.stream()
+                .filter(tDeviceManagementEntity -> "2".equals(tDeviceManagementEntity.getDeviceType()))
+                .toList();
+
+        int licensePlateRecognitionOnline = 0;
+        int licensePlateRecognitionOffline = 0;
+        int faceRecognitionOnline = 0;
+        int faceRecognitionOffline = 0;
+
+        Set<String> facekeys = redisCache.keys("DEVICES_STATUS::FACE::");
+        Set<String> carkeys = redisCache.keys("DEVICES_STATUS::CAR::");
+        licensePlateRecognitionOnline = carkeys.size();
+        faceRecognitionOnline = facekeys.size();
+        licensePlateRecognitionOffline = carcollect.size() - licensePlateRecognitionOnline;
+        faceRecognitionOffline = facecollect.size() - faceRecognitionOnline;
+
+        JSONObject entries = new JSONObject();
+        entries.put("licensePlateRecognitionOnline", licensePlateRecognitionOnline);
+        entries.put("licensePlateRecognitionOffline", licensePlateRecognitionOffline);
+        entries.put("faceRecognitionOnline", faceRecognitionOnline);
+        entries.put("faceRecognitionOffline", faceRecognitionOffline);
         return entries;
     }
 }

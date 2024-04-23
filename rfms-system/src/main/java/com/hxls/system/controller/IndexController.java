@@ -91,16 +91,31 @@ public class IndexController {
             JSONArray faceJsonA = new JSONArray();
             JSONArray carJsonA = new JSONArray();
 
-
             LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
+            tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
+            tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
             tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getMasterIp, ip);
             List<TDeviceManagementEntity> deviceManagementEntityList = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
             if (CollectionUtil.isNotEmpty(deviceManagementEntityList)){
                 TDeviceManagementEntity tDeviceManagementEntity = deviceManagementEntityList.get(0);
+
                 String siteCode = tDeviceManagementEntity.getSiteCode();
                 jsonObject.put("siteFront", siteCode);
+
                 for (int i = 0; i < deviceManagementEntityList.size(); i++) {
                     TDeviceManagementEntity tDeviceManagementEntity1 = deviceManagementEntityList.get(i);
+                    String deviceSn1 = tDeviceManagementEntity1.getDeviceSn();
+                    String deviceType1 = tDeviceManagementEntity1.getDeviceType();
+                    // 如果有设备，则需要设置redis，记录设备在线
+                    if ("1".equals(deviceType1)){
+                        // 如果是人脸
+                        redisCache.set("DEVICES_STATUS::FACE::"+deviceSn1, 1, 180);
+                    }else {
+                        // 如果是车辆
+                        redisCache.set("DEVICES_STATUS::CAR::"+deviceSn1, 1, 180);
+                    }
+
+
                     String deviceType = tDeviceManagementEntity1.getDeviceType();
                     String manufacturerCode = tDeviceManagementEntity1.getManufacturerCode();
                     String ipAddress = tDeviceManagementEntity1.getIpAddress();

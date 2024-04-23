@@ -30,7 +30,7 @@ public class DataDashboardsController {
       */
     @GetMapping("/factoryStationKanban")
     @Operation(summary = "数据看板-厂站看板")
-//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
+    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
     public Result<JSONObject> factoryStationKanban(@RequestParam("stationId") Long stationId) {
         // 通过站点查询数据
         JSONObject jsonObject = new JSONObject();

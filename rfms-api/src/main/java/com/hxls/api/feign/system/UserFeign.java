@@ -14,4 +14,9 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/sendSystemMessage")
     public JSONObject sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId);
+
+    @PostMapping(value = "api/system/QueryNumberVehiclesAndFacesOnlineAndOffline")
+    JSONObject QueryNumberVehiclesAndFacesOnlineAndOffline();
+
+
 }

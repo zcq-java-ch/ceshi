@@ -195,16 +195,20 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         Integer vehicularAccess = sitenum.getInteger("vehicularAccess");
         Integer personnelAccess = sitenum.getInteger("personnelAccess");
 
-        // 查询 车牌和人脸的识别数量
-//        com.alibaba.fastjson.JSONObject vehiclesAndFace = userFeign.QueryNumberVehiclesAndFacesOnlineAndOffline();
+        // 查询 车牌和人脸的设备数量
+        JSONObject vehiclesAndFace = userFeign.QueryNumberVehiclesAndFacesOnlineAndOffline();
+        Integer licensePlateRecognitionOnline = vehiclesAndFace.getInteger("licensePlateRecognitionOnline");
+        Integer licensePlateRecognitionOffline = vehiclesAndFace.getInteger("licensePlateRecognitionOffline");
+        Integer faceRecognitionOnline = vehiclesAndFace.getInteger("faceRecognitionOnline");
+        Integer faceRecognitionOffline = vehiclesAndFace.getInteger("faceRecognitionOffline");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("numberOfSites", numberOfSites); // 站点数量
         jsonObject.put("vehicularAccess", vehicularAccess); // 车辆通道
         jsonObject.put("personnelAccess", personnelAccess); // 人员通道
-        jsonObject.put("licensePlateRecognitionOnline", "10"); // 车牌识别（在线）
-        jsonObject.put("licensePlateRecognitionOffline", "10"); // 车牌识别（离线）
-        jsonObject.put("faceRecognitionOnline", "10"); // 人脸识别（在线）
-        jsonObject.put("faceRecognitionOffline", "10"); // 人脸识别（离线）
+        jsonObject.put("licensePlateRecognitionOnline", licensePlateRecognitionOnline); // 车牌识别（在线）
+        jsonObject.put("licensePlateRecognitionOffline", licensePlateRecognitionOffline); // 车牌识别（离线）
+        jsonObject.put("faceRecognitionOnline", faceRecognitionOnline); // 人脸识别（在线）
+        jsonObject.put("faceRecognitionOffline", faceRecognitionOffline); // 人脸识别（离线）
         return jsonObject;
     }
 
