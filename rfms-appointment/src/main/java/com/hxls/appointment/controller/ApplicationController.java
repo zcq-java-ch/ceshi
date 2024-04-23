@@ -40,11 +40,9 @@ public class ApplicationController {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
         if (user.getSuperAdmin()<1) {
-            List<Long> dataScopeList = user.getDataScopeList();
-            if (CollectionUtils.isNotEmpty(dataScopeList)){
-                query.setSiteIds(dataScopeList);
-            }else {
-                query.setCreator(user.getId());
+            Long orgId = user.getOrgId();
+            if (orgId != null){
+                query.setSupplierName(orgId.toString());
             }
         }
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);

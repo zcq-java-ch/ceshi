@@ -280,23 +280,14 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject mapSection() {
+        // 查询站点坐标
+        JSONArray siteCoor = stationFeign.querySiteCoordinates();
 
-        JSONArray locationArrays = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        // 站点名称
-        jsonObject.put("siteName", "崇州站");
-        // 站点经度
-        jsonObject.put("longitudeOfTheSite", "103.677481");
-        // 站点纬度
-        jsonObject.put("siteLatitude", "30.637758");
-        // 站点人数
-        jsonObject.put("numberOfPeopleAtTheSite", "10");
-        // 站点车数
-        jsonObject.put("numberOfStops", "10");
-        locationArrays.add(jsonObject);
+        // 给每个站点加上 在厂人员数量和车辆数量
+        JSONArray siteCoorAfter = tPersonAccessRecordsService.numberOfAssemblersAndVehicles(siteCoor);
 
         JSONObject jsonObjectReturn = new JSONObject();
-        jsonObjectReturn.put("sitelocation", locationArrays);
+        jsonObjectReturn.put("sitelocation", siteCoorAfter);
         return jsonObjectReturn;
     }
 }

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -384,7 +385,7 @@ public class SystemServerApi {
       */
     @SuppressWarnings({"checkstyle:FinalParameters", "checkstyle:MagicNumber", "checkstyle:Indentation"})
     @PostMapping(value = "/querySiteNumAndChannelNum")
-    public JSONObject querySiteNumAndChannelNum(@RequestParam("type") String type, @RequestParam("siteId") Long siteId) {
+    public JSONObject querySiteNumAndChannelNum() {
         LambdaQueryWrapper<SysOrgEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
@@ -444,8 +445,8 @@ public class SystemServerApi {
         int faceRecognitionOnline = 0;
         int faceRecognitionOffline = 0;
 
-        Set<String> facekeys = redisCache.keys("DEVICES_STATUS::FACE::");
-        Set<String> carkeys = redisCache.keys("DEVICES_STATUS::CAR::");
+        Set<String> facekeys = redisCache.keys("DEVICES_STATUS:FACE:*");
+        Set<String> carkeys = redisCache.keys("DEVICES_STATUS:CAR:*");
         licensePlateRecognitionOnline = carkeys.size();
         faceRecognitionOnline = facekeys.size();
         licensePlateRecognitionOffline = carcollect.size() - licensePlateRecognitionOnline;
@@ -457,5 +458,38 @@ public class SystemServerApi {
         entries.put("faceRecognitionOnline", faceRecognitionOnline);
         entries.put("faceRecognitionOffline", faceRecognitionOffline);
         return entries;
+    }
+
+    /**
+      * @author Mryang
+      * @description 查询全部站点的名字与id与经纬度
+      * @date 16:02 2024/4/23
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/querySiteCoordinates")
+    public JSONArray querySiteCoordinates() {
+        JSONArray objects = new JSONArray();
+
+        LambdaQueryWrapper<SysOrgEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4); // 只查询组织类型为站点的
+        List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(sysOrgEntities)){
+            for (int i = 0; i < sysOrgEntities.size(); i++) {
+                SysOrgEntity sysOrgEntity = sysOrgEntities.get(i);
+                JSONObject entries = new JSONObject();
+                entries.put("siteName", sysOrgEntity.getName());
+                entries.put("siteId", sysOrgEntity.getId());
+                entries.put("siteCode", sysOrgEntity.getCode());
+                // 经度
+                entries.put("locationLon", sysOrgEntity.getSiteLocationLon());
+                // 纬度
+                entries.put("locationLat", sysOrgEntity.getSiteLocationLat());
+                objects.add(entries);
+            }
+        }
+        return objects;
     }
 }

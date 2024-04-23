@@ -109,10 +109,10 @@ public class IndexController {
                     // 如果有设备，则需要设置redis，记录设备在线
                     if ("1".equals(deviceType1)){
                         // 如果是人脸
-                        redisCache.set("DEVICES_STATUS::FACE::"+deviceSn1, 1, 180);
+                        redisCache.set("DEVICES_STATUS:FACE:"+deviceSn1, 1, 180);
                     }else {
                         // 如果是车辆
-                        redisCache.set("DEVICES_STATUS::CAR::"+deviceSn1, 1, 180);
+                        redisCache.set("DEVICES_STATUS:CAR:"+deviceSn1, 1, 180);
                     }
 
 

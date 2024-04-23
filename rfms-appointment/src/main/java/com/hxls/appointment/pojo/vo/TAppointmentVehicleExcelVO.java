@@ -24,9 +24,9 @@ public class TAppointmentVehicleExcelVO implements Serializable {
     private String startTime;
 
     /**
-     * 开始时间
+     * 结束时间
      */
-    @ExcelProperty("开始时间")
+    @ExcelProperty("结束时间")
     private String endTime;
 
 
