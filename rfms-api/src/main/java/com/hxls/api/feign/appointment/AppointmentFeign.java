@@ -71,4 +71,8 @@ public interface AppointmentFeign {
 
     @PostMapping("api/appointment/checkTheDetailsOfExternalAppointments")
     JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId, @RequestParam Integer page, @RequestParam Integer limit);
+
+    @PostMapping("api/appointment/queryStatisticsallPeopleReservation")
+    JSONObject queryStatisticsallPeopleReservation();
+
 }

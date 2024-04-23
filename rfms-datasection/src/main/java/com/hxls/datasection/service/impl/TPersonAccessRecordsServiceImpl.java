@@ -7,6 +7,10 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
+import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
+import com.hxls.datasection.service.TVehicleAccessLedgerService;
+import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
@@ -41,6 +45,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAccessRecordsDao, TPersonAccessRecordsEntity> implements TPersonAccessRecordsService {
 
+    private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     @Override
     public PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query, UserDetail baseUser) {
         IPage<TPersonAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
@@ -406,5 +411,86 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             }
         }
         return objects;
+    }
+
+    @Override
+    public JSONObject queryAllVehicleAndPersonStatistics() {
+        /**
+         * 查询人员统计
+         * */
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper3 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
+
+        int numberOfFactoryStation = 0;
+        // 按照姓名id进行分组
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        List<TPersonAccessRecordsEntity> personAccessRecordsEntityArrayList = new ArrayList<>();
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
+            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+            // 找出每个分组中按照时间排序的最后一条数据
+            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                numberOfFactoryStation += 1;
+                personAccessRecordsEntityArrayList.add(lastRecord);
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        // 按照 busis 字段进行分组
+        Map<String, Long> typeCounts = personAccessRecordsEntityArrayList.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getBusis, Collectors.counting()));
+        // 打印每个类型及其数量
+        JSONObject busisStatistics = new JSONObject();
+        busisStatistics.putAll(typeCounts);
+
+
+        /**
+         * 查询车辆统计
+         * */
+        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper4 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper4.eq(TVehicleAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper4.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper4.between(TVehicleAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TVehicleAccessRecordsEntity> tVehicleAccessLedgerEntities = tVehicleAccessRecordsService.list(objectLambdaQueryWrapper4);
+        int numberOfCarStation = 0;
+        // 按照车牌进行分组
+        Map<String, List<TVehicleAccessRecordsEntity>> groupPlateNumber = tVehicleAccessLedgerEntities.stream()
+                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
+
+        List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = new ArrayList<>();
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TVehicleAccessRecordsEntity>> entry : groupPlateNumber.entrySet()) {
+            List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
+            // 找出每个分组中按照时间排序的最后一条数据
+            TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                numberOfCarStation += 1;
+                tVehicleAccessRecordsEntities.add(lastRecord);
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        // 按照 busis 字段进行分组
+        Map<String, Long> modelCounts = tVehicleAccessRecordsEntities.stream()
+                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getVehicleModel, Collectors.counting()));
+        // 打印每个类型及其数量
+        JSONObject catTypeStatistics = new JSONObject();
+        catTypeStatistics.putAll(modelCounts);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("numberOfFactoryStation", numberOfFactoryStation);
+        jsonObject.put("busisStatistics", busisStatistics);
+        jsonObject.put("numberOfCarStation", numberOfCarStation);
+        jsonObject.put("catTypeStatistics", catTypeStatistics);
+        return jsonObject;
     }
 }

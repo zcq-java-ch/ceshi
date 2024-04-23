@@ -115,4 +115,7 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param file
      */
     List<TAppointmentVehicle> importData(MultipartFile file);
+
+    com.alibaba.fastjson.JSONObject queryStatisticsallPeopleReservation();
+
 }

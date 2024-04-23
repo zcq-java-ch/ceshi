@@ -693,4 +693,44 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(TAppointmentEntity::getSiteId, siteId);
         return wrapper;
     }
+
+    @Override
+    public com.alibaba.fastjson.JSONObject queryStatisticsallPeopleReservation() {
+        LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+
+        // 筛选出预约类型为派驻类型的
+        List<Long> list = tAppointmentEntities.stream()
+                .filter(tAppointmentEntity -> "1".equals(tAppointmentEntity.getAppointmentType()))
+                .map(TAppointmentEntity::getId)
+                .toList();
+
+        // 筛选出预约类型是外部预约的
+        List<Long> list1 = tAppointmentEntities.stream()
+                .filter(entity -> List.of("3", "4", "5").contains(entity.getAppointmentType()))
+                .map(TAppointmentEntity::getId)
+                .toList();
+
+        LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        personnelLambdaQueryWrapper.in(TAppointmentPersonnel::getAppointmentId, list);
+        List<TAppointmentPersonnel> tAppointmentPersonnelList = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper);
+        int numberOfResidents = 0;
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList)){
+            numberOfResidents = tAppointmentPersonnelList.size();
+        }
+
+        LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, list1);
+        List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
+        int numberOfExternalAppointments = 0;
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+            numberOfExternalAppointments = tAppointmentPersonnelList2.size();
+        }
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("numberOfResidents", numberOfResidents);
+        jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
+        return jsonObject;
+    }
 }

@@ -143,7 +143,10 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	 * */
 	private String recordsId;
 
-
+	/**
+	 * 用户业务类型
+	 * */
+	private String busis;
 
 
 }

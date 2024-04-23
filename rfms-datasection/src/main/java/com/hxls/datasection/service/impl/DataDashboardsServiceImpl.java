@@ -247,31 +247,31 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * */
     @Override
     public JSONObject realNameInformationSection() {
+        // 查询全部厂站的人员和车辆统计信息
+        JSONObject statistics = tPersonAccessRecordsService.queryAllVehicleAndPersonStatistics();
+        Integer numberOfFactoryStation = statistics.getInteger("numberOfFactoryStation");
+        JSONObject busisStatistics = statistics.getJSONObject("busisStatistics");
+        Integer numberOfCarStation = statistics.getInteger("numberOfCarStation");
+        JSONObject catTypeStatistics = statistics.getJSONObject("catTypeStatistics");
+
+        // 在预约服务中查询派驻人数和外部预约人数
+        JSONObject appstatistics = appointmentFeign.queryStatisticsallPeopleReservation();
+        Integer numberOfResidents = appstatistics.getInteger("numberOfResidents");
+        Integer numberOfExternalAppointments = appstatistics.getInteger("numberOfExternalAppointments");
+
         JSONObject jsonObject = new JSONObject();
         // 厂站实时总人数
-        jsonObject.put("numberOfFactoryStation", "10");
-        // 预拌人数
-        jsonObject.put("numberOfPeopleReadyToMix", "10");
-        // 预制人数
-        jsonObject.put("preMadeNumberOfPeople", "10");
-        // 管桩人数
-        jsonObject.put("numberOfPipePiles", "10");
-        // 资源人数
-        jsonObject.put("numberOfResources", "10");
-        // 供应链人数
-        jsonObject.put("numberOfPeopleInTheSupplyChain", "10");
-        // 工程人数
-        jsonObject.put("numberOfEngineers", "10");
+        jsonObject.put("numberOfFactoryStation", numberOfFactoryStation);
+        // 业务类型统计
+        jsonObject.put("busisStatistics", busisStatistics);
         // 厂站实时车辆总数
-        jsonObject.put("numberOfCarStation", "10");
-        // 小客车数量
-        jsonObject.put("numberOfPassengerCars", "10");
-        // 货运车数量
-        jsonObject.put("numberOfFreightTrucks", "10");
+        jsonObject.put("numberOfCarStation", numberOfCarStation);
+        // 车型统计
+        jsonObject.put("catTypeStatistics", catTypeStatistics);
         // 派驻人数
-        jsonObject.put("numberOfResidents", "10");
+        jsonObject.put("numberOfResidents", numberOfResidents);
         // 外部预约人数
-        jsonObject.put("numberOfExternalAppointments", "10");
+        jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
         return jsonObject;
     }
 
