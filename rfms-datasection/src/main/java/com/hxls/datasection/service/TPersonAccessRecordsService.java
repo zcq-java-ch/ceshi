@@ -35,6 +35,21 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
 
     JSONArray queryTheDetailsOfSitePersonnel(Long stationId);
 
+    /**
+    * @Aouthor: Mryang
+    * @Date: 2024/4/23 16:15
+    * @describe: 查询所有站点的在厂人员数量和车辆数量，并将
+     *              人员按照业务类型分组获取数量
+     *              车辆按照车辆类型来分组
+    *
+    */
     JSONObject queryAllVehicleAndPersonStatistics();
 
+   /**
+   * @Aouthor: Mryang
+   * @Date: 2024/4/23 16:15
+   * @describe: 给传入的所有站点数据，加上每个站的在线人员数量和车辆数量
+   *
+   */
+    JSONArray numberOfAssemblersAndVehicles(JSONArray siteCoor);
 }

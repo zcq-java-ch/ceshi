@@ -86,7 +86,7 @@ public class TVehicleAccessRecordsController extends BaseController {
     @PostMapping("/saveTVehicleAccessRecords")
     @Operation(summary = "保存")
     @OperateLog(type = OperateTypeEnum.INSERT)
-//    @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:save')")
+    @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:save')")
     public Result<String> save(@RequestBody TVehicleAccessRecordsVO vo){
         tVehicleAccessRecordsService.save(vo);
 
