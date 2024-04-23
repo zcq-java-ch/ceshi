@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
-import com.hxls.framework.common.utils.RandomSnowUtils;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.SysOrgConvert;
@@ -30,7 +29,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 机构管理
@@ -58,6 +60,8 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         wrapper.like(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()),SysOrgEntity::getId, query.getOrgList());
+
         return wrapper;
     }
 
@@ -151,15 +155,15 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
     @Override
     public List<Long> getSubOrgIdList(Long id) {
-        // 所有机构的id、pid列表
-        List<SysOrgEntity> orgList = baseMapper.getIdAndPidList();
 
-        // 递归查询所有子机构ID列表
-        List<Long> subIdList = new ArrayList<>();
-        getTree(id, orgList, subIdList);
+        //根据id获取机构code
+        SysOrgEntity sysOrgEntity = baseMapper.selectById(id);
 
-        // 本机构也添加进去
-        subIdList.add(id);
+        // 根据code获取所有下级code
+        List<String> subOrgCodeList = getSubOrgCodeList(sysOrgEntity.getCode());
+
+        //遍历所有的code获取所有的id
+        List<Long> subIdList = baseMapper.getIdsByCodes(subOrgCodeList);
 
         return subIdList;
     }

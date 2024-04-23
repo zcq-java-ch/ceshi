@@ -6,6 +6,7 @@ import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.SysUserQuery;
@@ -40,6 +41,12 @@ public class SysOrgController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:org:page')")
     public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
+        //获取登录账户的数据权限
+        UserDetail user = SecurityUser.getUser();
+        if(user.getDataScopeList() != null ){
+            query.setOrgList(user.getDataScopeList());
+        }
+
         PageResult<SysOrgVO> page = sysOrgService.page(query);
         return Result.ok(page);
     }

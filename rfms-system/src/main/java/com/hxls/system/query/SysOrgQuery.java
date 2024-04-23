@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * 组织查询
  *
@@ -26,5 +28,7 @@ public class SysOrgQuery extends Query {
 
     @Schema(description = "类型")
     private Integer property;
+
+    private List<Long> orgList;
 
 }

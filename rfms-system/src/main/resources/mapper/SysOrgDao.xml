@@ -12,4 +12,12 @@
 		select t1.code, t1.pcode from sys_org t1 where t1.deleted = 0
 	</select>
 
+	<select id="getIdsByCodes" resultType="java.lang.Long">
+		SELECT id FROM sys_org WHERE code IN
+		<foreach item="item" collection="subOrgCodeList" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+
 </mapper>

@@ -23,4 +23,11 @@ public interface SysOrgDao extends BaseDao<SysOrgEntity> {
      */
     List<SysOrgEntity> getIdAndPidList();
 
+    /**
+    * @Author zhaohong
+    * @Description  根据编号查询id
+    * @Date 15:02 2024/4/23
+    **/
+    List<Long> getIdsByCodes(List<String> subOrgCodeList);
+
 }
