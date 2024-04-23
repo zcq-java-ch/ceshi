@@ -2,8 +2,8 @@ package com.hxls.system.api;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.entity.*;
@@ -150,17 +150,17 @@ public class SystemServerApi {
             TManufacturerEntity manufacturerEntity = tManufacturerService.getById(manufacturerId);
             String manufactureName = manufacturerEntity != null ? manufacturerEntity.getManufacturerName() : "";
 
-            entries.putOnce("channel_id", channelId);
-            entries.putOnce("channel_name", channelName);
-            entries.putOnce("device_id", tDeviceManagementEntity.getId());
-            entries.putOnce("device_name", tDeviceManagementEntity.getDeviceName());
-            entries.putOnce("access_type", tDeviceManagementEntity.getType());
-            entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
-            entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
-            entries.putOnce("manufacturer_name", manufactureName);
-            entries.putOnce("account", tDeviceManagementEntity.getAccount());
-            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
-            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
+            entries.put("channel_id", channelId);
+            entries.put("channel_name", channelName);
+            entries.put("device_id", tDeviceManagementEntity.getId());
+            entries.put("device_name", tDeviceManagementEntity.getDeviceName());
+            entries.put("access_type", tDeviceManagementEntity.getType());
+            entries.put("deviceStatus", tDeviceManagementEntity.getStatus());
+            entries.put("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
+            entries.put("manufacturer_name", manufactureName);
+            entries.put("account", tDeviceManagementEntity.getAccount());
+            entries.put("siteId", tDeviceManagementEntity.getSiteId());
+            entries.put("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
@@ -192,16 +192,16 @@ public class SystemServerApi {
             TManufacturerEntity manufacturerEntity = tManufacturerService.getById(manufacturerId);
             String manufactureName = manufacturerEntity != null ? manufacturerEntity.getManufacturerName() : "";
 
-            entries.putOnce("channel_id", channel_id);
-            entries.putOnce("channel_name", channel_name);
-            entries.putOnce("device_id", tDeviceManagementEntity.getId());
-            entries.putOnce("device_name", tDeviceManagementEntity.getDeviceName());
-            entries.putOnce("access_type", tDeviceManagementEntity.getType());
-            entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
-            entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
-            entries.putOnce("manufacturer_name", manufactureName);
-            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
-            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
+            entries.put("channel_id", channel_id);
+            entries.put("channel_name", channel_name);
+            entries.put("device_id", tDeviceManagementEntity.getId());
+            entries.put("device_name", tDeviceManagementEntity.getDeviceName());
+            entries.put("access_type", tDeviceManagementEntity.getType());
+            entries.put("deviceStatus", tDeviceManagementEntity.getStatus());
+            entries.put("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
+            entries.put("manufacturer_name", manufactureName);
+            entries.put("siteId", tDeviceManagementEntity.getSiteId());
+            entries.put("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
@@ -233,17 +233,17 @@ public class SystemServerApi {
             TManufacturerEntity manufacturerEntity = tManufacturerService.getById(manufacturerId);
             String manufactureName = manufacturerEntity != null ? manufacturerEntity.getManufacturerName() : "";
 
-            entries.putOnce("channel_id", channel_id);
-            entries.putOnce("channel_name", channel_name);
-            entries.putOnce("device_id", tDeviceManagementEntity.getId());
-            entries.putOnce("device_name", tDeviceManagementEntity.getDeviceName());
-            entries.putOnce("access_type", tDeviceManagementEntity.getType());
-            entries.putOnce("deviceStatus", tDeviceManagementEntity.getStatus());
-            entries.putOnce("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
-            entries.putOnce("manufacturer_name", manufactureName);
-            entries.putOnce("ipAddress", tDeviceManagementEntity.getIpAddress());
-            entries.putOnce("siteId", tDeviceManagementEntity.getSiteId());
-            entries.putOnce("siteName", tDeviceManagementEntity.getSiteName());
+            entries.put("channel_id", channel_id);
+            entries.put("channel_name", channel_name);
+            entries.put("device_id", tDeviceManagementEntity.getId());
+            entries.put("device_name", tDeviceManagementEntity.getDeviceName());
+            entries.put("access_type", tDeviceManagementEntity.getType());
+            entries.put("deviceStatus", tDeviceManagementEntity.getStatus());
+            entries.put("manufacturer_id", tDeviceManagementEntity.getManufacturerId());
+            entries.put("manufacturer_name", manufactureName);
+            entries.put("ipAddress", tDeviceManagementEntity.getIpAddress());
+            entries.put("siteId", tDeviceManagementEntity.getSiteId());
+            entries.put("siteName", tDeviceManagementEntity.getSiteName());
         }
         return entries;
     }
@@ -259,13 +259,13 @@ public class SystemServerApi {
         if (CollectionUtil.isNotEmpty(tVehicleEntities)){
             TVehicleEntity tVehicleEntity = tVehicleEntities.get(0);
 
-            entries.putOnce("carType", tVehicleEntity.getCarType());
-            entries.putOnce("emissionStandard", tVehicleEntity.getEmissionStandard());
-            entries.putOnce("licenseImage", tVehicleEntity.getLicenseImage());
-            entries.putOnce("images", tVehicleEntity.getImages()); // 随车环报清单
-            entries.putOnce("fleetName", tVehicleEntity.getFleetName());
-            entries.putOnce("vinNumber", tVehicleEntity.getVinNumber());
-            entries.putOnce("engineNumber", tVehicleEntity.getEngineNumber());
+            entries.put("carType", tVehicleEntity.getCarType());
+            entries.put("emissionStandard", tVehicleEntity.getEmissionStandard());
+            entries.put("licenseImage", tVehicleEntity.getLicenseImage());
+            entries.put("images", tVehicleEntity.getImages()); // 随车环报清单
+            entries.put("fleetName", tVehicleEntity.getFleetName());
+            entries.put("vinNumber", tVehicleEntity.getVinNumber());
+            entries.put("engineNumber", tVehicleEntity.getEngineNumber());
         }
         return entries;
     }
@@ -283,11 +283,11 @@ public class SystemServerApi {
         JSONObject entries = new JSONObject();
         if (CollectionUtil.isNotEmpty(sysUserEntities)){
             // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
-            entries.putOnce("numberOfPeopleRegistered", sysUserEntities.size());
+            entries.put("numberOfPeopleRegistered", sysUserEntities.size());
 
             // 获取在册人员所有id
             List<Long> collect = sysUserEntities.stream().map(SysUserEntity::getId).collect(Collectors.toList());
-            entries.putOnce("numberOfPeopleRegisteredIdList", collect);
+            entries.put("numberOfPeopleRegisteredIdList", collect);
 
             // 按照 busis 字段进行分组
             Map<String, Long> typeCounts = sysUserEntities.stream()
@@ -296,9 +296,9 @@ public class SystemServerApi {
             JSONObject objects = new JSONObject();
             for (Map.Entry<String, Long> entry : typeCounts.entrySet()) {
                 System.out.println("类型：" + entry.getKey() + "，数量：" + entry.getValue());
-                objects.putOnce(entry.getKey(), entry.getValue());
+                objects.put(entry.getKey(), entry.getValue());
             }
-            entries.putOnce("jobs", objects);
+            entries.put("jobs", objects);
 
             // 按照 busis 字段进行分组
             Map<String, Long> postCounts = sysUserEntities.stream()
@@ -307,9 +307,9 @@ public class SystemServerApi {
             JSONObject postobjects = new JSONObject();
             for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
                 System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
-                postobjects.putOnce(entry2.getKey(), entry2.getValue());
+                postobjects.put(entry2.getKey(), entry2.getValue());
             }
-            entries.putOnce("postobjects", postobjects);
+            entries.put("postobjects", postobjects);
         }
         return entries;
     }
@@ -331,7 +331,7 @@ public class SystemServerApi {
         JSONObject entries = new JSONObject();
         if (CollectionUtil.isNotEmpty(tVehicleEntities)){
             // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
-            entries.putOnce("siteCarNumberTotal", tVehicleEntities.size());
+            entries.put("siteCarNumberTotal", tVehicleEntities.size());
 
         }
         return entries;
@@ -347,7 +347,7 @@ public class SystemServerApi {
      * @return: JSONObject
      */
     @PostMapping(value = "/sendSystemMessage")
-    public JSONObject sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId){
+    public Result<Object> sendSystemMessage(@RequestParam("type") String type,@RequestParam("siteId") Long siteId){
         //根据站点id获取站点管理员列表
         SysOrgEntity byId = sysOrgService.getById(siteId);
         //判断是否设置站点管理
@@ -371,7 +371,7 @@ public class SystemServerApi {
                 sysNoticeService.save(sysNoticeVO);
             }
         }
-        return new JSONObject(Result.ok());
+        return Result.ok();
     }
 
     /**
@@ -413,9 +413,9 @@ public class SystemServerApi {
         }
 
         JSONObject entries = new JSONObject();
-        entries.putOnce("numberOfSites", sysOrgEntities.size());
-        entries.putOnce("vehicularAccess", faceChannelNum);
-        entries.putOnce("personnelAccess", carChannelNum);
+        entries.put("numberOfSites", sysOrgEntities.size());
+        entries.put("vehicularAccess", faceChannelNum);
+        entries.put("personnelAccess", carChannelNum);
         return entries;
     }
 }

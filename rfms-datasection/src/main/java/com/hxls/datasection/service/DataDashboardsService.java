@@ -1,9 +1,8 @@
 package com.hxls.datasection.service;
 
 
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 
-import java.util.List;
 
 public interface DataDashboardsService{
 

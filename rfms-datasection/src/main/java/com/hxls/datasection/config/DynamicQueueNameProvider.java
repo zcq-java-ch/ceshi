@@ -1,18 +1,15 @@
 package com.hxls.datasection.config;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,9 +42,9 @@ public class DynamicQueueNameProvider {
         List<String> all = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(objects)){
             for (int i = 0; i < objects.size(); i++) {
-                JSONObject jsonObject = objects.get(i, JSONObject.class);
-                String siteCode = jsonObject.get("siteCode", String.class);
-                String ipAddress = jsonObject.get("ipAddress", String.class);
+                JSONObject jsonObject = objects.getJSONObject(i);
+                String siteCode = jsonObject.getString("siteCode");
+                String ipAddress = jsonObject.getString("ipAddress");
 
                 // 创建交换机 和 队列
                 String exchangeName = siteCode + "_EXCHANGE";
@@ -82,9 +79,9 @@ public class DynamicQueueNameProvider {
         List<String> all = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(objects)){
             for (int i = 0; i < objects.size(); i++) {
-                JSONObject jsonObject = objects.get(i, JSONObject.class);
-                String siteCode = jsonObject.get("siteCode", String.class);
-                String ipAddress = jsonObject.get("ipAddress", String.class);
+                JSONObject jsonObject = objects.getJSONObject(i);
+                String siteCode = jsonObject.getString("siteCode");
+                String ipAddress = jsonObject.getString("ipAddress");
 
                 // 创建交换机 和 队列
                 String exchangeName = siteCode + "_EXCHANGE";

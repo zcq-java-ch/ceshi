@@ -1,9 +1,8 @@
 package com.hxls.datasection.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -125,12 +124,12 @@ public class TVehicleAccessRecordsController extends BaseController {
     @Operation(summary = "海康威视车辆识别结果回调地址")
     public JSONObject callbackAddressCarRecognitionByHKWS(@RequestBody JSONObject jsonObject) throws ParseException, IOException {
         if(ObjectUtil.isNotEmpty(jsonObject)){
-            String uniqueNo = jsonObject.get("uniqueNo", String.class);
-            String plateNo = jsonObject.get("plateNo", String.class);
-            String picVehicleFileData = jsonObject.get("picVehicleFileData", String.class);
-            String passTime = jsonObject.get("passTime", String.class);
-            String terminalNo = jsonObject.get("terminalNo", String.class);
-            String laneCode = jsonObject.get("laneCode", String.class);
+            String uniqueNo = jsonObject.getString("uniqueNo");
+            String plateNo = jsonObject.getString("plateNo");
+            String picVehicleFileData = jsonObject.getString("picVehicleFileData");
+            String passTime = jsonObject.getString("passTime");
+            String terminalNo = jsonObject.getString("terminalNo");
+            String laneCode = jsonObject.getString("laneCode");
 
 
             String carUrl = BaseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR");
@@ -147,14 +146,14 @@ public class TVehicleAccessRecordsController extends BaseController {
                  * */
                 JSONObject entries = deviceFeign.useTheDeviceSnToQueryDeviceInformation(laneCode);
                 log.info("海康客户端传来的设备编号:{}",laneCode);
-                log.info("平台端的设备编号:{}",entries.get("device_name", String.class));
+                log.info("平台端的设备编号:{}",entries.getString("device_name"));
 
                 TVehicleAccessRecordsEntity body = new TVehicleAccessRecordsEntity();
-                body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
-                body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
-                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
-                body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
-                body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
+                body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : "设备未匹配到");
+                body.setDeviceId(ObjectUtil.isNotEmpty(entries.getLong("device_id")) ? entries.getLong("device_id") : 999L);
+                body.setDeviceName(ObjectUtil.isNotEmpty(entries.getString("device_name")) ? entries.getString("device_name") : "设备未匹配到");
+                body.setAccessType(ObjectUtil.isNotEmpty(entries.getString("access_type")) ? entries.getString("access_type") : "1");
                 body.setCarUrl(carUrl);
                 body.setPlateNumber(plateNo);
                 body.setRecordsId(uniqueNo);
@@ -162,10 +161,10 @@ public class TVehicleAccessRecordsController extends BaseController {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
                 body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(passTime) ? passTime : "2023-04-17 12:00:00"));
-                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
-                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
-                body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
-                body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
+                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.getLong("manufacturer_id")) ? entries.getLong("manufacturer_id") : 999L);
+                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.getString("manufacturer_name")) ? entries.getString("manufacturer_name") : "设备未匹配到");
+                body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
+                body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                 try {
                     tVehicleAccessRecordsService.save(body);
                 }catch (Exception e){
@@ -183,10 +182,10 @@ public class TVehicleAccessRecordsController extends BaseController {
          * }
          *
          * */
-        JSONObject obj = JSONUtil.createObj();
-        obj.set("result", 0);
-        obj.set("message", "ok");
-        return obj;
+        JSONObject jsonObject1 = new JSONObject();
+        jsonObject1.put("result", 0);
+        jsonObject1.put("message", "ok");
+        return jsonObject1;
     }
 
 

@@ -1,8 +1,8 @@
 package com.hxls.api.feign.appointment;
 
 
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.ServerNames;
 import com.hxls.api.vo.PageResult;
@@ -47,7 +47,7 @@ public interface AppointmentFeign {
      * @return 是否成功
      */
     @PostMapping(value = "api/appointment/issuedPeople")
-    Boolean issuedPeople(@RequestBody JSONObject data );
+    Boolean issuedPeople(@RequestBody cn.hutool.json.JSONObject data );
 
 
     /**
@@ -64,11 +64,11 @@ public interface AppointmentFeign {
 
 
     @GetMapping(value = "api/appointment/sum/{id}/{type}")
-    JSONObject appointmentSum(@PathVariable("id") Long id,@PathVariable ("type")  Long type);
+    JSONObject appointmentSum(@PathVariable("id") Long id, @PathVariable ("type")  Long type);
 
     @PostMapping("api/appointment/queryTheNumberOfResidencies")
     JSONObject queryTheNumberOfResidencies(@RequestParam Long siteId);
 
     @PostMapping("api/appointment/checkTheDetailsOfExternalAppointments")
-    JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId,@RequestParam Integer page,@RequestParam Integer limit);
+    JSONArray checkTheDetailsOfExternalAppointments(@RequestParam Long siteId, @RequestParam Integer page, @RequestParam Integer limit);
 }

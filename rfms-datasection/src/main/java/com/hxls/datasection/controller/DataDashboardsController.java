@@ -1,6 +1,6 @@
 package com.hxls.datasection.controller;
 
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.vo.PageResult;
@@ -36,29 +36,29 @@ public class DataDashboardsController {
         JSONObject jsonObject = new JSONObject();
         // 1. 人员信息部分
         JSONObject jsonper = dataDashboardsService.personnelInformationSection(stationId);
-        jsonObject.putOnce("personnelInformationSection", jsonper);
+        jsonObject.put("personnelInformationSection", jsonper);
         // 2. 车辆信息部分
         JSONObject jsonveh = dataDashboardsService.vehicleInformationSection(stationId);
-        jsonObject.putOnce("vehicleInformationSection", jsonveh);
+        jsonObject.put("vehicleInformationSection", jsonveh);
         // 3. 站点人员明细部分
         JSONObject jsonsite = dataDashboardsService.sitePersonnelBreakdownSection(stationId);
-        jsonObject.putOnce("sitePersonnelBreakdownSection", jsonsite);
+        jsonObject.put("sitePersonnelBreakdownSection", jsonsite);
         // 4. 车辆出入明细部分
         JSONObject jsonvehic = dataDashboardsService.vehicleAccessDetails(stationId);
-        jsonObject.putOnce("vehicleAccessDetails", jsonvehic);
+        jsonObject.put("vehicleAccessDetails", jsonvehic);
         // 5. 外部预约人员明细部分
         JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
-        jsonObject.putOnce("breakdownOfExternalAppointments", jsonbreak);
+        jsonObject.put("breakdownOfExternalAppointments", jsonbreak);
 
         return Result.ok(jsonObject);
     }
 
     /**
-      * @author: Mryang
-      * @Description: PC端-数据看板-公司看板
-      * @Date: 22:38 2024/4/21
-      * @param:
-      * @return: Result<JSONObject>
+      * @author Mryang
+      * @description PC端-数据看板-公司看板
+      * @date 11:02 2024/4/23
+      * @param
+      * @return
       */
     @GetMapping("/companyKanban")
     @Operation(summary = "数据看板-公司看板")
@@ -67,13 +67,13 @@ public class DataDashboardsController {
         JSONObject jsonObject = new JSONObject();
         // 1. 基本信息部分
         JSONObject jsonper = dataDashboardsService.basicInformationSection();
-        jsonObject.putOnce("basicInformationSection", jsonper);
+        jsonObject.put("basicInformationSection", jsonper);
         // 2. 实名制信息部分
         JSONObject jsonveh = dataDashboardsService.realNameInformationSection();
-        jsonObject.putOnce("realNameInformationSection", jsonveh);
+        jsonObject.put("realNameInformationSection", jsonveh);
         // 3. 地图部分
         JSONObject jsonsite = dataDashboardsService.mapSection();
-        jsonObject.putOnce("mapSection", jsonsite);
+        jsonObject.put("mapSection", jsonsite);
 
         return Result.ok(jsonObject);
     }
@@ -111,7 +111,7 @@ public class DataDashboardsController {
     @GetMapping("appointmentInformation")
     @Operation(summary = "数据看板-预约看板-获取详情")
     @PreAuthorize("hasAuthority('datasection:appointment:info')")
-    public cn.hutool.json.JSONObject appointmentInformation(@RequestParam  Long id) {
+    public JSONObject appointmentInformation(@RequestParam  Long id) {
         return appointmentFeign.guardInformation(id);
     }
 
@@ -127,15 +127,15 @@ public class DataDashboardsController {
     @GetMapping("/appointmentSum")
     @Operation(summary = "数据看板-预约汇总")
     @PreAuthorize("hasAuthority('datasection:appointment:sum')")
-    public Result< cn.hutool.json.JSONObject> appointmentSum(@RequestParam Long id) {
-        cn.hutool.json.JSONObject entries = appointmentFeign.appointmentSum(id , 2L);
+    public Result< JSONObject> appointmentSum(@RequestParam Long id) {
+        JSONObject entries = appointmentFeign.appointmentSum(id , 2L);
         return Result.ok(entries);
     }
     @GetMapping("/guardSum")
     @Operation(summary = "数据看板-安保汇总")
     @PreAuthorize("hasAuthority('datasection:guard:sum')")
-    public Result<cn.hutool.json.JSONObject> guardSum(@RequestParam Long id) {
-        cn.hutool.json.JSONObject entries = appointmentFeign.appointmentSum(id , 1L);
+    public Result<JSONObject> guardSum(@RequestParam Long id) {
+        JSONObject entries = appointmentFeign.appointmentSum(id , 1L);
         return Result.ok(entries);
     }
 }

@@ -1,8 +1,9 @@
 package com.hxls.datasection.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.util.BaseImageUtils;
@@ -149,7 +150,7 @@ public class TPersonAccessRecordsController extends BaseController {
                  * */
                 JSONObject entries = deviceFeign.useTheAccountToQueryDeviceInformation(dfCallBackDto.getDevicename());
                 log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
-                log.info("平台端的设备名称:{}",entries.get("account", String.class));
+                log.info("平台端的设备名称:{}",entries.getString("account"));
                 String faceBase64 = dfCallBackDto.getFace_base64();
 
                 log.info("万众人脸开始转换base64");
@@ -157,11 +158,11 @@ public class TPersonAccessRecordsController extends BaseController {
                 log.info("万众人脸转换完成：{}",faceUrl);
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
-                body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
-                body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
-                body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
-                body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
-                body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
+                body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : "设备未匹配到");
+                body.setDeviceId(ObjectUtil.isNotEmpty(entries.getLong("device_id")) ? entries.getLong("device_id") : 999L);
+                body.setDeviceName(ObjectUtil.isNotEmpty(entries.getString("device_name")) ? entries.getString("device_name") : "设备未匹配到");
+                body.setAccessType(ObjectUtil.isNotEmpty(entries.getString("access_type")) ? entries.getString("access_type") : "1");
                 body.setHeadUrl(faceUrl);
                 body.setPersonName(dfCallBackDto.getName());
                 body.setDevicePersonId(dfCallBackDto.getEmployee_number());
@@ -169,10 +170,10 @@ public class TPersonAccessRecordsController extends BaseController {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
                 body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(dfCallBackDto.getTime()) ? dfCallBackDto.getTime() : "2023-04-17 12:00:00"));
-                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
-                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
-                body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
-                body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
+                body.setManufacturerId(ObjectUtil.isNotEmpty(entries.getLong("manufacturer_id")) ? entries.getLong("manufacturer_id") : 999L);
+                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.getString("manufacturer_name")) ? entries.getString("manufacturer_name") : "设备未匹配到");
+                body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
+                body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                 body.setRecordsId(dfCallBackDto.getId());
                 try {
                     tPersonAccessRecordsService.save(body);
@@ -191,10 +192,10 @@ public class TPersonAccessRecordsController extends BaseController {
          * }
          *
          * */
-        JSONObject obj = JSONUtil.createObj();
-        obj.set("result", 0);
-        obj.set("message", "ok");
-        return obj;
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("result", 0);
+        jsonObject.put("message", "ok");
+        return jsonObject;
     }
 
 
@@ -212,13 +213,13 @@ public class TPersonAccessRecordsController extends BaseController {
         // 在这里处理接收到的事件日志 JSON 字符串和图片文件
 //        System.out.println("Received event log JSON: " + event_log);
         if (StringUtils.isNotEmpty(event_log)){
-            JSONObject jsonObject = JSONUtil.parseObj(event_log);
-            String ipAddress = jsonObject.get("ipAddress", String.class);
-            Date dateTime = jsonObject.get("dateTime", Date.class);
-            JSONObject accessControllerEvent = jsonObject.get("AccessControllerEvent", JSONObject.class);
-            String name = accessControllerEvent.get("name", String.class);
-            String employeeNoString = accessControllerEvent.get("employeeNoString", String.class);
-            String recordId = accessControllerEvent.get("serialNo", String.class);
+            JSONObject jsonObject = JSON.parseObject(event_log);
+            String ipAddress = jsonObject.getString("ipAddress");
+            Date dateTime = jsonObject.getDate("dateTime");
+            JSONObject accessControllerEvent = jsonObject.getJSONObject("AccessControllerEvent");
+            String name = accessControllerEvent.getString("name");
+            String employeeNoString = accessControllerEvent.getString("employeeNoString");
+            String recordId = accessControllerEvent.getString("serialNo");
 
             boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(recordId);
             if (whetherItExists){
@@ -242,13 +243,13 @@ public class TPersonAccessRecordsController extends BaseController {
                         // 进行存储
                         JSONObject entries = deviceFeign.useTheIpaddressToQueryDeviceInformation(ipAddress);
                         log.info("海康人脸客户端传来的IP:{}",ipAddress);
-                        log.info("平台端的设备的IP:{}",entries.get("ipAddress", String.class));
+                        log.info("平台端的设备的IP:{}",entries.getString("ipAddress"));
                         TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
-                        body.setChannelId(ObjectUtil.isNotEmpty(entries.get("channel_id", Long.class)) ? entries.get("channel_id", Long.class) : 999L);
-                        body.setChannelName(ObjectUtil.isNotEmpty(entries.get("channel_name", String.class)) ? entries.get("channel_name", String.class) : "设备未匹配到");
-                        body.setDeviceId(ObjectUtil.isNotEmpty(entries.get("device_id", Long.class)) ? entries.get("device_id", Long.class) : 999L);
-                        body.setDeviceName(ObjectUtil.isNotEmpty(entries.get("device_name", String.class)) ? entries.get("device_name", String.class) : "设备未匹配到");
-                        body.setAccessType(ObjectUtil.isNotEmpty(entries.get("access_type", String.class)) ? entries.get("access_type", String.class) : "1");
+                        body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
+                        body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : "设备未匹配到");
+                        body.setDeviceId(ObjectUtil.isNotEmpty(entries.getLong("device_id")) ? entries.getLong("device_id") : 999L);
+                        body.setDeviceName(ObjectUtil.isNotEmpty(entries.getString("device_name")) ? entries.getString("device_name") : "设备未匹配到");
+                        body.setAccessType(ObjectUtil.isNotEmpty(entries.getString("access_type")) ? entries.getString("access_type") : "1");
                         body.setHeadUrl(faceUrl);
                         body.setPersonName(name);
                         body.setDevicePersonId(employeeNoString);
@@ -257,10 +258,10 @@ public class TPersonAccessRecordsController extends BaseController {
 
 //                    body.setRecordTime(dateFormat.parse(dateTime));
                         body.setRecordTime(dateTime);
-                        body.setManufacturerId(ObjectUtil.isNotEmpty(entries.get("manufacturer_id", Long.class)) ? entries.get("manufacturer_id", Long.class) : 999L);
-                        body.setManufacturerName(ObjectUtil.isNotEmpty(entries.get("manufacturer_name", String.class)) ? entries.get("manufacturer_name", String.class) : "设备未匹配到");
-                        body.setSiteId(ObjectUtil.isNotEmpty(entries.get("siteId", Long.class)) ? entries.get("siteId", Long.class) : 999L);
-                        body.setSiteName(ObjectUtil.isNotEmpty(entries.get("siteName", String.class)) ? entries.get("siteName", String.class) : "设备未匹配到");
+                        body.setManufacturerId(ObjectUtil.isNotEmpty(entries.getLong("manufacturer_id")) ? entries.getLong("manufacturer_id") : 999L);
+                        body.setManufacturerName(ObjectUtil.isNotEmpty(entries.getString("manufacturer_name")) ? entries.getString("manufacturer_name") : "设备未匹配到");
+                        body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
+                        body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                         body.setRecordsId(recordId);
                         tPersonAccessRecordsService.save(body);
                         // 返回结果或进行其他处理
@@ -284,9 +285,9 @@ public class TPersonAccessRecordsController extends BaseController {
          * }
          *
          * */
-        JSONObject obj = JSONUtil.createObj();
-        obj.set("result", 0);
-        obj.set("message", "ok");
+        JSONObject obj = new JSONObject();
+        obj.put("result", 0);
+        obj.put("message", "ok");
         return obj;
     }
 

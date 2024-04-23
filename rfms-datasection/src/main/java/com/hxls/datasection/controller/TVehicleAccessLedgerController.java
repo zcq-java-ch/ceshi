@@ -1,24 +1,16 @@
 package com.hxls.datasection.controller;
 
-import com.hxls.framework.operatelog.annotations.OperateLog;
-import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
-import com.hxls.datasection.convert.TVehicleAccessLedgerConvert;
-import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import com.hxls.datasection.service.TVehicleAccessLedgerService;
 import com.hxls.datasection.query.TVehicleAccessLedgerQuery;
 import com.hxls.datasection.vo.TVehicleAccessLedgerVO;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.List;
 
 /**
 * 车辆进出厂展示台账

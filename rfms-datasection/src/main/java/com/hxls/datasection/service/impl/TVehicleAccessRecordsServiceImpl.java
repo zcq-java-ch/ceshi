@@ -1,15 +1,14 @@
 package com.hxls.datasection.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
-import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.security.user.UserDetail;
@@ -120,13 +119,13 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                     // 先通过车牌找到对应的平台车辆信息
 
                     TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
-                    tVehicleAccessLedgerEntity.setVehicleModel(jsonObject.get("carType", String.class));
-                    tVehicleAccessLedgerEntity.setEmissionStandard(jsonObject.get("emissionStandard", String.class));
-                    tVehicleAccessLedgerEntity.setLicenseImage(jsonObject.get("licenseImage", String.class));
-                    tVehicleAccessLedgerEntity.setEnvirList(jsonObject.get("images", String.class));
-                    tVehicleAccessLedgerEntity.setFleetName(jsonObject.get("fleetName", String.class));
-                    tVehicleAccessLedgerEntity.setVinNumber(jsonObject.get("vinNumber", String.class));
-                    tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.get("engineNumber", String.class));
+                    tVehicleAccessLedgerEntity.setVehicleModel(jsonObject.getString("carType"));
+                    tVehicleAccessLedgerEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                    tVehicleAccessLedgerEntity.setLicenseImage(jsonObject.getString("licenseImage"));
+                    tVehicleAccessLedgerEntity.setEnvirList(jsonObject.getString("images"));
+                    tVehicleAccessLedgerEntity.setFleetName(jsonObject.getString("fleetName"));
+                    tVehicleAccessLedgerEntity.setVinNumber(jsonObject.getString("vinNumber"));
+                    tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.getString("engineNumber"));
 
                     tVehicleAccessLedgerEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
                     tVehicleAccessLedgerEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
@@ -225,9 +224,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
         }
         JSONObject entries = new JSONObject();
-        entries.putOnce("realTimeTotals", inAllNumer);
-        entries.putOnce("numberOfTrolleys", numberOfTrolleys);
-        entries.putOnce("theNumberOfShipments", theNumberOfShipments);
+        entries.put("realTimeTotals", inAllNumer);
+        entries.put("numberOfTrolleys", numberOfTrolleys);
+        entries.put("theNumberOfShipments", theNumberOfShipments);
         return entries;
     }
 
@@ -278,12 +277,12 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             if ("1".equals(lastRecord.getAccessType())) {
                 // 最后一次为入厂
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.putOnce("licensePlateNumber", lastRecord.getPlateNumber());
-                jsonObject.putOnce("driver", lastRecord.getDriverName());
-                jsonObject.putOnce("models", lastRecord.getVehicleModel());
-                jsonObject.putOnce("emissionStandards", lastRecord.getEmissionStandard());
-                jsonObject.putOnce("time", lastRecord.getRecordTime());
-                jsonObject.putOnce("typeOfEntryAndExit", lastRecord.getAccessType());
+                jsonObject.put("licensePlateNumber", lastRecord.getPlateNumber());
+                jsonObject.put("driver", lastRecord.getDriverName());
+                jsonObject.put("models", lastRecord.getVehicleModel());
+                jsonObject.put("emissionStandards", lastRecord.getEmissionStandard());
+                jsonObject.put("time", lastRecord.getRecordTime());
+                jsonObject.put("typeOfEntryAndExit", lastRecord.getAccessType());
                 objects.add(jsonObject);
             } else {
                 // 最后一次为出厂

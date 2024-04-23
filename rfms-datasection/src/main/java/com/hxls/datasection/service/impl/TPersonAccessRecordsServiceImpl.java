@@ -1,8 +1,8 @@
 package com.hxls.datasection.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -340,10 +340,10 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         }
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("inTheRegisteredFactory", inNumer);
-        jsonObject.putOnce("realTimeTotalNumberOfPeople", inAllNumer);
-        jsonObject.putOnce("nbzc", innbNumer);
-        jsonObject.putOnce("wbzp", inzpNumer);
+        jsonObject.put("inTheRegisteredFactory", inNumer);
+        jsonObject.put("realTimeTotalNumberOfPeople", inAllNumer);
+        jsonObject.put("nbzc", innbNumer);
+        jsonObject.put("wbzp", inzpNumer);
         return jsonObject;
     }
     private Date getTodayStart() {
@@ -396,10 +396,10 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             if ("1".equals(lastRecord.getAccessType())) {
                 // 最后一次为入厂
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.putOnce("name", lastRecord.getPersonName());
-                jsonObject.putOnce("fire", lastRecord.getCompanyName());
-                jsonObject.putOnce("post", lastRecord.getPositionName());
-                jsonObject.putOnce("region", lastRecord.getChannelName());
+                jsonObject.put("name", lastRecord.getPersonName());
+                jsonObject.put("fire", lastRecord.getCompanyName());
+                jsonObject.put("post", lastRecord.getPositionName());
+                jsonObject.put("region", lastRecord.getChannelName());
                 objects.add(jsonObject);
             } else {
                 // 最后一次为出厂
