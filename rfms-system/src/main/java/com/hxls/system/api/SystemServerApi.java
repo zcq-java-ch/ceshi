@@ -396,8 +396,8 @@ public class SystemServerApi {
         objectLambdaQueryWrapper1.eq(SysSiteAreaEntity::getDeleted, 0);
         List<SysSiteAreaEntity> areaEntities = sysSiteAreaService.list(objectLambdaQueryWrapper1);
 
-        Integer faceChannelNum = 0;
-        Integer carChannelNum = 0;
+        int faceChannelNum = 0;
+        int carChannelNum = 0;
         for (int i = 0; i < areaEntities.size(); i++) {
             SysSiteAreaEntity sysSiteAreaEntity = areaEntities.get(i);
             if (StringUtils.isNotBlank(sysSiteAreaEntity.getFaceInCode()) && StringUtils.isNotBlank(sysSiteAreaEntity.getFaceOutCode())) {

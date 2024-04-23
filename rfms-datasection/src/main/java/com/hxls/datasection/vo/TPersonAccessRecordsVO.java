@@ -4,6 +4,8 @@ import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.io.Serial;
 import java.io.Serializable;
 import com.hxls.framework.common.utils.DateUtils;
 
@@ -20,6 +22,7 @@ import java.util.List;
 @Data
 @Schema(description = "人员出入记录表")
 public class TPersonAccessRecordsVO implements Serializable {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Schema(description = "id")

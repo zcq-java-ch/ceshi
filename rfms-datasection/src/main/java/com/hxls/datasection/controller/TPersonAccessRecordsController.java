@@ -83,6 +83,7 @@ public class TPersonAccessRecordsController extends BaseController {
             return Result.ok();
         }catch (Exception e){
             e.printStackTrace();
+            log.info("保存失败，进入catch:");
             return Result.error("添加失败！");
         }
     }

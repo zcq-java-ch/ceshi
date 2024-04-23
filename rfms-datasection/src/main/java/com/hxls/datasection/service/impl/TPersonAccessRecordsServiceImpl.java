@@ -199,7 +199,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
-        Integer inNumer = 0;
+        int inNumer = 0;
         if(CollectionUtil.isNotEmpty(allnbNumids)){
             objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getPersonId, allnbNumids);
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
@@ -235,7 +235,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities2 = baseMapper.selectList(objectLambdaQueryWrapper2);
-        Integer inAllNumer = 0;
+        int inAllNumer = 0;
 
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
@@ -274,7 +274,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper3.in(TPersonAccessRecordsEntity::getPersonId, nbNumids);
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
 
-        Integer innbNumer = 0;
+        int innbNumer = 0;
 
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
@@ -309,7 +309,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper4.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper4.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper4.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
-        Integer inzpNumer = 0;
+        int inzpNumer = 0;
         if (ObjectUtils.isNotEmpty(pzNumIds)){
             objectLambdaQueryWrapper4.in(TPersonAccessRecordsEntity::getPersonId, pzNumIds);
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities4 = baseMapper.selectList(objectLambdaQueryWrapper4);

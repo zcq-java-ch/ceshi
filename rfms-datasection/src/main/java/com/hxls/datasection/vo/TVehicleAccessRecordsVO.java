@@ -3,6 +3,8 @@ package com.hxls.datasection.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.io.Serial;
 import java.io.Serializable;
 import com.hxls.framework.common.utils.DateUtils;
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.Date;
 @Data
 @Schema(description = "车辆出入记录表")
 public class TVehicleAccessRecordsVO implements Serializable {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Schema(description = "id")

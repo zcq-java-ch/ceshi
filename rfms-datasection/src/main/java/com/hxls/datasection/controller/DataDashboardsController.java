@@ -57,12 +57,12 @@ public class DataDashboardsController {
       * @author: Mryang
       * @Description: PC端-数据看板-公司看板
       * @Date: 22:38 2024/4/21
-      * @Param:
-      * @return:
+      * @param:
+      * @return: Result<JSONObject>
       */
     @GetMapping("/companyKanban")
     @Operation(summary = "数据看板-公司看板")
-//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
+    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
     public Result<JSONObject> companyKanban() {
         JSONObject jsonObject = new JSONObject();
         // 1. 基本信息部分
@@ -81,15 +81,22 @@ public class DataDashboardsController {
     @PostMapping("/guard")
     @Operation(summary = "数据看板-安保看板")
     @PreAuthorize("hasAuthority('datasection:guard:page')")
-    public Result<PageResult<TAppointmentVO>> guardPage(@RequestBody  AppointmentDTO data) {
+    public Result<PageResult<TAppointmentVO>> guardPage(@RequestBody AppointmentDTO data) {
         PageResult<TAppointmentVO> board = appointmentFeign.board(data);
         return Result.ok(board);
     }
 
+    /**
+      * @author Mryang
+      * @description PC端-安保看板-获取详情
+      * @date 10:15 2024/4/23
+      * @param id 站点
+      * @return JSONObject
+      */
     @GetMapping("/guardInformation")
     @Operation(summary = "数据看板-安保看板-获取详情")
     @PreAuthorize("hasAuthority('datasection:guard:info')")
-    public cn.hutool.json.JSONObject guardInformation(@RequestParam  Long id) {
+    public JSONObject guardInformation(@RequestParam Long id) {
         return appointmentFeign.guardInformation(id);
     }
 

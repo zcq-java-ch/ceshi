@@ -59,27 +59,30 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         Long zccn = jsonObject2.get("inTheRegisteredFactory", Long.class);
         Long realTimeTotalNumberOfPeople = jsonObject2.get("realTimeTotalNumberOfPeople", Long.class);
         Long nbzc = jsonObject2.get("nbzc", Long.class);
-        Long wbzp = jsonObject2.get("wbzp", Long.class);
+        Long wbzp = jsonObject2.getLong("wbzp");
 
         JSONObject entries = jsonObject1.get("jobs", JSONObject.class);
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum); // 在册人数
-        jsonObject.putOnce("inTheRegisteredFactory", zccn); // 在册厂内
-        jsonObject.putOnce("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn); // 在册厂外
-        jsonObject.putOnce("numberOfPeopleReadyToMix", entries); // 预拌人数 预制人数 等业务与人数
-//        jsonObject.putOnce("preMadeNumberOfPeople", "10"); //
+        // 在册人数
+        jsonObject.putOnce("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum);
+        // 在册厂内
+        jsonObject.putOnce("inTheRegisteredFactory", zccn);
+        // 在册厂外
+        jsonObject.putOnce("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn);
+        // 预拌人数 预制人数 等业务与人数
+        jsonObject.putOnce("numberOfPeopleReadyToMix", entries);
+        // 实时总人数
+        jsonObject.putOnce("realTimeTotalNumberOfPeople", realTimeTotalNumberOfPeople);
+        // 公司人员
+        jsonObject.putOnce("companyPersonnel", nbzc);
+        // 派驻人员
+        jsonObject.putOnce("residency", wbzp);
+        // 外部预约
+        jsonObject.putOnce("externalAppointments", "10");
 
-        jsonObject.putOnce("realTimeTotalNumberOfPeople", realTimeTotalNumberOfPeople); // 实时总人数
-        jsonObject.putOnce("companyPersonnel", nbzc); // 公司人员
-        jsonObject.putOnce("residency", wbzp); // 派驻人员
-        jsonObject.putOnce("externalAppointments", "10"); // 外部预约
-
-//        JSONObject jsonObjectType = new JSONObject();
-//        jsonObjectType.put("钢筋工", "10"); // 钢筋工
-//        jsonObjectType.put("xx工", "10"); // xx工
-
-        jsonObject.putOnce("jobs", postAll); // 工种人员数量集合
+        // 工种人员数量集合
+        jsonObject.putOnce("jobs", postAll);
 
         return jsonObject;
     }
@@ -178,7 +181,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         }
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putOnce("detailsOfExternalReservationStaff", objects1); // 外部预约员明细
+        jsonObject.putOnce("detailsOfExternalReservationStaff", entries); // 外部预约员明细
         return jsonObject;
     }
 
