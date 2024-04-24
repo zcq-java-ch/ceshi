@@ -41,6 +41,8 @@ public class ApplicationController {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+
+
             Long orgId = user.getOrgId();
             if (orgId != null){
                 query.setSupplierName(orgId.toString());
