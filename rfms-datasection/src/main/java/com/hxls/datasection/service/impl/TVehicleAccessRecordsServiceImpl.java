@@ -196,9 +196,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             String devicePersonId = entry.getKey();
             List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
 
-            System.out.println("车牌: " + devicePersonId);
-            System.out.println("Records:");
-            System.out.println("---------------------------------");
+//            System.out.println("车牌: " + devicePersonId);
+//            System.out.println("Records:");
+//            System.out.println("---------------------------------");
 
             // 找出每个分组中按照时间排序的最后一条数据
             TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
@@ -268,9 +268,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             String devicePersonId = entry.getKey();
             List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
 
-            System.out.println("车牌: " + devicePersonId);
-            System.out.println("Records:");
-            System.out.println("---------------------------------");
+//            System.out.println("车牌: " + devicePersonId);
+//            System.out.println("Records:");
+//            System.out.println("---------------------------------");
 
             // 找出每个分组中按照时间排序的最后一条数据
             TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));

@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.UserFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -21,6 +22,7 @@ import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +53,8 @@ import java.util.List;
 @Slf4j
 public class TPersonAccessRecordsController extends BaseController {
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
-    @Autowired
-    private DeviceFeign deviceFeign;
+    private final DeviceFeign deviceFeign;
+    private final UserFeign userFeign;
 
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
@@ -118,7 +120,7 @@ public class TPersonAccessRecordsController extends BaseController {
       */
     @GetMapping("/pageUnidirectionalTpersonAccessRecords")
     @Operation(summary = "查询单向通行记录")
-//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
+    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectional')")
     public Result<PageResult<TPersonAccessRecordsVO>> pageUnidirectionalTVehicleAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
 
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query,baseUser);
@@ -175,7 +177,14 @@ public class TPersonAccessRecordsController extends BaseController {
                 body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
                 body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                 body.setRecordsId(dfCallBackDto.getId());
+                body.setPhone(dfCallBackDto.getTelephone());
                 try {
+
+                    // 通过手机号查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+                    String telephone = dfCallBackDto.getTelephone();
+                    if (StringUtils.isNotEmpty(telephone)){
+                        JSONObject userDetail = userFeign.queryUserInformationThroughMobilePhoneNumber(telephone);
+                    }
                     tPersonAccessRecordsService.save(body);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -211,7 +220,7 @@ public class TPersonAccessRecordsController extends BaseController {
     @Operation(summary = "海康威视人脸识别结果回调地址")
     public JSONObject callbackAddressFaceRecognitionByHKWS( @RequestParam("event_log") String event_log,@RequestParam(value = "Picture", required = false) MultipartFile pictureFile) throws ParseException {
         // 在这里处理接收到的事件日志 JSON 字符串和图片文件
-//        System.out.println("Received event log JSON: " + event_log);
+        System.out.println("Received event log JSON: " + event_log);
         if (StringUtils.isNotEmpty(event_log)){
             JSONObject jsonObject = JSON.parseObject(event_log);
             String ipAddress = jsonObject.getString("ipAddress");

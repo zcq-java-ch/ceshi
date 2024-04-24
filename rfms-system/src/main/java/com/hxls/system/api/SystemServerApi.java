@@ -498,4 +498,27 @@ public class SystemServerApi {
         }
         return objects;
     }
+
+    /**
+      * @author Mryang
+      * @description 通过手机号查询用户信息
+      * @date 11:40 2024/4/24
+      * @param telephone
+      * @return JSONObject
+      */
+    @PostMapping(value = "/queryUserInformationThroughMobilePhoneNumber")
+    public JSONObject queryUserInformationThroughMobilePhoneNumber(@RequestParam("telephone") String telephone) {
+        LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getMobile, telephone);
+        List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
+
+        JSONObject entries = new JSONObject();
+//        entries.put("licensePlateRecognitionOnline", licensePlateRecognitionOnline);
+//        entries.put("licensePlateRecognitionOffline", licensePlateRecognitionOffline);
+//        entries.put("faceRecognitionOnline", faceRecognitionOnline);
+//        entries.put("faceRecognitionOffline", faceRecognitionOffline);
+        return entries;
+    }
 }

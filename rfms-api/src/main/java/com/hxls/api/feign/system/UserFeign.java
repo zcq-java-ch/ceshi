@@ -18,5 +18,6 @@ public interface UserFeign {
     @PostMapping(value = "api/system/QueryNumberVehiclesAndFacesOnlineAndOffline")
     JSONObject QueryNumberVehiclesAndFacesOnlineAndOffline();
 
-
+    @PostMapping(value = "api/system/queryUserInformationThroughMobilePhoneNumber")
+    JSONObject queryUserInformationThroughMobilePhoneNumber(@RequestParam("telephone") String telephone);
 }
