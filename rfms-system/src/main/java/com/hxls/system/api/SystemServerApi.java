@@ -263,7 +263,8 @@ public class SystemServerApi {
             entries.put("carType", tVehicleEntity.getCarType());
             entries.put("emissionStandard", tVehicleEntity.getEmissionStandard());
             entries.put("licenseImage", tVehicleEntity.getLicenseImage());
-            entries.put("images", tVehicleEntity.getImages()); // 随车环报清单
+            // 随车环报清单
+            entries.put("images", tVehicleEntity.getImages());
             entries.put("fleetName", tVehicleEntity.getFleetName());
             entries.put("vinNumber", tVehicleEntity.getVinNumber());
             entries.put("engineNumber", tVehicleEntity.getEngineNumber());
@@ -389,7 +390,8 @@ public class SystemServerApi {
         LambdaQueryWrapper<SysOrgEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
-        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 3); // 只查询组织类型为站点的
+        // 只查询组织类型为站点的
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 3);
         List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
 
         LambdaQueryWrapper<SysSiteAreaEntity> objectLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
@@ -474,7 +476,8 @@ public class SystemServerApi {
         LambdaQueryWrapper<SysOrgEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
-        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4); // 只查询组织类型为站点的
+        // 只查询组织类型为站点的
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4);
         List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(sysOrgEntities)){
             for (int i = 0; i < sysOrgEntities.size(); i++) {

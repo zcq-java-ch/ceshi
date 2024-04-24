@@ -39,8 +39,11 @@ public class TVehicleVO implements Serializable {
 	@Schema(description = "默认司机（关联用户）")
 	private Long driverId;
 
-	@Schema(description = "默认司机名字")
+	@Schema(description = "默认司机姓名")
 	private String driverName;
+
+	@Schema(description = "默认司机手机号")
+	private String driverPhone;
 
 	@Schema(description = "默认司机手机号码")
 	private String driverMobile;

@@ -44,6 +44,16 @@ public class TVehicleEntity extends BaseEntity {
 	private Long driverId;
 
 	/**
+	 * 默认司机姓名
+	 */
+	private String driverName;
+
+	/**
+	 * 默认司机手机号
+	 */
+	private String driverMobile;
+
+	/**
 	* 使用司机（关联用户）
 	*/
 	private Long userId;
