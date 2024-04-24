@@ -91,8 +91,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
+        LambdaQueryWrapper<TAppointmentEntity> wrapper =query.getCreator() == null? getWrapper(query) :getWrapper(query).or().eq(TAppointmentEntity::getCreator ,query.getCreator());
 
-        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+
+        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query),wrapper );
 
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
@@ -164,7 +166,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
-        wrapper.eq(query.getCreator() != null, TAppointmentEntity::getCreator, query.getCreator());
         wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
 
         if (StringUtils.isNotEmpty(query.getSubmitterName())) {

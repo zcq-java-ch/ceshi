@@ -7,6 +7,7 @@ import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -47,12 +48,12 @@ public class AppointmentAuditController {
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        if (user.getSuperAdmin()<1) {
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
             Set<Long> manageStation = user.getManageStation();
             if (CollectionUtils.isNotEmpty(manageStation)){
                 query.setSiteIds((new ArrayList<>(manageStation)));
             }else {
-                query.setCreator(user.getId());
+                query.setSiteIds(List.of(Constant.EMPTY));
             }
         }
         PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
