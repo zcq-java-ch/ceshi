@@ -1,8 +1,6 @@
 package com.hxls.datasection.util;
 
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -47,9 +45,9 @@ public class BaseImageUtils {
         // 打印响应结果
         int statusCode = response.getStatusLine().getStatusCode();
         String responseBody = EntityUtils.toString(response.getEntity());
-        JSON parse = JSONUtil.parse(responseBody);
-        JSONObject data = parse.getByPath("data", JSONObject.class);
-        String url = data.get("url", String.class);
+        JSONObject parse = com.alibaba.fastjson.JSON.parseObject(responseBody);
+        JSONObject data = parse.getJSONObject("data");
+        String url = data.getString("url");
 
         System.out.println("Status Code: " + statusCode);
         System.out.println("Response Body: " + responseBody);

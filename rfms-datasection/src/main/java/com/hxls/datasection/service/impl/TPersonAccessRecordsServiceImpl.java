@@ -115,6 +115,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
             // 按照 站点 进行分组
             Map<Long, List<TPersonAccessRecordsEntity>> groupedByManufacturerId = tPersonAccessRecordsEntities.stream()
+                    .filter(tPersonAccessRecordsEntity -> ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity.getSiteId()))
                     .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getSiteId));
             // 打印每个分组
             groupedByManufacturerId.forEach((siteId, recordsList) -> {
@@ -125,6 +126,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
                 // 按照 姓名 进行分组
                 Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
+                        .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
                         .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
                 // 打印每个分组
@@ -136,6 +138,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
                     // 按照 进出类型 进行分组
                     Map<String, List<TPersonAccessRecordsEntity>> groupedByAccessType = records2List.stream()
+                            .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getAccessType()))
                             .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getAccessType));
                     int size = groupedByAccessType.size();
                     if (size == 1){
@@ -210,6 +213,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
             // 按照姓名id进行分组
             Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
+                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                     .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
             // 打印每个分组并更新inNumer变量
             for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId.entrySet()) {
@@ -245,7 +249,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
                 .stream()
-                .filter(tPersonAccessRecordsEntity -> ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         // 打印每个分组并更新inNumer变量
@@ -283,6 +287,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         // 打印每个分组并更新inNumer变量
@@ -321,6 +326,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
             // 按照姓名id进行分组
             Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = tPersonAccessRecordsEntities4.stream()
+                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                     .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
             // 打印每个分组并更新inNumer变量
@@ -384,7 +390,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
                 .stream()
-                .filter(tPersonAccessRecordsEntity -> ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
@@ -429,6 +435,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int numberOfFactoryStation = 0;
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         List<TPersonAccessRecordsEntity> personAccessRecordsEntityArrayList = new ArrayList<>();
@@ -465,6 +472,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int numberOfCarStation = 0;
         // 按照车牌进行分组
         Map<String, List<TVehicleAccessRecordsEntity>> groupPlateNumber = tVehicleAccessLedgerEntities.stream()
+                .filter(tVehicleAccessRecordsEntity -> StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getPlateNumber()))
                 .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
 
         List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = new ArrayList<>();
@@ -531,6 +539,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int numberOfCarStation = 0;
         // 按照车牌进行分组
         Map<String, List<TVehicleAccessRecordsEntity>> groupPlateNumber = tVehicleAccessLedgerEntities.stream()
+                .filter(tVehicleAccessRecordsEntity -> StringUtils.isNotBlank(tVehicleAccessRecordsEntity.getPlateNumber()))
                 .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
 
         // 打印每个分组并更新inNumer变量
@@ -567,6 +576,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int numberOfFactoryStation = 0;
         // 按照姓名id进行分组
         Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         // 打印每个分组并更新inNumer变量
