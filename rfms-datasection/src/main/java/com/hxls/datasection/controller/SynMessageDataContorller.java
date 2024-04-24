@@ -2,6 +2,7 @@ package com.hxls.datasection.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
@@ -10,6 +11,7 @@ import com.hxls.framework.rabbitmq.domain.MessageSendDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -27,8 +29,8 @@ import java.util.Date;
 public class SynMessageDataContorller {
 
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
-
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
+    private final VehicleFeign vehicleFeign;
     /**
      * 接收客户端传来的人员人别记录
      * */
@@ -115,6 +117,21 @@ public class SynMessageDataContorller {
                 tVehicleAccessRecordsEntity.setRecordTime(jsonObjectRecords.getDate("record_time"));
                 tVehicleAccessRecordsEntity.setSiteId(jsonObjectRecords.getLong("siteId"));
                 tVehicleAccessRecordsEntity.setSiteName(jsonObjectRecords.getString("siteName"));
+
+                /**
+                 * 需要通过车牌绑定平台车辆信息数据
+                 * */
+                if (ObjectUtils.isNotEmpty(jsonObjectRecords.getString("plateNumber"))){
+                    JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(jsonObjectRecords.getString("plateNumber"));
+                    if(ObjectUtils.isNotEmpty(jsonObject)){
+                        tVehicleAccessRecordsEntity.setVehicleModel(jsonObject.getString("carType"));
+                        tVehicleAccessRecordsEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                        tVehicleAccessRecordsEntity.setDriverId(jsonObject.getLong("driverId"));
+                        tVehicleAccessRecordsEntity.setDriverName(jsonObject.getString("driverName"));
+                        tVehicleAccessRecordsEntity.setDriverPhone(jsonObject.getString("driverMobile"));
+                    }
+                }
+
                 tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);
 
                 // 存储车辆进出场展示台账

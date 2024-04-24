@@ -268,6 +268,9 @@ public class SystemServerApi {
             entries.put("fleetName", tVehicleEntity.getFleetName());
             entries.put("vinNumber", tVehicleEntity.getVinNumber());
             entries.put("engineNumber", tVehicleEntity.getEngineNumber());
+            entries.put("driverId", tVehicleEntity.getDriverId());
+            entries.put("driverName", tVehicleEntity.getDriverName());
+            entries.put("driverMobile", tVehicleEntity.getDriverMobile());
         }
         return entries;
     }

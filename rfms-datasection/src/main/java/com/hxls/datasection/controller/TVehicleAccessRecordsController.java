@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
@@ -20,6 +21,7 @@ import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -63,6 +65,7 @@ public class TVehicleAccessRecordsController extends BaseController {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     @Autowired
     private DeviceFeign deviceFeign;
+    private final VehicleFeign vehicleFeign;
 
 
     @GetMapping("/pageTVehicleAccessRecords")
@@ -166,6 +169,21 @@ public class TVehicleAccessRecordsController extends BaseController {
                 body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
                 body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                 try {
+
+                    /**
+                     * 需要通过车牌绑定平台车辆信息数据
+                     * */
+                    if (StringUtils.isNotEmpty(plateNo)){
+                        JSONObject jsonObject1 = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNo);
+                        if(ObjectUtils.isNotEmpty(jsonObject1)){
+                            body.setVehicleModel(jsonObject.getString("carType"));
+                            body.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                            body.setDriverId(jsonObject.getLong("driverId"));
+                            body.setDriverName(jsonObject.getString("driverName"));
+                            body.setDriverPhone(jsonObject.getString("driverMobile"));
+                        }
+                    }
+
                     tVehicleAccessRecordsService.save(body);
                 }catch (Exception e){
                     e.printStackTrace();
