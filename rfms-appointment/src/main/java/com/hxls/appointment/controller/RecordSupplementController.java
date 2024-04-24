@@ -7,6 +7,7 @@ import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TSupplementRecordVO;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.appointment.service.TSupplementRecordService;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -46,16 +47,13 @@ public class RecordSupplementController {
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        if (user.getSuperAdmin()<1) {
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
             List<Long> dataScopeList = user.getDataScopeList();
             if (CollectionUtils.isNotEmpty(dataScopeList)){
                 query.setSiteIds(dataScopeList);
-            }else {
-                query.setCreator(user.getId());
             }
+            query.setCreator(user.getId());
         }
-
-
         PageResult<TSupplementRecordVO> page = service.page(query);
         return Result.ok(page);
     }

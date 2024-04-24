@@ -63,4 +63,9 @@ public interface Constant {
     String SITE_ROUTING_FACE_TOAGENT = "_ROUTING_FACE_TOAGENT";
     String SITE_ROUTING_CAR_TOAGENT = "_ROUTING_CAR_TOAGENT";
 
+    /**
+     * 置空
+     */
+    Long EMPTY = -1L;
+
 }

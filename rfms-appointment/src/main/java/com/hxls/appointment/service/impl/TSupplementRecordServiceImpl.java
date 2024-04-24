@@ -141,14 +141,15 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
 
     private LambdaQueryWrapper<TSupplementRecord> getWrapper(TSupplementRecordQuery query) {
+
         LambdaQueryWrapper<TSupplementRecord> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(query.getSiteId() != null, TSupplementRecord::getSiteId, query.getSiteId());
         wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()) , TSupplementRecord::getSiteId,query.getSiteIds());
-        wrapper.eq(query.getCreator()!=null , TSupplementRecord::getCreator ,query.getCreator());
         wrapper.between(ArrayUtils.isNotEmpty(query.getSupplementTime()), TSupplementRecord::getSupplementTime, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[0] : null, ArrayUtils.isNotEmpty(query.getSupplementTime()) ? query.getSupplementTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getAccessType()), TSupplementRecord::getAccessType, query.getAccessType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplementType()), TSupplementRecord::getSupplementType, query.getSupplementType());
-        return wrapper;
+
+        return query.getCreator() ==null? wrapper  : wrapper.or().eq(TSupplementRecord::getCreator ,query.getCreator());
     }
 
 
