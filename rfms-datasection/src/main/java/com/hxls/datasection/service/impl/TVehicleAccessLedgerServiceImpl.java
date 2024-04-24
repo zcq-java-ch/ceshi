@@ -61,7 +61,11 @@ public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAcc
 
         }else {
             List<Long> dataScopeList = baseUser.getDataScopeList();
-            wrapper.in("site_id", dataScopeList);
+            if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(dataScopeList)){
+                wrapper.in("site_id", dataScopeList);
+            }else {
+                wrapper.in("site_id", "null");
+            }
         }
         return wrapper;
     }

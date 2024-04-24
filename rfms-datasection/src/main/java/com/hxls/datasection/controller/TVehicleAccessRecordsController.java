@@ -63,10 +63,10 @@ import java.util.List;
 @Slf4j
 public class TVehicleAccessRecordsController extends BaseController {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
-    @Autowired
-    private DeviceFeign deviceFeign;
+    private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
 
+    private static final String NOTFIND_DEVICE = "设备未找到";
 
     @GetMapping("/pageTVehicleAccessRecords")
     @Operation(summary = "分页")
@@ -131,7 +131,7 @@ public class TVehicleAccessRecordsController extends BaseController {
             String plateNo = jsonObject.getString("plateNo");
             String picVehicleFileData = jsonObject.getString("picVehicleFileData");
             String passTime = jsonObject.getString("passTime");
-            String terminalNo = jsonObject.getString("terminalNo");
+//            String terminalNo = jsonObject.getString("terminalNo");
             String laneCode = jsonObject.getString("laneCode");
 
 
@@ -148,14 +148,14 @@ public class TVehicleAccessRecordsController extends BaseController {
                  * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
                  * */
                 JSONObject entries = deviceFeign.useTheDeviceSnToQueryDeviceInformation(laneCode);
-                log.info("海康客户端传来的设备编号:{}",laneCode);
-                log.info("平台端的设备编号:{}",entries.getString("device_name"));
+//                log.info("海康客户端传来的设备编号:{}",laneCode);
+//                log.info("平台端的设备编号:{}",entries.getString("device_name"));
 
                 TVehicleAccessRecordsEntity body = new TVehicleAccessRecordsEntity();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
-                body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : "设备未匹配到");
+                body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : NOTFIND_DEVICE);
                 body.setDeviceId(ObjectUtil.isNotEmpty(entries.getLong("device_id")) ? entries.getLong("device_id") : 999L);
-                body.setDeviceName(ObjectUtil.isNotEmpty(entries.getString("device_name")) ? entries.getString("device_name") : "设备未匹配到");
+                body.setDeviceName(ObjectUtil.isNotEmpty(entries.getString("device_name")) ? entries.getString("device_name") : NOTFIND_DEVICE);
                 body.setAccessType(ObjectUtil.isNotEmpty(entries.getString("access_type")) ? entries.getString("access_type") : "1");
                 body.setCarUrl(carUrl);
                 body.setPlateNumber(plateNo);
@@ -165,9 +165,9 @@ public class TVehicleAccessRecordsController extends BaseController {
 
                 body.setRecordTime(dateFormat.parse(ObjectUtil.isNotEmpty(passTime) ? passTime : "2023-04-17 12:00:00"));
                 body.setManufacturerId(ObjectUtil.isNotEmpty(entries.getLong("manufacturer_id")) ? entries.getLong("manufacturer_id") : 999L);
-                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.getString("manufacturer_name")) ? entries.getString("manufacturer_name") : "设备未匹配到");
+                body.setManufacturerName(ObjectUtil.isNotEmpty(entries.getString("manufacturer_name")) ? entries.getString("manufacturer_name") : NOTFIND_DEVICE);
                 body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
-                body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
+                body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : NOTFIND_DEVICE);
                 try {
 
                     /**

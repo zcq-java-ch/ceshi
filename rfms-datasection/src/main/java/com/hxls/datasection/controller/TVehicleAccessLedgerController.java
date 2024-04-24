@@ -9,6 +9,7 @@ import com.hxls.framework.common.utils.Result;
 import com.hxls.datasection.service.TVehicleAccessLedgerService;
 import com.hxls.datasection.query.TVehicleAccessLedgerQuery;
 import com.hxls.datasection.vo.TVehicleAccessLedgerVO;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -34,7 +35,7 @@ public class TVehicleAccessLedgerController extends BaseController {
       */
     @PostMapping("page")
     @Operation(summary = "分页")
-//    @PreAuthorize("hasAuthority('datasection:ledger:page')")
+    @PreAuthorize("hasAuthority('datasection:ledger:page')")
     public Result<PageResult<TVehicleAccessLedgerVO>> page(@RequestBody TVehicleAccessLedgerQuery query, @ModelAttribute("baseUser") UserDetail baseUser){
         PageResult<TVehicleAccessLedgerVO> page = tVehicleAccessLedgerService.page(query, baseUser);
 
