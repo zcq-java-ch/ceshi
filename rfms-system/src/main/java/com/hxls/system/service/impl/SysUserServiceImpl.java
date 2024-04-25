@@ -75,6 +75,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
     }
 
+
+
     private Map<String, Object> getParams(SysUserQuery query) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", query.getUsername());
@@ -94,6 +96,24 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         return params;
     }
+
+    private Map<String, Object> getParamsByNoAuth(SysUserQuery query) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("username", query.getUsername());
+        params.put("mobile", query.getMobile());
+        params.put("gender", query.getGender());
+        params.put("userType", query.getUserType());
+        params.put("supervisor", query.getSupervisor());
+        params.put("licensePlate", query.getLicensePlate());
+        params.put("code", query.getCode());
+        params.put("status", query.getStatus());
+        params.put("realName", query.getRealName());
+        params.put("orgName", query.getOrgName());
+        params.put("orgId", query.getOrgId());
+
+        return params;
+    }
+
 
 
     @Override
@@ -380,6 +400,21 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             // 更新实体
             this.updateById(entity);
         }
+    }
+
+    @Override
+    public PageResult<SysUserVO> pageByNoAuth(SysUserQuery query) {
+        // 查询参数
+        Map<String, Object> params = getParamsByNoAuth(query);
+
+        // 分页查询
+        IPage<SysUserEntity> page = getPage(query);
+        params.put(Constant.PAGE, page);
+
+        // 数据列表
+        List<SysUserEntity> list = baseMapper.getList(params);
+
+        return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
     }
 
 }
