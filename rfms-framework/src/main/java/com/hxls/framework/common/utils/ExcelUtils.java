@@ -12,12 +12,17 @@ import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.TransPojo;
 import com.fhs.trans.service.impl.DictionaryTransService;
+import org.springframework.core.io.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import com.hxls.framework.common.excel.ExcelDataListener;
 import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -228,21 +233,29 @@ public class ExcelUtils {
     **/
     public static MultipartFile convertToMultipartFile(String filePath) {
         try{
-            // 创建File对象
-            File file = new File(URLEncoder.encode(filePath, "UTF-8"));
+            RestTemplate restTemplate = new RestTemplate();
 
-            // 使用File对象创建FileInputStream对象
-            FileInputStream input = new FileInputStream(file);
+            // 发送 HTTP 请求获取文件内容
+            byte[] fileBytes = restTemplate.getForObject(filePath, byte[].class);
 
-            // 创建MockMultipartFile对象
-            MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(),
-                    "application/octet-stream", input);
+            // 获取文件名，这里假设文件名是从 URL 中解析得到的
+            String fileName = extractFileNameFromUrl(filePath);
+
+            // 创建 MockMultipartFile 对象
+            MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "application/octet-stream", fileBytes);
+
 
             return multipartFile;
-        }catch (IOException e) {
+        }catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private static String extractFileNameFromUrl(String fileUrl) {
+        // 这里实现根据 URL 提取文件名的逻辑，例如截取最后一个斜杠后的部分作为文件名
+        String[] parts = fileUrl.split("/");
+        return parts[parts.length - 1];
     }
 
 }
