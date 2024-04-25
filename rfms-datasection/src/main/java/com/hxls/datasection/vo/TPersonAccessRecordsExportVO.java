@@ -2,27 +2,30 @@ package com.hxls.datasection.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
+import com.fhs.core.trans.vo.TransPojo;
+import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.framework.common.excel.DateConverter;
+import com.hxls.framework.common.utils.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import com.hxls.framework.common.utils.DateUtils;
 import java.util.Date;
+import java.util.List;
 
 /**
-* 车辆出入记录表
+* 人员单向通行
 *
 * @author zhaohong 
 * @since 1.0.0 2024-03-29
 */
 @Data
-@Schema(description = "车辆出入记录表")
-public class TVehicleAccessRecordsVO implements Serializable {
+@Schema(description = "单向通行记录导出表")
+public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Serial
 	private static final long serialVersionUID = 1L;
 
@@ -55,11 +58,11 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	private String accessTypeLabel;
 
 	@ExcelIgnore
-	@Schema(description = "出入通道ID")
+	@Schema(description = "出入通道区域ID")
 	private Long channelId;
 
-	@ExcelProperty("出入通道名字")
-	@Schema(description = "出入通道名字")
+	@ExcelProperty("出入通道区域名字")
+	@Schema(description = "出入通道区域名字")
 	private String channelName;
 
 	@ExcelIgnore
@@ -75,39 +78,53 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date recordTime;
 
-	@ExcelProperty("车牌号")
-	@Schema(description = "车牌号")
-	private String plateNumber;
+	@ExcelIgnore
+	@Schema(description = "用户id")
+	private Long personId;
 
 	@ExcelIgnore
-	@Schema(description = "车型（数据字典）")
-	private String vehicleModel;
+	@Schema(description = "设备方用户唯一标识")
+	private String devicePersonId;
 
-	@ExcelProperty("车型")
-	private String vehicleModelLab;
-
-	@ExcelIgnore
-	@Schema(description = "车辆排放标准（数据字典）")
-	private String emissionStandard;
-
-	@ExcelProperty("车辆排放标准")
-	private String emissionStandardLab;
+	@ExcelProperty("名字")
+	@Schema(description = "名字")
+	private String personName;
 
 	@ExcelIgnore
-	@Schema(description = "车辆照片地址")
-	private String carUrl;
+	@Schema(description = "单位id")
+	private Long companyId;
+
+	@ExcelProperty("单位")
+	@Schema(description = "单位")
+	private String companyName;
 
 	@ExcelIgnore
-	@Schema(description = "司机id")
-	private Long driverId;
+	@Schema(description = "带班负责人id")
+	private Long supervisorId;
 
-	@ExcelProperty("司机姓名")
-	@Schema(description = "司机姓名")
-	private String driverName;
+	@ExcelProperty("带班负责人名字")
+	@Schema(description = "带班负责人名字")
+	private String supervisorName;
 
-	@ExcelProperty("司机手机号码")
-	@Schema(description = "司机手机号码")
-	private String driverPhone;
+	@ExcelProperty("身份证号码")
+	@Schema(description = "身份证号码")
+	private String idCardNumber;
+
+	@ExcelProperty("手机号码")
+	@Schema(description = "手机号码")
+	private String phone;
+
+	@ExcelIgnore
+	@Schema(description = "头像地址")
+	private String headUrl;
+
+	@ExcelIgnore
+	@Schema(description = "岗位id")
+	private Long positionId;
+
+	@ExcelProperty("岗位名字")
+	@Schema(description = "岗位名字")
+	private String positionName;
 
 	@ExcelIgnore
 	@Schema(description = "排序")
@@ -148,6 +165,14 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	private String recordsId;
 
 	@ExcelIgnore
+	@Trans(type = TransType.DICTIONARY, key = "business", ref = "busisLabel")
+	@Schema(description = "用户业务类型")
+	private String busis;
+
+	@ExcelProperty(value = "用户业务类型")
+	private String busisLabel;
+
+	@ExcelIgnore
 	@Trans(type = TransType.DICTIONARY, key = "create_type", ref = "createTypeLabel")
 	@Schema(description = "记录创建类型（0:自动生成 1:手动创建）")
 	private String createType;
@@ -155,8 +180,10 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@ExcelProperty(value = "记录创建类型")
 	private String createTypeLabel;
 
+	@ExcelIgnore
+	private String directionType;
 
 	@ExcelIgnore
-	@Schema(description = "车辆默认照片")
-	private String imageUrl;
+	private List<TPersonAccessRecordsEntity> todayDetails;
+
 }

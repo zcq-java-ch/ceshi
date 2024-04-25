@@ -152,6 +152,6 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	/**
 	 * 创建类型（0:自动生成 1:手动创建）
 	 * */
-	private Integer createType;
+	private String createType;
 
 }

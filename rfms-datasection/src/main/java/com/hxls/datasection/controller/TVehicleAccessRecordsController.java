@@ -6,6 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.util.BaseImageUtils;
+import com.hxls.datasection.vo.TPersonAccessRecordsVO;
+import com.hxls.framework.common.utils.DateUtils;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.UserDetail;
@@ -21,6 +24,7 @@ import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.datasection.query.TVehicleAccessRecordsQuery;
 import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -48,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -116,6 +121,68 @@ public class TVehicleAccessRecordsController extends BaseController {
         return Result.ok();
     }
 
+    /**
+      * @author Mryang
+      * @description 导出车辆通行记录
+      * @date 17:37 2024/4/25
+      * @param
+      * @return
+      */
+    @GetMapping("/exportTVehicleAccessRecords")
+    @Operation(summary = "导出车辆通行记录")
+//    @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:export')")
+    public void exportTVehicleAccessRecords(@ParameterObject @Valid TVehicleAccessRecordsQuery query, @ModelAttribute("baseUser") UserDetail baseUser){
+        PageResult<TVehicleAccessRecordsVO> page = tVehicleAccessRecordsService.page(query,baseUser);
 
+        List<TVehicleAccessRecordsVO> list = page.getList();
+        if (CollectionUtils.isNotEmpty(list)){
+            for (int i = 0; i < list.size(); i++) {
+                TVehicleAccessRecordsVO tVehicleAccessRecordsVO = list.get(i);
+                String accessType = tVehicleAccessRecordsVO.getAccessType();
+                if ("1".equals(accessType)){
+                    tVehicleAccessRecordsVO.setAccessTypeLabel("进场");
+                }else {
+                    tVehicleAccessRecordsVO.setAccessTypeLabel("出场");
+                }
 
+                String createType = tVehicleAccessRecordsVO.getCreateType();
+                if ("0".equals(createType)){
+                    tVehicleAccessRecordsVO.setCreateTypeLabel("自动");
+                }else {
+                    tVehicleAccessRecordsVO.setCreateTypeLabel("手动");
+                }
+
+                String vehicleModel = tVehicleAccessRecordsVO.getVehicleModel();
+                if ("1".equals(vehicleModel)){
+                    tVehicleAccessRecordsVO.setVehicleModelLab("小客车");
+                }else if ("2".equals(vehicleModel)){
+                    tVehicleAccessRecordsVO.setVehicleModelLab("货车");
+                }else if ("3".equals(vehicleModel)){
+                    tVehicleAccessRecordsVO.setVehicleModelLab("罐车");
+                }else {
+                    tVehicleAccessRecordsVO.setVehicleModelLab("错误");
+                }
+
+                String emissionStandard = tVehicleAccessRecordsVO.getEmissionStandard();
+                if ("1".equals(vehicleModel)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅰ");
+                }else if ("2".equals(emissionStandard)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅱ");
+                }else if ("3".equals(emissionStandard)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅲ");
+                }else if ("4".equals(emissionStandard)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅳ");
+                }else if ("5".equals(emissionStandard)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅴ");
+                }else if ("6".equals(emissionStandard)){
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅵ");
+                }else {
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("错误");
+                }
+            }
+        }
+
+        // 写到浏览器打开
+        ExcelUtils.excelExport(TVehicleAccessRecordsVO.class, "车辆通行记录" + DateUtils.format(new Date()), null, list);
+    }
 }

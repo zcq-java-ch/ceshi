@@ -4,10 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fhs.trans.service.impl.TransService;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.util.BaseImageUtils;
+import com.hxls.framework.common.utils.DateUtils;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.UserDetail;
@@ -55,7 +58,7 @@ public class TPersonAccessRecordsController extends BaseController {
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
     private final DeviceFeign deviceFeign;
     private final UserFeign userFeign;
-
+    private final TransService transService;
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
@@ -127,5 +130,110 @@ public class TPersonAccessRecordsController extends BaseController {
         return Result.ok(page);
     }
 
+    /**
+      * @author Mryang
+      * @description 导出人员通行记录
+      * @date 15:41 2024/4/25
+      * @param
+      * @return
+      */
+    @GetMapping("/exportUnidirectionalTpersonAccessRecords")
+    @Operation(summary = "导出人员通行记录")
+    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:export')")
+    public void exportUnidirectionalTpersonAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
+        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query, baseUser);
+        List<TPersonAccessRecordsVO> list = page.getList();
+        // 处理字典
+        for (int i = 0; i < list.size(); i++) {
+            TPersonAccessRecordsVO tPersonAccessRecordsVO = list.get(i);
+            String accessType = tPersonAccessRecordsVO.getAccessType();
+            if ("1".equals(accessType)){
+                tPersonAccessRecordsVO.setAccessTypeLabel("进场");
+            }else {
+                tPersonAccessRecordsVO.setAccessTypeLabel("出场");
+            }
+
+            String busis = tPersonAccessRecordsVO.getBusis();
+            if ("1".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("预拌");
+            }else if ("2".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("预制");
+            }else if ("3".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("管桩");
+            }else if ("4".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("资源");
+            }else if ("5".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("供应链");
+            }else if ("6".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("工程");
+            }else {
+                tPersonAccessRecordsVO.setBusisLabel("错误");
+            }
+
+            String createType = tPersonAccessRecordsVO.getCreateType();
+            if ("0".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("自动");
+            }else {
+                tPersonAccessRecordsVO.setCreateTypeLabel("手动");
+            }
+        }
+
+//        transService.transBatch(list);
+        // 写到浏览器打开
+        ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "人员通行记录" + DateUtils.format(new Date()), null, list);
+    }
+
+    /**
+      * @author Mryang
+      * @description 导出单行通行记录
+      * @date 17:39 2024/4/25
+      * @param
+      * @return
+      */
+    @GetMapping("/exportTpersonAccessRecords")
+    @Operation(summary = "导出单行通行记录")
+    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:unidirectionalexport')")
+    public void exportTpersonAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
+        PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query,baseUser);
+        List<TPersonAccessRecordsVO> list = page.getList();
+        // 处理字典
+        for (int i = 0; i < list.size(); i++) {
+            TPersonAccessRecordsVO tPersonAccessRecordsVO = list.get(i);
+            String accessType = tPersonAccessRecordsVO.getAccessType();
+            if ("1".equals(accessType)){
+                tPersonAccessRecordsVO.setAccessTypeLabel("进场");
+            }else {
+                tPersonAccessRecordsVO.setAccessTypeLabel("出场");
+            }
+
+            String busis = tPersonAccessRecordsVO.getBusis();
+            if ("1".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("预拌");
+            }else if ("2".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("预制");
+            }else if ("3".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("管桩");
+            }else if ("4".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("资源");
+            }else if ("5".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("供应链");
+            }else if ("6".equals(busis)){
+                tPersonAccessRecordsVO.setBusisLabel("工程");
+            }else {
+                tPersonAccessRecordsVO.setBusisLabel("错误");
+            }
+
+            String createType = tPersonAccessRecordsVO.getCreateType();
+            if ("0".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("自动");
+            }else {
+                tPersonAccessRecordsVO.setCreateTypeLabel("手动");
+            }
+        }
+
+//        transService.transBatch(list);
+        // 写到浏览器打开
+        ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "人员通行记录" + DateUtils.format(new Date()), null, list);
+    }
 
 }

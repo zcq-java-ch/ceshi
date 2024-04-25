@@ -131,7 +131,6 @@ public class SysSiteAreaController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
 //    @PreAuthorize("hasAuthority('spd:area:update')")
     public Result<String> update(@RequestBody @Valid SysSiteAreaVO vo){
-        sysSiteAreaService.update(vo);
 
         // 清空中间表原有数据并重新生成随机码
         String faceInCode = sysSiteAreaService.resetCodeAndDeleteData(vo.getFaceInCode());
@@ -144,6 +143,12 @@ public class SysSiteAreaController {
         sysSiteAreaService.addNewDevices(vo.getFaceOutCodeAddDevices(), faceOutCode);
         sysSiteAreaService.addNewDevices(vo.getCarIntCodeAddDevices(), carIntCode);
         sysSiteAreaService.addNewDevices(vo.getCarOutCodeAddDevices(), carOutCode);
+
+        vo.setFaceInCode(faceInCode);
+        vo.setFaceOutCode(faceOutCode);
+        vo.setCarIntCode(carIntCode);
+        vo.setCarOutCode(carOutCode);
+        sysSiteAreaService.update(vo);
 
         return Result.ok();
     }
