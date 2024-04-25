@@ -22,7 +22,9 @@ import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -152,5 +154,20 @@ public class TVehicleController {
         tVehicleService.updateStatus(list);
         return Result.ok();
     }
+
+
+    @PostMapping("import")
+    @Operation(summary = "导入通用车辆")
+    @OperateLog(type = OperateTypeEnum.IMPORT)
+    @PreAuthorize("hasAuthority('system:vehicle:import')")
+    public Result<String> importExcel(@RequestBody TVehicleVO vo) throws IOException {
+        if (vo.getImageUrl().isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        tVehicleService.importByExcel(vo.getImageUrl(),vo.getSiteId());
+
+        return Result.ok();
+    }
+
 
 }

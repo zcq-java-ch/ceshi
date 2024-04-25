@@ -17,6 +17,7 @@ import lombok.SneakyThrows;
 import com.hxls.framework.common.excel.ExcelDataListener;
 import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -215,6 +216,30 @@ public class ExcelUtils {
                     }
                 }
             }
+        }
+
+    }
+
+    /**
+    * @Author zhaohong
+    * @Description  将文件地址转换为MultipartFile对象
+    * @Date 17:25 2024/4/25
+    **/
+    public static MultipartFile convertToMultipartFile(String filePath) {
+        try{
+            // 创建File对象
+            File file = new File(filePath);
+
+            // 使用File对象创建FileInputStream对象
+            FileInputStream input = new FileInputStream(file);
+
+            // 创建MockMultipartFile对象
+            MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(),
+                    "application/octet-stream", input);
+
+            return multipartFile;
+        }catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }

@@ -1,6 +1,7 @@
 package com.hxls.system.convert;
 
 import com.hxls.system.entity.TVehicleEntity;
+import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -10,7 +11,7 @@ import java.util.List;
 /**
 * 通用车辆管理表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-15
 */
 @Mapper
@@ -22,5 +23,7 @@ public interface TVehicleConvert {
     TVehicleVO convert(TVehicleEntity entity);
 
     List<TVehicleVO> convertList(List<TVehicleEntity> list);
+
+    List<TVehicleEntity> convertListEntity(List<TVehicleExcelVO> list);
 
 }

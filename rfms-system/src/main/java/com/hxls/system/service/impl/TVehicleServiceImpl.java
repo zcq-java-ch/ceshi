@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.TVehicleConvert;
@@ -16,12 +18,15 @@ import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.service.TVehicleService;
+import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -146,5 +151,28 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             // 更新实体
             this.updateById(entity);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void importByExcel(String file,Long siteId){
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(file), TVehicleExcelVO.class, new ExcelFinishCallBack<TVehicleExcelVO>() {
+            @Override
+            public void doAfterAllAnalysed(List<TVehicleExcelVO> result) {
+                saveTVehicle(result);
+            }
+
+            @Override
+            public void doSaveBatch(List<TVehicleExcelVO> result) {
+                saveTVehicle(result);
+            }
+
+            private void saveTVehicle(List<TVehicleExcelVO> result) {
+                List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
+                tVehicleEntities.forEach(tVehicle -> tVehicle.setSiteId(siteId));
+                saveBatch(tVehicleEntities);
+            }
+        });
+
     }
 }
