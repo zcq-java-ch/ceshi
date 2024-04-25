@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -228,7 +229,7 @@ public class ExcelUtils {
     public static MultipartFile convertToMultipartFile(String filePath) {
         try{
             // 创建File对象
-            File file = new File(filePath.replace(File.separator, "\\\\"));
+            File file = new File(URLEncoder.encode(filePath, "UTF-8"));
 
             // 使用File对象创建FileInputStream对象
             FileInputStream input = new FileInputStream(file);
