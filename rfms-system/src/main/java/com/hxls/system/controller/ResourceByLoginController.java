@@ -195,7 +195,7 @@ public class ResourceByLoginController {
     @GetMapping("personAll")
     @Operation(summary = "全量人员下拉")
     public Result<PageResult<SysUserVO>> page(@ParameterObject @Valid SysUserQuery query) {
-        PageResult<SysUserVO> page = sysUserService.page(query);
+        PageResult<SysUserVO> page = sysUserService.pageByNoAuth(query);
         for (SysUserVO userVO : page.getList()){
             if(userVO.getOrgId() != null){
                 SysOrgEntity byId = sysOrgService.getById(userVO.getOrgId());

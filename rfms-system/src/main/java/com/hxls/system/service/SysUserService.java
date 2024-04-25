@@ -78,4 +78,7 @@ public interface SysUserService extends BaseService<SysUserEntity> {
     List<MainUserVO> queryByMainUsers();
 
     void updateStatus(List<SysUserVO> list);
+
+
+    PageResult<SysUserVO> pageByNoAuth(SysUserQuery query);
 }

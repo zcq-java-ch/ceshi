@@ -91,11 +91,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
-        LambdaQueryWrapper<TAppointmentEntity> wrapper =query.getCreator() == null? getWrapper(query) :getWrapper(query).or().eq(TAppointmentEntity::getCreator ,query.getCreator());
-
+        LambdaQueryWrapper<TAppointmentEntity> wrapper =query.getCreator() == null? getWrapper(query) : getWrapperAll(query);
 
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query),wrapper );
-
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
         //需要翻译回显
@@ -167,6 +165,51 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
         wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
+        if (StringUtils.isNotEmpty(query.getSubmitterName())) {
+            List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName()));
+            if (CollectionUtils.isNotEmpty(tAppointmentPersonnels)) {
+                List<Long> ids = tAppointmentPersonnels.stream().map(TAppointmentPersonnel::getAppointmentId).toList();
+                wrapper.in(TAppointmentEntity::getId, ids);
+            }
+        }
+        return wrapper;
+    }
+
+    private LambdaQueryWrapper<TAppointmentEntity> getWrapperAll(TAppointmentQuery query) {
+
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
+
+        wrapper.or();
+
+        List<String> list = Stream.of("3", "4", "5").toList();
+        wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
+        if (query.getIsFinish() != null ){
+            if (query.getIsFinish()){
+                wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
+            } else {
+                wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
+            }
+        }
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds());
+        wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
+        wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
+        wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
+        wrapper.eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId());
+        wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
+        wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
+        wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
+        wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
+        wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
+        wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
+        wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
+        if (query.getIsPerson() && StringUtils.isEmpty(query.getReviewStatus())) {
+            //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
+            wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
+        }
+        wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
+        wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
+        wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
+        wrapper.eq(query.getCreator() !=null , TAppointmentEntity::getCreator , query.getCreator());
 
         if (StringUtils.isNotEmpty(query.getSubmitterName())) {
             List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName()));

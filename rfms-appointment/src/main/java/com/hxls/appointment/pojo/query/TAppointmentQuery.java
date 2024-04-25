@@ -83,12 +83,13 @@ public class TAppointmentQuery extends Query {
      */
     private Boolean isPerson = false;
 
-
     /**
      * 是否办理
      */
     private Boolean isFinish ;
 
+
+    private Long userId;
 
 
 
