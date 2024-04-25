@@ -127,6 +127,9 @@ public class TPersonAccessRecordsVO implements Serializable {
 	@Schema(description = "用户业务类型")
 	private String busis;
 
+	@Schema(description = "创建类型（0:自动生成 1:手动创建）")
+	private Integer createType;
+
 	private String directionType;
 
 	private List<TPersonAccessRecordsEntity> todayDetails;

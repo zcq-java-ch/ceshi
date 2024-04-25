@@ -149,4 +149,9 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	private String busis;
 
 
+	/**
+	 * 创建类型（0:自动生成 1:手动创建）
+	 * */
+	private Integer createType;
+
 }
