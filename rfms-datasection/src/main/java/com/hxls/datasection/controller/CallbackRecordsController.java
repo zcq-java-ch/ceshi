@@ -102,14 +102,16 @@ public class CallbackRecordsController {
                     String telephone = dfCallBackDto.getTelephone();
                     if (StringUtils.isNotEmpty(telephone)){
                         JSONObject userDetail = userFeign.queryUserInformationThroughMobilePhoneNumber(telephone);
-                        body.setCompanyId(userDetail.getLong("orgId"));
-                        body.setCompanyName(userDetail.getString("orgName"));
-                        body.setSupervisorName(userDetail.getString("supervisor"));
-                        body.setIdCardNumber(userDetail.getString("idCard"));
-                        body.setPhone(userDetail.getString("mobile"));
-                        body.setPositionId(userDetail.getLong("postId"));
-                        body.setPositionName(userDetail.getString("postName"));
-                        body.setBusis(userDetail.getString("busis"));
+                        if (ObjectUtils.isNotEmpty(userDetail)) {
+                            body.setCompanyId(userDetail.getLong("orgId"));
+                            body.setCompanyName(userDetail.getString("orgName"));
+                            body.setSupervisorName(userDetail.getString("supervisor"));
+                            body.setIdCardNumber(userDetail.getString("idCard"));
+                            body.setPhone(userDetail.getString("mobile"));
+                            body.setPositionId(userDetail.getLong("postId"));
+                            body.setPositionName(userDetail.getString("postName"));
+                            body.setBusis(userDetail.getString("busis"));
+                        }
                     }
                     tPersonAccessRecordsService.save(body);
                 }catch (Exception e){
@@ -198,6 +200,22 @@ public class CallbackRecordsController {
                         body.setSiteId(ObjectUtil.isNotEmpty(entries.getLong("siteId")) ? entries.getLong("siteId") : 999L);
                         body.setSiteName(ObjectUtil.isNotEmpty(entries.getString("siteName")) ? entries.getString("siteName") : "设备未匹配到");
                         body.setRecordsId(recordId);
+
+                        // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+                        if (StringUtils.isNotEmpty(employeeNoString)){
+                            JSONObject userDetail = userFeign.queryUserInformationUserId(employeeNoString);
+                            if (ObjectUtils.isNotEmpty(userDetail)) {
+                                body.setCompanyId(userDetail.getLong("orgId"));
+                                body.setCompanyName(userDetail.getString("orgName"));
+                                body.setSupervisorName(userDetail.getString("supervisor"));
+                                body.setIdCardNumber(userDetail.getString("idCard"));
+                                body.setPhone(userDetail.getString("mobile"));
+                                body.setPositionId(userDetail.getLong("postId"));
+                                body.setPositionName(userDetail.getString("postName"));
+                                body.setBusis(userDetail.getString("busis"));
+                            }
+                        }
+
                         tPersonAccessRecordsService.save(body);
                         // 返回结果或进行其他处理
                     } catch (IOException e) {

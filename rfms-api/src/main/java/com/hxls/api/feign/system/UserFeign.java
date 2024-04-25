@@ -20,4 +20,7 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/queryUserInformationThroughMobilePhoneNumber")
     JSONObject queryUserInformationThroughMobilePhoneNumber(@RequestParam("telephone") String telephone);
+
+    @PostMapping(value = "api/system/queryUserInformationUserId")
+    JSONObject queryUserInformationUserId(@RequestParam("deviceUserId") String deviceUserId);
 }

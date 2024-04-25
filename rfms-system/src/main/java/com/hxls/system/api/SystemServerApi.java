@@ -527,4 +527,33 @@ public class SystemServerApi {
         }
         return entries;
     }
+
+    /**
+      * @author Mryang
+      * @description 通过用户唯一编码查询用户信息
+      * @date 10:10 2024/4/25
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/queryUserInformationUserId")
+    public JSONObject queryUserInformationUserId(@RequestParam("deviceUserId") String deviceUserId) {
+        LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getId, deviceUserId);
+        List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtils.isNotEmpty(userEntities)){
+            SysUserEntity sysUserEntity = userEntities.get(0);
+            entries.put("orgId", sysUserEntity.getOrgId());
+            entries.put("orgName", sysUserEntity.getOrgName());
+            entries.put("supervisor", sysUserEntity.getSupervisor());
+            entries.put("idCard", sysUserEntity.getIdCard());
+            entries.put("mobile", sysUserEntity.getMobile());
+            entries.put("postId", sysUserEntity.getPostId());
+            entries.put("postName", sysUserEntity.getPostName());
+            entries.put("busis", sysUserEntity.getBusis());
+        }
+        return entries;
+    }
 }
