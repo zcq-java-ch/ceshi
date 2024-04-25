@@ -2,6 +2,7 @@ package com.hxls.datasection.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.hxls.api.feign.system.UserFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -31,8 +33,11 @@ public class SynMessageDataContorller {
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     private final VehicleFeign vehicleFeign;
+    private final UserFeign userFeign;
     /**
      * 接收客户端传来的人员人别记录
+     *
+     * 目前接收的是：华安视讯  凌智恒
      * */
     @RabbitHandler
     @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
@@ -68,6 +73,22 @@ public class SynMessageDataContorller {
                 tPersonAccessRecordsEntity.setSiteId(jsonObjectRecords.getLong("siteId"));
                 tPersonAccessRecordsEntity.setSiteName(jsonObjectRecords.getString("siteName"));
                 tPersonAccessRecordsEntity.setRecordsId(recordsId);
+
+                // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+                String devicePersonId = jsonObjectRecords.getString("device_person_id");
+                if (StringUtils.isNotEmpty(devicePersonId)){
+                    JSONObject userDetail = userFeign.queryUserInformationUserId(devicePersonId);
+                    if (ObjectUtils.isNotEmpty(userDetail)) {
+                        tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
+                        tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
+                        tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
+                        tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
+                        tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
+                        tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
+                        tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
+                        tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+                    }
+                }
                 tPersonAccessRecordsService.save(tPersonAccessRecordsEntity);
                 log.info("人脸数据不存在，结束存储");
             }
