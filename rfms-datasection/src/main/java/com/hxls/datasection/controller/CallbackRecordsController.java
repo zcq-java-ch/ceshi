@@ -102,6 +102,14 @@ public class CallbackRecordsController {
                     String telephone = dfCallBackDto.getTelephone();
                     if (StringUtils.isNotEmpty(telephone)){
                         JSONObject userDetail = userFeign.queryUserInformationThroughMobilePhoneNumber(telephone);
+                        body.setCompanyId(userDetail.getLong("orgId"));
+                        body.setCompanyName(userDetail.getString("orgName"));
+                        body.setSupervisorName(userDetail.getString("supervisor"));
+                        body.setIdCardNumber(userDetail.getString("idCard"));
+                        body.setPhone(userDetail.getString("mobile"));
+                        body.setPositionId(userDetail.getLong("postId"));
+                        body.setPositionName(userDetail.getString("postName"));
+                        body.setBusis(userDetail.getString("busis"));
                     }
                     tPersonAccessRecordsService.save(body);
                 }catch (Exception e){

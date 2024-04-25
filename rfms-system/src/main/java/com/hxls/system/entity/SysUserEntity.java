@@ -125,9 +125,13 @@ public class SysUserEntity extends BaseEntity {
      */
     private String mobile;
     /**
-     * 组织ID
+     * 公司ID
      */
     private Long orgId;
+    /**
+     * 公司名字
+     */
+    private String orgName;
     /**
      * 超级管理员   0：否   1：是
      */
@@ -139,8 +143,8 @@ public class SysUserEntity extends BaseEntity {
     /**
      * 组织名称
      */
-    @TableField(exist = false)
-    private String orgName;
+//    @TableField(exist = false)
+//    private String orgName;
 
     /**
      * 车牌号

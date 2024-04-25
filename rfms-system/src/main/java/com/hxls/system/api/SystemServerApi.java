@@ -513,12 +513,18 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
         objectLambdaQueryWrapper.eq(SysUserEntity::getMobile, telephone);
         List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
-
         JSONObject entries = new JSONObject();
-//        entries.put("licensePlateRecognitionOnline", licensePlateRecognitionOnline);
-//        entries.put("licensePlateRecognitionOffline", licensePlateRecognitionOffline);
-//        entries.put("faceRecognitionOnline", faceRecognitionOnline);
-//        entries.put("faceRecognitionOffline", faceRecognitionOffline);
+        if (CollectionUtils.isNotEmpty(userEntities)){
+            SysUserEntity sysUserEntity = userEntities.get(0);
+            entries.put("orgId", sysUserEntity.getOrgId());
+            entries.put("orgName", sysUserEntity.getOrgName());
+            entries.put("supervisor", sysUserEntity.getSupervisor());
+            entries.put("idCard", sysUserEntity.getIdCard());
+            entries.put("mobile", sysUserEntity.getMobile());
+            entries.put("postId", sysUserEntity.getPostId());
+            entries.put("postName", sysUserEntity.getPostName());
+            entries.put("busis", sysUserEntity.getBusis());
+        }
         return entries;
     }
 }
