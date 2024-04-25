@@ -123,6 +123,10 @@ public class TVehicleAccessRecordsEntity extends BaseEntity {
 	 * */
 	private Integer createType;
 
+	/**
+	 * 车辆默认照片
+	 * */
+	private String imageUrl;
 
 
 }

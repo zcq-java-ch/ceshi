@@ -309,6 +309,7 @@ public class CallbackRecordsController {
                             body.setDriverId(jsonObject.getLong("driverId"));
                             body.setDriverName(jsonObject.getString("driverName"));
                             body.setDriverPhone(jsonObject.getString("driverMobile"));
+                            body.setImageUrl(jsonObject.getString("imageUrl"));
                         }
                     }
 

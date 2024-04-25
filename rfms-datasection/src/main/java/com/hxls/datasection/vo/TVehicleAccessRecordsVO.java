@@ -108,4 +108,6 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "创建类型（0:自动生成 1:手动创建）")
 	private Integer createType;
 
+	@Schema(description = "车辆默认照片")
+	private String imageUrl;
 }

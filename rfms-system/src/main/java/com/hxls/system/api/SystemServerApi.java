@@ -271,6 +271,7 @@ public class SystemServerApi {
             entries.put("driverId", tVehicleEntity.getDriverId());
             entries.put("driverName", tVehicleEntity.getDriverName());
             entries.put("driverMobile", tVehicleEntity.getDriverMobile());
+            entries.put("imageUrl", tVehicleEntity.getImageUrl());
         }
         return entries;
     }
