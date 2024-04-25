@@ -80,13 +80,13 @@
 
 
     <select id="selectMasterIpById" resultType="java.lang.String">
-        SELECT DISTINCT master_ip FROM t_device_management where device_type = #{type}  and  manufacturer_code = #{code} and deleted = 0
+        SELECT DISTINCT master_ip FROM t_device_management where device_type = #{type}  and site_id = #{siteId} and  manufacturer_code = #{code} and deleted = 0
     </select>
 
 
     <select id="selectDeviceList" resultType="com.alibaba.fastjson.JSONObject">
 
-        SELECT  device_sn as code, ip_address as ip, account as username, password  FROM t_device_management where device_type = 1  and  manufacturer_code = #{code} and deleted = 0
+        SELECT  device_sn as code, ip_address as ip, account as username, password  FROM t_device_management where device_type = 1 and site_id = #{siteId}  and  manufacturer_code = #{code} and deleted = 0
 
     </select>
 

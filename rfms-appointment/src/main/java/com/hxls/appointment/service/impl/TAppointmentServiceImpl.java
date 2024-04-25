@@ -13,7 +13,6 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hxls.api.dto.appointment.AppointmentDTO;
-import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
@@ -22,21 +21,15 @@ import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
-import com.hxls.appointment.pojo.entity.TSupplementRecord;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.*;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
 import com.hxls.framework.common.constant.Constant;
-import com.hxls.framework.common.excel.ExcelFinishCallBack;
-import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
-import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
-import com.hxls.framework.security.user.SecurityUser;
-import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -417,9 +410,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                 for (String device : strings) {
 
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device);
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,byId.getSiteId());
 
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1");
+                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1" ,byId.getSiteId());
                     for (String masterIp : masterIpById) {
                         for (TAppointmentPersonnel personnel : personnelList) {
                             JSONObject entries = new JSONObject();
@@ -592,9 +585,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
                 //设备便历
                 for (String device : strings) {
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device);
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,Long.parseLong(stationId));
                     //获取主机ip
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1");
+                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1", Long.parseLong(stationId));
                     for (String masterIp : masterIpById) {
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", device);
