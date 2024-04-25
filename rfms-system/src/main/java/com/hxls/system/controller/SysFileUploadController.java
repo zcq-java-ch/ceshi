@@ -38,6 +38,7 @@ public class SysFileUploadController {
 
         // 上传路径
         String path = storageService.getPath(file.getOriginalFilename());
+
         // 上传文件
         String url = storageService.upload(file.getBytes(), path);
 

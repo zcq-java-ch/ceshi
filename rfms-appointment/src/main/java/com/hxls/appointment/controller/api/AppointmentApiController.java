@@ -166,14 +166,12 @@ public class AppointmentApiController {
             }
         }
 
-
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("pzNum", pzNum);
         jsonObject.putOnce("pzAllIds", wpPersonnel);
         jsonObject.putOnce("postAll", postobjects);
         return jsonObject;
     }
-
 
     @GetMapping("auditPage")
     @Operation(summary = "主页查询")

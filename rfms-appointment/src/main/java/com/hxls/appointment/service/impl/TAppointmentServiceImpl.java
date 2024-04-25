@@ -562,6 +562,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("faceUrl", faceUrl);
                         sendData.set("masterIp", masterIp);
                         sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
+                        sendData.set("password" , jsonObjects.get(0).getString("password"));
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
                     }
                 }
@@ -571,7 +572,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("stationId");
+                String stationId = entries.getStr("siteId");
                 //车牌号
                 String licensePlate = entries.getStr("licensePlate");
 

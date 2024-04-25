@@ -43,22 +43,20 @@ import java.util.List;
 public class ResourceController {
 
     private final SysOrgService sysOrgService;
-
     private final SysDictTypeService sysDictTypeService;
-
     private final TBannerService tBannerService;
-
     private final StorageProperties storageProperties;
 
 
 
     @GetMapping("page")
     @Operation(summary = "场站下拉")
-    public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
-
+    public Result<PageResult<SysOrgVO>> page(@ParameterObject SysOrgQuery query) {
         PageResult<SysOrgVO> page = sysOrgService.page(query);
         return Result.ok(page);
     }
+
+
 
 
     @GetMapping("all")
@@ -69,19 +67,16 @@ public class ResourceController {
     }
 
 
-
     @GetMapping("pageBanner")
     @Operation(summary = "分页")
     public Result<PageResult<TBannerVO>> page(@ParameterObject @Valid TBannerQuery query){
         PageResult<TBannerVO> page = tBannerService.page(query);
-
         return Result.ok(page);
     }
 
     @GetMapping("export")
     @Operation(summary = "下载补录导入模板")
     public Result<String> export() {
-
         String domain = storageProperties.getConfig().getDomain();
         String path = storageProperties.getLocal().getUrl();
 
@@ -94,7 +89,6 @@ public class ResourceController {
     public Result<String> exportSupplierCar() {
 
         String domain = storageProperties.getConfig().getDomain();
-
         String path = storageProperties.getLocal().getUrl();
 
         String dataUrl = domain + "/" + path + "/车辆入场导入模板.xlsx";
