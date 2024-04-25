@@ -228,7 +228,7 @@ public class ExcelUtils {
     public static MultipartFile convertToMultipartFile(String filePath) {
         try{
             // 创建File对象
-            File file = new File(filePath);
+            File file = new File(filePath.replace(File.separator, "\\\\"));
 
             // 使用File对象创建FileInputStream对象
             FileInputStream input = new FileInputStream(file);
