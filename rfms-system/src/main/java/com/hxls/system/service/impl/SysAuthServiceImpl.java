@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import com.hxls.framework.security.user.UserDetail;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ public class SysAuthServiceImpl implements SysAuthService {
             // 用户认证
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(login.getUsername(), Sm2Util.decrypt(login.getPassword())));
-        } catch (BadCredentialsException e) {
+        } catch (Exception e) {
             //账户密码错误之后，判断是否是手机号进行登录
             SysUserVO byMobile = sysUserService.getByMobile(login.getUsername());
             if(byMobile == null){
@@ -79,12 +80,18 @@ public class SysAuthServiceImpl implements SysAuthService {
                         new UsernamePasswordAuthenticationToken(byMobile.getUsername(), Sm2Util.decrypt(login.getPassword())));
             }catch (BadCredentialsException be){
                 throw new ServerException("用户名/手机号码或密码错误");
+            }catch (DisabledException be){
+                throw new ServerException("您的账户已被禁用，请联系管理员");
             }
 
 
         }
         // 用户信息
         UserDetail user = (UserDetail) authentication.getPrincipal();
+
+        if(user.getStatus() != 1){
+            throw new ServerException("您的账户已被禁用，请联系管理员");
+        }
 
         //查询管理场站
         Long id = user.getId();
