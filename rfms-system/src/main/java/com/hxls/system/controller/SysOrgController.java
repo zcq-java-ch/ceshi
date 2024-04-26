@@ -46,7 +46,19 @@ public class SysOrgController {
         if(user.getDataScopeList() != null ){
             query.setOrgList(user.getDataScopeList());
         }
+        PageResult<SysOrgVO> page = sysOrgService.page(query);
+        return Result.ok(page);
+    }
 
+    @GetMapping("pageByGys")
+    @Operation(summary = "供应商组织")
+    @PreAuthorize("hasAuthority('sys:org:page')")
+    public Result<PageResult<SysOrgVO>> pageByGys(@ParameterObject @Valid SysOrgQuery query) {
+        //获取登录账户的供应商
+        UserDetail user = SecurityUser.getUser();
+        if(user.getOrgId() != null ){
+            query.setId(user.getOrgId());
+        }
         PageResult<SysOrgVO> page = sysOrgService.page(query);
         return Result.ok(page);
     }
