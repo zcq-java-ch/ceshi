@@ -4,7 +4,7 @@
 <mapper namespace="com.hxls.system.dao.SysOrgDao">
 
 	<select id="getList" resultType="com.hxls.system.entity.SysOrgEntity">
-		select t1.*, (select t2.name from sys_org t2 where t2.code = t1.pcode) parentName from sys_org t1 where t1.deleted = 0
+		select t1.*, (select t2.name from sys_org t2 where t2.code = t1.pcode) parentName from sys_org t1 where t1.deleted = 0  and t1.status = 1
 			order by t1.sort asc
 	</select>
 

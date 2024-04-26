@@ -112,7 +112,7 @@ public class SysPostServiceImpl extends BaseServiceImpl<SysPostDao, SysPostEntit
             accessToken = mainPlatformCache.getAccessToken();
         }
 
-        String secondRequestUrl = "http://182.150.57.78:9096/MainPlatform/travel/main_post/query_page";
+        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/main_post/query_page";
         JSONObject params = new JSONObject();
         params.set("page",query.getPage());
         params.set("pageSize",query.getLimit());

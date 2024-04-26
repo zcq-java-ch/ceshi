@@ -54,8 +54,9 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
     private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query){
         LambdaQueryWrapper<SysOrgEntity> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(query.getId() != null, SysOrgEntity::getId, query.getId());
         wrapper.eq(SysOrgEntity::getDeleted, 0);
-        wrapper.eq(SysOrgEntity::getStatus, 1);
+        wrapper.eq(query.getStatus() != null, SysOrgEntity::getStatus, query.getStatus());
         wrapper.like(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
         wrapper.like(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
@@ -189,7 +190,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
         // 构建请求
         Request request = new Request.Builder()
-                .url("http://182.150.57.78:9096/MainPlatform/userLogin/cardLogin")
+                .url("https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin")
                 .post(body) // 设置POST方法
                 .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
                 .build();
@@ -209,7 +210,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
                 String accessToken =json2.get("accessToken").toString();
                 if (accessToken != null) {
                     // 第二次请求的URL和请求头
-                    String secondRequestUrl = "http://182.150.57.78:9096/MainPlatform/travel/administrative_organization/query_page"; // 替换为实际的第二个接口URL
+                    String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/administrative_organization/query_page"; // 替换为实际的第二个接口URL
                     JSONObject params = new JSONObject();
                     params.set("page",1);
                     params.set("pageSize",1000000);

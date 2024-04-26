@@ -21,21 +21,18 @@ import com.hxls.framework.security.utils.TokenUtils;
 import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
+import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.enums.SuperAdminEnum;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
-import com.hxls.system.vo.MainUserVO;
-import com.hxls.system.vo.SysUserBaseVO;
-import com.hxls.system.vo.SysUserExcelVO;
-import com.hxls.system.vo.SysUserVO;
+import com.hxls.system.vo.*;
 import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -75,6 +72,31 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
     }
 
+
+    @Override
+    public PageResult<SysUserVO> pageByGys(SysUserQuery query) {
+        // 查询参数
+        Map<String, Object> params = new HashMap<>();
+        params.put("username", query.getUsername());
+        params.put("mobile", query.getMobile());
+        params.put("gender", query.getGender());
+        params.put("userType", query.getUserType());
+        params.put("supervisor", query.getSupervisor());
+        params.put("licensePlate", query.getLicensePlate());
+        params.put("code", query.getCode());
+        params.put("status", query.getStatus());
+        params.put("realName", query.getRealName());
+        params.put("orgName", query.getOrgName());
+        params.put("orgId", query.getOrgId());
+        // 分页查询
+        IPage<SysUserEntity> page = getPage(query);
+        params.put(Constant.PAGE, page);
+
+        // 数据列表
+        List<SysUserEntity> list = baseMapper.getList(params);
+
+        return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
+    }
 
 
     private Map<String, Object> getParams(SysUserQuery query) {
@@ -282,23 +304,41 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void importByExcel(MultipartFile file, String password) {
-
-        ExcelUtils.readAnalysis(file, SysUserExcelVO.class, new ExcelFinishCallBack<SysUserExcelVO>() {
+    public void importByExcel(String file, String password,Long orgId) {
+        SysOrgEntity byId = sysOrgService.getById(orgId);
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
             @Override
-            public void doAfterAllAnalysed(List<SysUserExcelVO> result) {
+            public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
                 saveUser(result);
             }
 
             @Override
-            public void doSaveBatch(List<SysUserExcelVO> result) {
+            public void doSaveBatch(List<SysUserGysExcelVO> result) {
                 saveUser(result);
             }
 
-            private void saveUser(List<SysUserExcelVO> result) {
+            private void saveUser(List<SysUserGysExcelVO> result) {
                 ExcelUtils.parseDict(result);
                 List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(result);
-                sysUserEntities.forEach(user -> user.setPassword(password));
+                sysUserEntities.forEach(user -> {
+                    // 判断手机号是否存在
+                    SysUserEntity  olduser = baseMapper.getByUsername(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    // 判断手机号是否存在
+                    olduser = baseMapper.getByMobile(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    user.setUserType("3");
+                    user.setPassword(password);
+                    user.setOrgId(orgId);
+                    user.setUsername(user.getMobile());
+                    user.setOrgName(byId.getName());
+                    user.setStatus(1);
+                    user.setSuperAdmin(0);
+                });
                 saveBatch(sysUserEntities);
             }
         });
@@ -325,7 +365,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         // 构建请求
         Request request = new Request.Builder()
-                .url("http://182.150.57.78:9096/MainPlatform/userLogin/cardLogin")
+                .url("https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin")
                 .post(body) // 设置POST方法
                 .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
                 .build();
@@ -364,7 +404,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             accessToken = mainPlatformCache.getAccessToken();
         }
 
-        String secondRequestUrl = "http://182.150.57.78:9096/MainPlatform/travel/employee/queryList";
+        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/employee/queryList";
         RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), "");
         Request secondRequest = new Request.Builder()
                 .url(secondRequestUrl)
