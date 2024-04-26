@@ -3,6 +3,8 @@ package com.hxls.datasection.controller;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.util.BaseImageUtils;
@@ -185,4 +187,29 @@ public class TVehicleAccessRecordsController extends BaseController {
         // 写到浏览器打开
         ExcelUtils.excelExport(TVehicleAccessRecordsVO.class, "车辆通行记录" + DateUtils.format(new Date()), null, list);
     }
+
+    /**
+      * @author Mryang
+      * @description 精城临时接口，完善三个月数据，组合台账
+      * @date 15:33 2024/4/26
+      * @param
+      * @return
+      */
+    @PostMapping("/jingchengMakeTaz")
+    public Result<String> jingchengMakeTaz(){
+        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getSiteId, 175);
+        List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = tVehicleAccessRecordsService.list(objectLambdaQueryWrapper);
+        for (int i = 0; i < tVehicleAccessRecordsEntities.size(); i++) {
+//            tVehicleAccessRecordsEntities.get()
+
+        }
+
+
+        return Result.ok();
+    }
+
+
 }

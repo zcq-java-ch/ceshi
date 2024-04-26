@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -97,7 +98,11 @@ public class TDeviceManagementController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
     @PreAuthorize("hasAuthority('system:device:update')")
     public Result<String> updateStatus(@RequestBody List<TDeviceManagementVO> list) {
-        tDeviceManagementService.updateStatus(list);
-        return Result.ok();
+        List<String> strings = tDeviceManagementService.updateStatus(list);
+        if (CollectionUtils.isNotEmpty(strings)){
+            return Result.error("以下设备已经被绑定不能删除："+strings.toString());
+        }else {
+            return Result.ok();
+        }
     }
 }

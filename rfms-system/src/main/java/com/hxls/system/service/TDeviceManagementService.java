@@ -24,5 +24,5 @@ public interface TDeviceManagementService extends BaseService<TDeviceManagementE
 
     void delete(List<Long> idList);
 
-    void updateStatus(List<TDeviceManagementVO> list);
+    List<String> updateStatus(List<TDeviceManagementVO> list);
 }

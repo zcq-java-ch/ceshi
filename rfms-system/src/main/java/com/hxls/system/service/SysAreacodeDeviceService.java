@@ -41,4 +41,5 @@ public interface SysAreacodeDeviceService extends BaseService<SysAreacodeDeviceE
      * 通过设备id找到唯一的关联的通道数据
      * */
     SysSiteAreaEntity queryChannelByDeviceId(Long deviceId);
+
 }
