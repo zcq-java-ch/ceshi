@@ -24,6 +24,8 @@ public interface SysUserService extends BaseService<SysUserEntity> {
 
     PageResult<SysUserVO> page(SysUserQuery query);
 
+    PageResult<SysUserVO> pageByGys(SysUserQuery query);
+
     void save(SysUserVO vo);
 
     void update(SysUserVO vo);
@@ -52,8 +54,9 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      *
      * @param file     excel文件
      * @param password 密码
+     * @param orgId 所属供应商
      */
-    void importByExcel(MultipartFile file, String password);
+    void importByExcel(MultipartFile file, String password,Long orgId);
 
     /**
      * 导出用户信息表格

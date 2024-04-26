@@ -52,6 +52,10 @@ public class SysUserController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> page(@ParameterObject @Valid SysUserQuery query) {
+        UserDetail user = SecurityUser.getUser();
+        if(user.getOrgId() != null ){
+            query.setOrgId(user.getOrgId());
+        }
         PageResult<SysUserVO> page = sysUserService.page(query);
         for (SysUserVO userVO : page.getList()){
             if(userVO.getOrgId() != null){
@@ -59,6 +63,19 @@ public class SysUserController {
                 userVO.setOrgName(byId.getName());
             }
         }
+        return Result.ok(page);
+    }
+
+
+    @GetMapping("pageByGys")
+    @Operation(summary = "供应商人员分页")
+    @PreAuthorize("hasAuthority('sys:user:page')")
+    public Result<PageResult<SysUserVO>> pageByGys(@ParameterObject @Valid SysUserQuery query) {
+        UserDetail user = SecurityUser.getUser();
+        if(user.getOrgId() != null ){
+            query.setOrgId(user.getOrgId());
+        }
+        PageResult<SysUserVO> page = sysUserService.pageByGys(query);
         return Result.ok(page);
     }
 
@@ -216,14 +233,14 @@ public class SysUserController {
 
 
     @PostMapping("import")
-    @Operation(summary = "导入用户")
+    @Operation(summary = "导入供应商用户")
     @OperateLog(type = OperateTypeEnum.IMPORT)
     @PreAuthorize("hasAuthority('sys:user:import')")
-    public Result<String> importExcel(@RequestParam("file") MultipartFile file) {
+    public Result<String> importExcel(@RequestParam("file") MultipartFile file,@RequestParam("orgId") Long orgId) {
         if (file.isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
-        sysUserService.importByExcel(file, passwordEncoder.encode("hxls1234"));
+        sysUserService.importByExcel(file, passwordEncoder.encode("hxls1234"),orgId);
 
         return Result.ok();
     }
