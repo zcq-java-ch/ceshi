@@ -51,6 +51,8 @@ public class StaffAppointmentController {
             List<Long> dataScopeList = user.getDataScopeList();
             if (CollectionUtils.isNotEmpty(dataScopeList)){
                 query.setSiteIds(dataScopeList);
+            }else {
+                query.setSiteIds(List.of(Constant.EMPTY));
             }
             query.setCreator(user.getId());
         }

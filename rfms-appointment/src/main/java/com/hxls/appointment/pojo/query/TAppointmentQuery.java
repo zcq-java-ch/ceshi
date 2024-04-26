@@ -63,6 +63,10 @@ public class TAppointmentQuery extends Query {
     private  String[] creatTime;
 
 
+    @Schema(description = "预约时间")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private  String[] appointmentTime;
+
     /**
      * 外部预约存储的openId
      */

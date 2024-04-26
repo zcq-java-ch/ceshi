@@ -59,6 +59,9 @@ public class AppointmentDTO  implements Serializable {
     @Schema(description = "每页条数", required = true)
     Integer limit;
 
+    @Schema(description = "预约时间")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private  String[] appointmentTime;
 
     @Schema(description = "排序字段")
     String order = "create_time";

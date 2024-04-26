@@ -44,11 +44,10 @@ public class SupplierCarController {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
-            List<Long> dataScopeList = user.getDataScopeList();
-            if (CollectionUtils.isNotEmpty(dataScopeList)){
-                query.setSiteIds(dataScopeList);
+            Long orgId = user.getOrgId();
+            if (orgId != null){
+                query.setSupplierName(orgId.toString());
             }
-            query.setCreator(user.getId());
         }
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);

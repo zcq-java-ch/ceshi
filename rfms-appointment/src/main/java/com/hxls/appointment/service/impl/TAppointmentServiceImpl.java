@@ -147,6 +147,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
         wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
         wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
+        wrapper.ge(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[0] : null );
+        wrapper.le(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[1] : null);
+
         wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
         wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
@@ -169,13 +172,31 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     }
 
     private LambdaQueryWrapper<TAppointmentEntity> getWrapperAll(TAppointmentQuery query) {
-
+        List<String> list = Stream.of("3", "4", "5").toList();
         LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
 
-        wrapper.or();
+        wrapper.or().eq(TAppointmentEntity::getCreator , query.getCreator())
+                .in(query.getOther(), TAppointmentEntity::getAppointmentType, list)
 
-        List<String> list = Stream.of("3", "4", "5").toList();
-        wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
+
+
+        .in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds())
+        .eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType())
+        .eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName())
+        .eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter())
+        .eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId())
+        .like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName())
+        .ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime())
+        .le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime())
+        .between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null)
+        .between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null)
+        .eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult())
+        .eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus())
+        .eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass())
+        .eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId())
+        .eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId())
+        .eq(query.getCreator() !=null , TAppointmentEntity::getCreator , query.getCreator());
+
         if (query.getIsFinish() != null ){
             if (query.getIsFinish()){
                 wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
@@ -183,27 +204,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
             }
         }
-        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds());
-        wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
-        wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
-        wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
-        wrapper.eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId());
-        wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
-        wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
-        wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
-        wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
-        wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
-        wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
-        wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
         if (query.getIsPerson() && StringUtils.isEmpty(query.getReviewStatus())) {
             //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
             wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
         }
-        wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
-        wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
-        wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
-        wrapper.eq(query.getCreator() !=null , TAppointmentEntity::getCreator , query.getCreator());
-
         if (StringUtils.isNotEmpty(query.getSubmitterName())) {
             List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName()));
             if (CollectionUtils.isNotEmpty(tAppointmentPersonnels)) {
@@ -592,7 +596,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", device);
                         sendData.set("startTime", "2024-04-01 00:00:00");
-                        sendData.set("deadline", "2074-04-01 00:00:00");
+                        sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("peopleName", peopleName);
                         sendData.set("peopleCode", code);
                         sendData.set("faceUrl", faceUrl);
@@ -608,7 +612,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
-                String stationId = entries.getStr("siteId");
+                String stationId = entries.getStr("stationId");
                 //车牌号
                 String licensePlate = entries.getStr("licensePlate");
 

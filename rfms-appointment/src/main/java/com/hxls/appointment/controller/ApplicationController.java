@@ -1,7 +1,6 @@
 package com.hxls.appointment.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.service.TAppointmentService;
@@ -36,12 +35,12 @@ public class ApplicationController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('supplier:person:page')")
     public Result<PageResult<TAppointmentVO>> page(@ParameterObject @Valid TAppointmentQuery query){
+
         UserDetail user = SecurityUser.getUser();
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
-
 
             Long orgId = user.getOrgId();
             if (orgId != null){

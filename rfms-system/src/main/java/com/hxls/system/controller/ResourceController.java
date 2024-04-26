@@ -4,6 +4,7 @@ package com.hxls.system.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -15,23 +16,15 @@ import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.TBannerQuery;
-import com.hxls.system.service.SysDictTypeService;
-import com.hxls.system.service.SysOrgService;
-import com.hxls.system.service.SysUserService;
-import com.hxls.system.service.TBannerService;
-import com.hxls.system.vo.SysDictVO;
-import com.hxls.system.vo.SysOrgVO;
-import com.hxls.system.vo.SysUserVO;
-import com.hxls.system.vo.TBannerVO;
+import com.hxls.system.service.*;
+import com.hxls.system.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +39,8 @@ public class ResourceController {
     private final SysDictTypeService sysDictTypeService;
     private final TBannerService tBannerService;
     private final StorageProperties storageProperties;
-
+    private final SysUserService sysUserService;
+    private final TVehicleService tVehicleService;
 
 
     @GetMapping("page")
@@ -93,6 +87,24 @@ public class ResourceController {
 
         String dataUrl = domain + "/" + path + "/车辆入场导入模板.xlsx";
         return Result.ok(dataUrl);
+    }
+
+
+    @PostMapping("setVehicleBindingByLicensePlates")
+    @Operation(summary ="设置车辆绑定")
+    public Result<String> setVehicleBindingByLicensePlates(@RequestBody TVehicleVO vo){
+        //获取到得icps传输得数据
+        //车牌号
+        String licensePlate = vo.getLicensePlate();
+        //驾驶员电话
+        String driverPhone = vo.getDriverPhone();
+        //通过电话找到对应得人员
+        SysUserVO byMobile = sysUserService.getByMobile(driverPhone);
+        if (ObjectUtil.isNull(byMobile)){
+            throw new ServerException("没有此员工");
+        }
+        tVehicleService.setByLicensePlates(licensePlate ,byMobile.getId() , Constant.ENABLE );
+        return Result.ok();
     }
 
 }
