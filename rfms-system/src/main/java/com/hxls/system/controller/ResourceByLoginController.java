@@ -115,7 +115,7 @@ public class ResourceByLoginController {
         } else {
             vo.setPassword(passwordEncoder.encode(vo.getPassword()));
         }
-        sysUserService.update(vo);
+        sysUserService.updateByUser(vo);
         return Result.ok();
     }
 
@@ -245,7 +245,7 @@ public class ResourceByLoginController {
         }
         List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getSiteId,user.getOrgId()));
         if (CollectionUtils.isNotEmpty(list)){
-            return Result.ok(new ArrayList<>(list.stream().map(TVehicleEntity::getFleetName).filter(Objects::nonNull).toList()));
+            return Result.ok(new ArrayList<>(list.stream().map(TVehicleEntity::getFleetName).filter(Objects::nonNull).distinct().toList()));
         }
         return Result.ok(new ArrayList<>());
     }

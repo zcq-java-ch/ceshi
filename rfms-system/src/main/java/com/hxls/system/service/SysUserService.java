@@ -82,4 +82,10 @@ public interface SysUserService extends BaseService<SysUserEntity> {
 
 
     PageResult<SysUserVO> pageByNoAuth(SysUserQuery query);
+
+    /**
+     * 小程序修改用户信息
+     * @param vo
+     */
+    void updateByUser(SysUserVO vo);
 }

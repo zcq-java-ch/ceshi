@@ -457,4 +457,41 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
     }
 
+    @Override
+    public void updateByUser(SysUserVO vo) {
+        SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
+
+        // 判断用户名是否存在
+        SysUserEntity user = baseMapper.getByUsername(entity.getUsername());
+        if (user != null && !user.getId().equals(entity.getId())) {
+            throw new ServerException("用户名已经存在");
+        }
+
+        // 判断手机号是否存在
+        user = baseMapper.getByMobile(entity.getMobile());
+        if (user != null && !user.getId().equals(entity.getId())) {
+            throw new ServerException("手机号已经存在");
+        }
+
+        // 更新用户
+        updateById(entity);
+
+        if (entity.getStationId() !=null) {
+            //TODO 修改用户的时候人脸下发
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(entity));
+            appointmentFeign.issuedPeople(person);
+
+            //TODO 修改用户的时候车辆下发 ---判断是否有值
+
+            if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                appointmentFeign.issuedPeople(vehicle);
+            }
+        }
+    }
+
 }
