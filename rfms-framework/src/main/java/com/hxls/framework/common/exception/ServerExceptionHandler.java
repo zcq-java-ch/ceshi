@@ -7,6 +7,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 
 /**
@@ -41,6 +42,11 @@ public class ServerExceptionHandler {
     public Result<String> handleAccessDeniedException(Exception ex) {
 
         return Result.error(ErrorCode.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public Result<String> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        return Result.error("上传的文件大小超过了限制");
     }
 
     @ExceptionHandler(Exception.class)
