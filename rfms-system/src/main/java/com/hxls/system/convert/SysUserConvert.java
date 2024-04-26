@@ -3,6 +3,7 @@ package com.hxls.system.convert;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserExcelVO;
+import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.framework.security.user.UserDetail;
 import org.mapstruct.Mapper;
@@ -29,6 +30,6 @@ public interface SysUserConvert {
 
     List<SysUserExcelVO> convert2List(List<SysUserEntity> list);
 
-    List<SysUserEntity> convertListEntity(List<SysUserExcelVO> list);
+    List<SysUserEntity> convertListEntity(List<SysUserGysExcelVO> list);
 
 }

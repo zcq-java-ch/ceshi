@@ -23,7 +23,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -236,11 +235,11 @@ public class SysUserController {
     @Operation(summary = "导入供应商用户")
     @OperateLog(type = OperateTypeEnum.IMPORT)
     @PreAuthorize("hasAuthority('sys:user:import')")
-    public Result<String> importExcel(@RequestParam("file") MultipartFile file,@RequestParam("orgId") Long orgId) {
-        if (file.isEmpty()) {
+    public Result<String> importExcel(@RequestBody @Valid SysUserImportVO vo) {
+        if (vo.getImageUrl().isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
-        sysUserService.importByExcel(file, passwordEncoder.encode("hxls1234"),orgId);
+        sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls1234"),vo.getOrgId());
 
         return Result.ok();
     }

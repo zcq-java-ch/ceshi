@@ -2,11 +2,8 @@ package com.hxls.system.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
-import com.hxls.framework.common.utils.DateUtils;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -37,14 +34,14 @@ public class TVehicleExcelVO implements Serializable {
 	@Trans(type = TransType.DICTIONARY, key = "car_type", ref = "carTypeName")
 	private String carType;
 
-	@ExcelProperty(value = "车型")
+	@ExcelProperty("车型")
 	private String carTypeName;
 
 	@ExcelIgnore
 	@Trans(type = TransType.DICTIONARY, key = "emission_standard", ref = "emissionStandardName")
 	private String emissionStandard;
 
-	@ExcelProperty(value = "车辆排放标准")
+	@ExcelProperty("车辆排放标准")
 	private String emissionStandardName;
 
 	@ExcelProperty("车辆注册日期")

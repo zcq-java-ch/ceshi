@@ -1,16 +1,14 @@
 package com.hxls.system.service;
 
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.vo.MainUserVO;
-import com.hxls.system.vo.SysOrgVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserVO;
-import com.hxls.framework.common.utils.PageResult;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -56,7 +54,7 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * @param password 密码
      * @param orgId 所属供应商
      */
-    void importByExcel(MultipartFile file, String password,Long orgId);
+    void importByExcel(String file, String password,Long orgId);
 
     /**
      * 导出用户信息表格

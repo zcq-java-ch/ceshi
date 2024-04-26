@@ -27,16 +27,12 @@ import com.hxls.system.enums.SuperAdminEnum;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
-import com.hxls.system.vo.MainUserVO;
-import com.hxls.system.vo.SysUserBaseVO;
-import com.hxls.system.vo.SysUserExcelVO;
-import com.hxls.system.vo.SysUserVO;
+import com.hxls.system.vo.*;
 import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -308,27 +304,40 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void importByExcel(MultipartFile file, String password,Long orgId) {
+    public void importByExcel(String file, String password,Long orgId) {
         SysOrgEntity byId = sysOrgService.getById(orgId);
-        ExcelUtils.readAnalysis(file, SysUserExcelVO.class, new ExcelFinishCallBack<SysUserExcelVO>() {
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
             @Override
-            public void doAfterAllAnalysed(List<SysUserExcelVO> result) {
+            public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
                 saveUser(result);
             }
 
             @Override
-            public void doSaveBatch(List<SysUserExcelVO> result) {
+            public void doSaveBatch(List<SysUserGysExcelVO> result) {
                 saveUser(result);
             }
 
-            private void saveUser(List<SysUserExcelVO> result) {
+            private void saveUser(List<SysUserGysExcelVO> result) {
                 ExcelUtils.parseDict(result);
                 List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(result);
                 sysUserEntities.forEach(user -> {
+                    // 判断手机号是否存在
+                    SysUserEntity  olduser = baseMapper.getByUsername(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    // 判断手机号是否存在
+                    olduser = baseMapper.getByMobile(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
                     user.setUserType("3");
                     user.setPassword(password);
                     user.setOrgId(orgId);
+                    user.setUsername(user.getMobile());
                     user.setOrgName(byId.getName());
+                    user.setStatus(1);
+                    user.setSuperAdmin(0);
                 });
                 saveBatch(sysUserEntities);
             }
