@@ -31,7 +31,7 @@ public abstract class StorageService {
         // 把当天HH:mm:ss，转换成秒
         long time = DateUtil.timeToSecond(DateUtil.formatTime(new Date()));
         // 新文件名
-        return   "_" + time + "." + suffix;
+        return   prefix + "_" + time + "." + suffix;
     }
 
     /**
