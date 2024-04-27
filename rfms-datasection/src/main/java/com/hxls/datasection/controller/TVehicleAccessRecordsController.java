@@ -2,6 +2,7 @@ package com.hxls.datasection.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -211,5 +212,71 @@ public class TVehicleAccessRecordsController extends BaseController {
         return Result.ok();
     }
 
+    /**
+      * @author: Mryang
+      * @Description: 注释，临时接口，处理精城大范围时间内返回的数据，插入至数据库
+      * @Date: 21:47 2024/4/27
+      * @Param:
+      * @return:
+      */
+    @PostMapping("/directlyInsterData")
+    public Result<String> directlyInsterData(@RequestBody JSONObject jsonObjectBody) {
+        JSONArray jsonArray = jsonObjectBody.getJSONArray("carRecords");
+        if (CollectionUtils.isNotEmpty(jsonArray)) {
+            int insterCount = 0;
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonObjectRecords = jsonArray.getJSONObject(i);
+                // 判断数据  数据库中已经存在
+                String recordsId = jsonObjectRecords.getString("records_id");
+                boolean whetherItExists = tVehicleAccessRecordsService.whetherItExists(recordsId);
+                if (whetherItExists){
+                    // 存在
+                }else {
+                    log.info("开始插入车辆记录");
+                    TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = new TVehicleAccessRecordsEntity();
+                    tVehicleAccessRecordsEntity.setChannelId(jsonObjectRecords.getLong("channel_id"));
+                    tVehicleAccessRecordsEntity.setChannelName(jsonObjectRecords.getString("channel_name"));
+                    tVehicleAccessRecordsEntity.setDeviceId(jsonObjectRecords.getLong("device_id"));
+                    tVehicleAccessRecordsEntity.setDeviceName(jsonObjectRecords.getString("deviceName"));
 
+                    tVehicleAccessRecordsEntity.setManufacturerId(jsonObjectRecords.getLong("manufacturer_id"));
+                    tVehicleAccessRecordsEntity.setManufacturerName(jsonObjectRecords.getString("manufacturer_name"));
+                    tVehicleAccessRecordsEntity.setPlateNumber(jsonObjectRecords.getString("plateNumber"));
+                    tVehicleAccessRecordsEntity.setRecordsId(jsonObjectRecords.getString("records_id"));
+
+                    String passChannelType = jsonObjectRecords.getString("passChannelType");
+                    String accessType = jsonObjectRecords.getString("access_type");
+                    tVehicleAccessRecordsEntity.setAccessType(accessType);
+                    tVehicleAccessRecordsEntity.setCarUrl(jsonObjectRecords.getString("car_url"));
+                    tVehicleAccessRecordsEntity.setRecordTime(jsonObjectRecords.getDate("record_time"));
+                    tVehicleAccessRecordsEntity.setSiteId(jsonObjectRecords.getLong("siteId"));
+                    tVehicleAccessRecordsEntity.setSiteName(jsonObjectRecords.getString("siteName"));
+
+                    /**
+                     * 需要通过车牌绑定平台车辆信息数据
+                     * */
+                    if (ObjectUtils.isNotEmpty(jsonObjectRecords.getString("plateNumber"))){
+                        JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(jsonObjectRecords.getString("plateNumber"));
+                        if(ObjectUtils.isNotEmpty(jsonObject)){
+                            tVehicleAccessRecordsEntity.setVehicleModel(jsonObject.getString("carType"));
+                            tVehicleAccessRecordsEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                            tVehicleAccessRecordsEntity.setDriverId(jsonObject.getLong("driverId"));
+                            tVehicleAccessRecordsEntity.setDriverName(jsonObject.getString("driverName"));
+                            tVehicleAccessRecordsEntity.setDriverPhone(jsonObject.getString("driverMobile"));
+                            tVehicleAccessRecordsEntity.setImageUrl(jsonObject.getString("imageUrl"));
+                        }
+                    }
+
+                    tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);
+                    insterCount++;
+                    // 存储车辆进出场展示台账
+//                    log.info("通信记录存储完成，开始记录台账");
+//                    tVehicleAccessRecordsService.saveLedger(tVehicleAccessRecordsEntity);
+
+                }
+            }
+            return Result.ok("插入完成总条数为："+insterCount);
+        }
+        return Result.error("数据传入为空");
+    }
 }
