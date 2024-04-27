@@ -66,16 +66,16 @@ public class CallbackRecordsController {
                  * 2. 通过客户端传过来的设备名称，找到平台对应的设备，从而获取其他数据
                  * */
                 JSONObject entries = deviceFeign.useTheAccountToQueryDeviceInformation(dfCallBackDto.getDevicename());
-                log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
-                log.info("平台端的设备名称:{}",entries.getString("account"));
+//                log.info("万众客户端传来的设备名称:{}",dfCallBackDto.getDevicename());
+//                log.info("平台端的设备名称:{}",entries.getString("account"));
                 String faceBase64 = dfCallBackDto.getFace_base64();
 
-                log.info("万众人脸开始转换base64");
+//                log.info("万众人脸开始转换base64");
                 String faceUrl = "";
                 if (StringUtils.isNotBlank(faceBase64)) {
-                    faceUrl = BaseImageUtils.base64ToUrl(faceBase64, "WANZHONG/FACE");
+                    faceUrl = BaseImageUtils.base64ToUrl(faceBase64, "WANZHONG/FACE", dfCallBackDto.getName());
                 }
-                log.info("万众人脸转换完成：{}",faceUrl);
+//                log.info("万众人脸转换完成：{}",faceUrl);
 
                 TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                 body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
@@ -161,7 +161,7 @@ public class CallbackRecordsController {
             boolean whetherItExists = tPersonAccessRecordsService.whetherItExists(recordId);
             if (whetherItExists){
                 // 存在
-                log.info("人脸数据已经存在不进行存储，他的唯一值是{}",recordId);
+                log.info("海康威视人数据已经存在不进行存储，他的唯一值是{}",recordId);
             }else {
                 // 检查文件是否为空或未上传
                 if (pictureFile != null && !pictureFile.isEmpty()) {
@@ -171,16 +171,16 @@ public class CallbackRecordsController {
 
                         // 将文件内容转换为Base64编码的字符串
                         String base64Encoded = Base64.getEncoder().encodeToString(fileContent);
-                        log.info("海康人脸开始转换base64");
-                        String faceUrl = BaseImageUtils.base64ToUrl(base64Encoded, "HAIKANG/FACE");
-                        log.info("海康人脸转换完成：{}",faceUrl);
+//                        log.info("海康人脸开始转换base64");
+                        String faceUrl = BaseImageUtils.base64ToUrl(base64Encoded, "HAIKANG/FACE", name);
+//                        log.info("海康人脸转换完成：{}",faceUrl);
 
                         // 输出Base64编码的字符串
 //                System.out.println("Base64 encoded file content: " + base64Encoded);
                         // 进行存储
                         JSONObject entries = deviceFeign.useTheIpaddressToQueryDeviceInformation(ipAddress);
-                        log.info("海康人脸客户端传来的IP:{}",ipAddress);
-                        log.info("平台端的设备的IP:{}",entries.getString("ipAddress"));
+//                        log.info("海康人脸客户端传来的IP:{}",ipAddress);
+//                        log.info("平台端的设备的IP:{}",entries.getString("ipAddress"));
                         TPersonAccessRecordsVO body = new TPersonAccessRecordsVO();
                         body.setChannelId(ObjectUtil.isNotEmpty(entries.getLong("channel_id")) ? entries.getLong("channel_id") : 999L);
                         body.setChannelName(ObjectUtil.isNotEmpty(entries.getString("channel_name")) ? entries.getString("channel_name") : "设备未匹配到");
@@ -263,7 +263,7 @@ public class CallbackRecordsController {
             String laneCode = jsonObject.getString("laneCode");
 
 
-            String carUrl = BaseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR");
+            String carUrl = BaseImageUtils.base64ToUrl(picVehicleFileData, "HAIKANG/CAR", plateNo);
             /**
              * 1. 先验证uuid是否存在，存在说明录入过了
              * */

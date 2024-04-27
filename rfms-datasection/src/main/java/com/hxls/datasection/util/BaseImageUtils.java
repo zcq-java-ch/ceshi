@@ -1,10 +1,12 @@
 package com.hxls.datasection.util;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -18,7 +20,7 @@ import java.util.Base64;
 import java.util.Random;
 
 public class BaseImageUtils {
-    public static String base64ToUrl(String picVehicleFileData, String path) throws IOException {
+    public static String base64ToUrl(String picVehicleFileData, String path, String fileName) throws IOException {
         byte[] bfile = Base64.getDecoder().decode(picVehicleFileData);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bfile);
         // 创建HttpClient实例
@@ -31,8 +33,13 @@ public class BaseImageUtils {
         HttpPost httpPost = new HttpPost(apiUrl);
 
         // 构建请求体
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.addBinaryBody("file", inputStream, ContentType.APPLICATION_OCTET_STREAM, generateRandomDigits(6)+".jpg");
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
+
+        String fileNameOr = generateRandomDigits(6)+".jpg";
+        if (StringUtils.isNotBlank(fileName)){
+            fileNameOr = fileName + '_' + fileNameOr;
+        }
+        builder.addBinaryBody("file", inputStream, ContentType.APPLICATION_OCTET_STREAM, fileNameOr);
         builder.addTextBody("sitePri", path);
 
         // 设置请求体
@@ -61,21 +68,14 @@ public class BaseImageUtils {
     // 生成指定位数的随机数字字符串
     private static String generateRandomDigits(int length) {
 
-        // 获取当前时间
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        // 定义日期时间格式
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        // 格式化当前时间为字符串
-        String formattedDateTime = currentDateTime.format(formatter);
-
-
+        long currentTimeMillis = System.currentTimeMillis();
         Random random = new Random();
         StringBuilder builder = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             builder.append(random.nextInt(10));
         }
         builder.append("_");
-        builder.append(formattedDateTime);
+        builder.append(currentTimeMillis);
         return builder.toString();
     }
 }
