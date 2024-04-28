@@ -163,8 +163,5 @@ public class SynMessageDataContorller {
 
             }
         }
-        //手动回执，不批量签收,回执后才能处理下一批消息
-//        c.basicAck(tag,false);
-//        System.out.println("正常进入人脸设备  : " + o);
     }
 }
