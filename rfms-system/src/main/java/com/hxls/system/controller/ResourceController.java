@@ -51,6 +51,13 @@ public class ResourceController {
     }
 
 
+    @GetMapping("getServerUrl")
+    @Operation(summary = "获取服务器地址")
+    public Result<String> page() {
+        String domain = storageProperties.getConfig().getDomain();
+        return Result.ok(domain);
+    }
+
 
 
     @GetMapping("all")

@@ -162,10 +162,21 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
         wrapper.eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
         if (StringUtils.isNotEmpty(query.getSubmitterName())) {
-            List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName()));
+            List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService
+                    .list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName())
+                    );
             if (CollectionUtils.isNotEmpty(tAppointmentPersonnels)) {
-                List<Long> ids = tAppointmentPersonnels.stream().map(TAppointmentPersonnel::getAppointmentId).toList();
-                wrapper.in(TAppointmentEntity::getId, ids);
+                List<Long> ids = new ArrayList<>();
+                for (TAppointmentPersonnel tAppointmentPersonnel : tAppointmentPersonnels) {
+                    Long appointmentId = tAppointmentPersonnel.getAppointmentId();
+                    List<TAppointmentPersonnel> appointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, appointmentId));
+                    if (CollectionUtils.isNotEmpty(appointmentPersonnels)){
+                        if (appointmentPersonnels.get(0).getExternalPersonnel().equals(query.getSubmitterName())){
+                            ids.add(appointmentId);
+                        }
+                    }
+                }
+                wrapper.in(CollectionUtils.isNotEmpty(ids) , TAppointmentEntity::getId, ids);
             }
         }
         return wrapper;
@@ -178,9 +189,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.or().eq(TAppointmentEntity::getCreator , query.getCreator())
                 .in(query.getOther(), TAppointmentEntity::getAppointmentType, list)
 
-
-
-        .in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds())
         .eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType())
         .eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName())
         .eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter())
@@ -194,8 +202,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         .eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus())
         .eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass())
         .eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId())
-        .eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId())
-        .eq(query.getCreator() !=null , TAppointmentEntity::getCreator , query.getCreator());
+        .eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
 
         if (query.getIsFinish() != null ){
             if (query.getIsFinish()){
