@@ -8,7 +8,10 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import com.hxls.appointment.pojo.vo.leadingVO.*;
+import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.utils.JsonUtils;
 import com.hxls.framework.common.utils.Result;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,10 +29,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LeadingEnterpriseController {
 
-
     private static String token;
 
-    private final static Map<String , List<recordInfo>> map1 = new HashMap<>();
+    @Resource
+    private  RedisCache redisCache;
+
 
     private static void getToken() {
         Map<String, String> map = new HashMap<>();
@@ -50,15 +54,11 @@ public class LeadingEnterpriseController {
     @PostMapping("/byTime")
     @PreAuthorize("hasAuthority('leading:record:page')")
     public Result<?> selectInByTime(@RequestBody PageParams data) {
-
         System.out.println("开始查询记录");
-
         try {
-
             if (ObjectUtil.isNull(token)) {
                 getToken();
             }
-
             Map<String, String> map = new HashMap<>();
             map.put("accessToken", token);
             map.put("apiCode", "getWeightInfoCustom");
@@ -68,11 +68,11 @@ public class LeadingEnterpriseController {
             params.setEndTime(data.getEndTime());
             params.setReceiveStation(data.getReceiveStation());
             map.put("params", JSONUtil.toJsonStr(params));
-            if (map1.get(data.getStartTime()+data.getEndTime()) != null){
+            if (redisCache.get(data.getStartTime()+data.getEndTime()) != null){
                 return CacheData(data);
             }
 
-            //获取过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
+            //获取icps过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
             String post = HttpUtil.post("https://lvshe.huashijc.com/third/open/api/send_data", JSONUtil.toJsonStr(map));
             responseBodyList bean = JSONUtil.toBean(post, responseBodyList.class);
             if (!bean.getCode().equals("1001")) {
@@ -122,10 +122,10 @@ public class LeadingEnterpriseController {
 
     private Result<?> CacheData(PageParams data) {
 
-        List<recordInfo> recordInfos = map1.get(data.getStartTime() + data.getEndTime());
-
+        String string = redisCache.get(data.getStartTime() + data.getEndTime()).toString();
+        List<recordInfo> recordInfos = JSONUtil.toList(string, recordInfo.class);
         if (StrUtil.isNotEmpty(data.getCdName())){
-            recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
+            recordInfos.removeIf(item-> item.getCdName() ==null || !item.getCdName().equals(data.getCdName()));
         }
 
         int startIndex = (data.getPage() - 1) * data.getPageSize();
@@ -181,11 +181,16 @@ public class LeadingEnterpriseController {
         });
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
-
-        map1.put( data1.getStartTime() + data1.getEndTime() , objects );
+        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 600);
 
     }
 
+    /**
+     *
+     * @param subtract
+     * @param bigDecimal
+     * @return
+     */
     private BigDecimal generateRandomDecimal(BigDecimal subtract, BigDecimal bigDecimal) {
         Random random = new Random();
         // 生成一个 [0, 1) 之间的随机数
@@ -257,13 +262,6 @@ public class LeadingEnterpriseController {
         } catch (Exception e) {
             return Result.error(500, "请稍后再试");
         }
-    }
-
-
-    @Async
-    @Scheduled(cron = "0 0/30 * * * ?")
-    public  void resetMap(){
-        map1.clear();
     }
 
 
