@@ -2,12 +2,15 @@ package com.hxls.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.SysDictDataConvert;
 import com.hxls.system.dao.SysDictDataDao;
 import com.hxls.system.entity.SysDictDataEntity;
+import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysDictDataQuery;
 import com.hxls.system.service.SysDictDataService;
 import com.hxls.system.vo.SysDictDataVO;
@@ -45,6 +48,14 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void save(SysDictDataVO vo) {
+        //判断当前值有没有，字典值只能被创建一次
+        long valusCount = baseMapper.selectCount(new QueryWrapper<SysDictDataEntity>()
+                .eq("dict_type_id", vo.getDictTypeId())
+                .eq("dict_value", vo.getDictValue())
+                .eq("deleted", 0));
+        if (valusCount > 0) {
+            throw new ServerException("当前字典值已存在，不能重复添加");
+        }
         SysDictDataEntity entity = SysDictDataConvert.INSTANCE.convert(vo);
 
         baseMapper.insert(entity);
