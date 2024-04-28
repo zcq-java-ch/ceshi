@@ -323,7 +323,6 @@ public class SystemServerApi {
             // 打印每个类型及其数量
             JSONObject objects = new JSONObject();
             for (Map.Entry<String, Long> entry : typeCounts.entrySet()) {
-                System.out.println("类型：" + entry.getKey() + "，数量：" + entry.getValue());
                 objects.put(entry.getKey(), entry.getValue());
             }
             entries.put("jobs", objects);
@@ -334,7 +333,6 @@ public class SystemServerApi {
             // 打印每个类型及其数量
             JSONObject postobjects = new JSONObject();
             for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
-                System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
                 postobjects.put(entry2.getKey(), entry2.getValue());
             }
             entries.put("postobjects", postobjects);

@@ -241,11 +241,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 String devicePersonId = entry.getKey();
                 List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-                System.out.println("用户id: " + devicePersonId);
-                System.out.println("Records:");
-                //recordsList.forEach(System.out::println);
-                System.out.println("---------------------------------");
-
                 // 找出每个分组中按照时间排序的最后一条数据
                 TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
                 if ("1".equals(lastRecord.getAccessType())) {
@@ -277,11 +272,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
             String devicePersonId = entry.getKey();
             List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
-
-            System.out.println("用户id: " + devicePersonId);
-            System.out.println("Records:");
-            //recordsList.forEach(System.out::println);
-            System.out.println("---------------------------------");
 
             // 找出每个分组中按照时间排序的最后一条数据
             TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
@@ -317,10 +307,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 String devicePersonId = entry.getKey();
                 List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-                System.out.println("用户id: " + devicePersonId);
-                System.out.println("Records:");
-                //recordsList.forEach(System.out::println);
-                System.out.println("---------------------------------");
 
                 // 找出每个分组中按照时间排序的最后一条数据
                 TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
@@ -357,10 +343,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 String devicePersonId = entry.getKey();
                 List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-                System.out.println("用户id: " + devicePersonId);
-                System.out.println("Records:");
-                //recordsList.forEach(System.out::println);
-                System.out.println("---------------------------------");
 
                 // 找出每个分组中按照时间排序的最后一条数据
                 TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
@@ -421,10 +403,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             String devicePersonId = entry.getKey();
             List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
-            System.out.println("用户id: " + devicePersonId);
-            System.out.println("Records:");
-            //recordsList.forEach(System.out::println);
-            System.out.println("---------------------------------");
 
             // 找出每个分组中按照时间排序的最后一条数据
             TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));

@@ -54,6 +54,7 @@ public class CallbackRecordsController {
     public JSONObject callbackAddressFaceRecognitionByWZ(@RequestBody DfWZCallBackDto dfCallBackDto) throws ParseException, IOException {
         if(ObjectUtil.isNotEmpty(dfCallBackDto)){
 //            log.info("万众人脸识别结果：{}",dfCallBackDto.toString());
+//            log.info("设备唯一识别码：{}",dfCallBackDto);
             /**
              * 1. 先验证uuid是否存在，存在说明录入过了
              * */
