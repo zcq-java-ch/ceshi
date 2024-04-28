@@ -120,9 +120,9 @@ public class ResourceByLoginController {
     }
 
 
-    @GetMapping("site")
+    @GetMapping("area")
     @Operation(summary = "区域下拉")
-    public Result<List<SysSiteAreaVO>> siteList(@RequestParam Long siteId) {
+    public Result<List<SysSiteAreaVO>> areaList(@RequestParam Long siteId) {
 
 //        //配置查询权限
 //        UserDetail user = SecurityUser.getUser();
@@ -151,9 +151,9 @@ public class ResourceByLoginController {
     }
 
 
-    @GetMapping("area")
+    @GetMapping("site")
     @Operation(summary = "组织下拉")
-    public Result<List<SysOrgVO>> areaList(@RequestParam Integer type) {
+    public Result<List<SysOrgVO>> siteList(@RequestParam Integer type) {
 
         //配置查询权限
         UserDetail user = SecurityUser.getUser();
@@ -176,7 +176,14 @@ public class ResourceByLoginController {
                 if (CollectionUtils.isNotEmpty(list)) {
                     result.addAll(SysOrgConvert.INSTANCE.convertList(list));
                 }
+            }else {
+                List<SysOrgEntity> list = sysOrgService.list(wrapper
+                        .eq(SysOrgEntity::getId, user.getOrgId()));
+                if (CollectionUtils.isNotEmpty(list)) {
+                    result.addAll(SysOrgConvert.INSTANCE.convertList(list));
+                }
             }
+
             return Result.ok(result);
         }
 

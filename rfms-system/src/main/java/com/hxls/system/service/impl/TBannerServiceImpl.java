@@ -3,6 +3,8 @@ package com.hxls.system.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.storage.config.StorageConfiguration;
+import com.hxls.storage.properties.StorageProperties;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
@@ -29,9 +31,18 @@ import java.util.List;
 @AllArgsConstructor
 public class TBannerServiceImpl extends BaseServiceImpl<TBannerDao, TBannerEntity> implements TBannerService {
 
+
+    private final StorageProperties storageProperties;
+
     @Override
     public PageResult<TBannerVO> page(TBannerQuery query) {
         IPage<TBannerEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+
+        List<TBannerEntity> records = page.getRecords();
+        String domain = storageProperties.getConfig().getDomain();
+
+
+
 
         return new PageResult<>(TBannerConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
