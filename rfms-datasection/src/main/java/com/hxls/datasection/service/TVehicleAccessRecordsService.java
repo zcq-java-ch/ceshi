@@ -34,4 +34,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     JSONObject QueryRealtimeTotalAndNumberVariousClasses(Long stationId);
 
     JSONArray queryTheDetailsOfSiteCar(Long stationId);
+
+    void jingchengMakeTaz(String siteId);
 }

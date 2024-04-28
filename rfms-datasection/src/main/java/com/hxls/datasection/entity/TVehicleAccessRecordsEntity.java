@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import com.baomidou.mybatisplus.annotation.*;
 import java.util.Date;
 import com.hxls.framework.mybatis.entity.BaseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 车辆出入记录表
@@ -65,6 +66,7 @@ public class TVehicleAccessRecordsEntity extends BaseEntity {
 	* 记录时间
 	*/
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date recordTime;
 
 	/**
@@ -127,6 +129,11 @@ public class TVehicleAccessRecordsEntity extends BaseEntity {
 	 * 车辆默认照片
 	 * */
 	private String imageUrl;
+
+	/**
+	 * 行驶证照片
+	 */
+	private String licenseImage;
 
 
 }

@@ -151,6 +151,7 @@ public class SynMessageDataContorller {
                         tVehicleAccessRecordsEntity.setDriverName(jsonObject.getString("driverName"));
                         tVehicleAccessRecordsEntity.setDriverPhone(jsonObject.getString("driverMobile"));
                         tVehicleAccessRecordsEntity.setImageUrl(jsonObject.getString("imageUrl"));
+                        tVehicleAccessRecordsEntity.setLicenseImage(jsonObject.getString("licenseImage"));
                     }
                 }
 

@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -197,16 +198,8 @@ public class TVehicleAccessRecordsController extends BaseController {
       * @return
       */
     @PostMapping("/jingchengMakeTaz")
-    public Result<String> jingchengMakeTaz(){
-        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getStatus, 1);
-        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
-        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getSiteId, 175);
-        List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = tVehicleAccessRecordsService.list(objectLambdaQueryWrapper);
-        for (int i = 0; i < tVehicleAccessRecordsEntities.size(); i++) {
-//            tVehicleAccessRecordsEntities.get()
-
-        }
+    public Result<String> jingchengMakeTaz(@RequestParam("siteId") String siteId){
+        tVehicleAccessRecordsService.jingchengMakeTaz(siteId);
 
 
         return Result.ok();
@@ -264,6 +257,7 @@ public class TVehicleAccessRecordsController extends BaseController {
                             tVehicleAccessRecordsEntity.setDriverName(jsonObject.getString("driverName"));
                             tVehicleAccessRecordsEntity.setDriverPhone(jsonObject.getString("driverMobile"));
                             tVehicleAccessRecordsEntity.setImageUrl(jsonObject.getString("imageUrl"));
+                            tVehicleAccessRecordsEntity.setLicenseImage(jsonObject.getString("licenseImage"));
                         }
                     }
 

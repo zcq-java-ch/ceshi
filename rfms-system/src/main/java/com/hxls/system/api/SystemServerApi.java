@@ -283,7 +283,7 @@ public class SystemServerApi {
 
                 entries.put("carType", sysUserEntity.getCarType());
                 entries.put("emissionStandard", sysUserEntity.getEmissionStandard());
-                entries.put("licenseImage", sysUserEntity.getLicensePlate());
+                entries.put("licenseImage", "");
                 // 随车环报清单
                 entries.put("images", "无");
                 entries.put("fleetName", "无");
