@@ -51,17 +51,7 @@ public class SysUserController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> page(@ParameterObject @Valid SysUserQuery query) {
-        UserDetail user = SecurityUser.getUser();
-        if(user.getOrgId() != null ){
-            query.setOrgId(user.getOrgId());
-        }
         PageResult<SysUserVO> page = sysUserService.page(query);
-        for (SysUserVO userVO : page.getList()){
-            if(userVO.getOrgId() != null){
-                SysOrgEntity byId = sysOrgService.getById(userVO.getOrgId());
-                userVO.setOrgName(byId.getName());
-            }
-        }
         return Result.ok(page);
     }
 

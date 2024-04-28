@@ -111,7 +111,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         params.put("status", query.getStatus());
         params.put("realName", query.getRealName());
         params.put("orgName", query.getOrgName());
-        params.put("orgId", query.getOrgId());
+
+
+        if(query.getOrgId() != null){
+            List<Long> subOrgIdList = sysOrgService.getSubOrgIdList(query.getOrgId());
+            params.put("orgList", subOrgIdList);
+        }
 
         // 数据权限
         params.put(Constant.DATA_SCOPE, getDataScope("t1", null));

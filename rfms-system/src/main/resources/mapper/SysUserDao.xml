@@ -5,7 +5,7 @@
 
 	<select id="getList" resultType="com.hxls.system.entity.SysUserEntity">
 		select t1.*
-			from sys_user t1 where t1.super_admin = 0 and t1.deleted = 0
+			from sys_user t1 where t1.deleted = 0
 		<if test="username != null and username.trim() != ''">
 			and t1.username = #{username}
 		</if>

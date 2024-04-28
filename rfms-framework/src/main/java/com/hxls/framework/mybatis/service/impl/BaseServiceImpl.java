@@ -102,7 +102,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         }
 
         // 查询本人数据
-        sqlFilter.append(tableAlias).append("creator").append("=").append(user.getId());
+        sqlFilter.append(tableAlias).append("id").append("=").append(user.getId());
 
         sqlFilter.append(")");
 
