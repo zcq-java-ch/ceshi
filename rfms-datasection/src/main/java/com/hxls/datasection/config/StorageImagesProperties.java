@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  */
 @Data
-@ConfigurationProperties(prefix = "storageImage")
+@ConfigurationProperties(prefix = "storageimage")
 public class StorageImagesProperties {
     /**
      * 通用配置项
