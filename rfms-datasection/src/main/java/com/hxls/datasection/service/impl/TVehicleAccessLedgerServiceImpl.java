@@ -1,11 +1,14 @@
 package com.hxls.datasection.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
+import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
@@ -33,9 +36,60 @@ import java.util.List;
 @AllArgsConstructor
 public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAccessLedgerDao, TVehicleAccessLedgerEntity> implements TVehicleAccessLedgerService {
 
+    public StorageImagesProperties properties;
+
     @Override
     public PageResult<TVehicleAccessLedgerVO> page(TVehicleAccessLedgerQuery query, UserDetail baseUser) {
         IPage<TVehicleAccessLedgerEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
+        List<TVehicleAccessLedgerEntity> records = page.getRecords();
+        String domain = properties.getConfig().getDomain();
+
+        if (CollectionUtil.isNotEmpty(records)){
+            for (int i = 0; i < records.size(); i++) {
+                TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = records.get(i);
+                if (StringUtils.isNotEmpty(tVehicleAccessLedgerEntity.getLicenseImage())){
+                    String licenseImage = tVehicleAccessLedgerEntity.getLicenseImage();
+                    boolean isHttplicenseImage = licenseImage.startsWith("http");
+                    if (isHttplicenseImage){
+                        // 是http开头 不处理
+                    }else {
+                        String newCarUrl = domain + licenseImage;
+                        tVehicleAccessLedgerEntity.setLicenseImage(newCarUrl);
+                    }
+                }
+                if (StringUtils.isNotEmpty(tVehicleAccessLedgerEntity.getEnvirList())){
+                    String envirList = tVehicleAccessLedgerEntity.getEnvirList();
+                    boolean isHttpenvirList = envirList.startsWith("http");
+                    if (isHttpenvirList){
+                        // 是http开头 不处理
+                    }else {
+                        String newenvirList = domain + envirList;
+                        tVehicleAccessLedgerEntity.setEnvirList(newenvirList);
+                    }
+                }
+                if (StringUtils.isNotEmpty(tVehicleAccessLedgerEntity.getInPic())){
+                    String inPic = tVehicleAccessLedgerEntity.getInPic();
+                    boolean isHttpinPic = inPic.startsWith("http");
+                    if (isHttpinPic){
+                        // 是http开头 不处理
+                    }else {
+                        String newinPic = domain + inPic;
+                        tVehicleAccessLedgerEntity.setInPic(newinPic);
+                    }
+                }
+
+                if (StringUtils.isNotEmpty(tVehicleAccessLedgerEntity.getOutPic())){
+                    String outPic = tVehicleAccessLedgerEntity.getOutPic();
+                    boolean isHttpoutPic = outPic.startsWith("http");
+                    if (isHttpoutPic){
+                        // 是http开头 不处理
+                    }else {
+                        String newoutPic = domain + outPic;
+                        tVehicleAccessLedgerEntity.setOutPic(newoutPic);
+                    }
+                }
+            }
+        }
 
         return new PageResult<>(TVehicleAccessLedgerConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }

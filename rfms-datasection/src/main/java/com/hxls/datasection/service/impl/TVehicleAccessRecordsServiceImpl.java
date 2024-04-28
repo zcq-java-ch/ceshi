@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.VehicleFeign;
+import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
@@ -44,12 +45,52 @@ import java.util.stream.Collectors;
 public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAccessRecordsDao, TVehicleAccessRecordsEntity> implements TVehicleAccessRecordsService {
 
     private final TVehicleAccessLedgerDao tVehicleAccessLedgerDao;
-
+    public StorageImagesProperties properties;
     private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
     @Override
     public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser) {
         IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
+
+        List<TVehicleAccessRecordsEntity> records = page.getRecords();
+        String domain = properties.getConfig().getDomain();
+
+        if (CollectionUtil.isNotEmpty(records)){
+            for (int i = 0; i < records.size(); i++) {
+                TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = records.get(i);
+                if (StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getCarUrl())){
+                    String carUrl = tVehicleAccessRecordsEntity.getCarUrl();
+                    boolean isHttpUrlcarUrl = carUrl.startsWith("http");
+                    if (isHttpUrlcarUrl){
+                        // 是http开头 不处理
+                    }else {
+                        String newCarUrl = domain + carUrl;
+                        tVehicleAccessRecordsEntity.setCarUrl(newCarUrl);
+                    }
+                }
+                if (StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getImageUrl())){
+                    String imageUrl = tVehicleAccessRecordsEntity.getImageUrl();
+                    boolean isHttpUrlimageUrl = imageUrl.startsWith("http");
+                    if (isHttpUrlimageUrl){
+                        // 是http开头 不处理
+                    }else {
+                        String newimageUrl = domain + imageUrl;
+                        tVehicleAccessRecordsEntity.setImageUrl(newimageUrl);
+                    }
+                }
+                if (StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getLicenseImage())){
+                    String licenseImage = tVehicleAccessRecordsEntity.getLicenseImage();
+                    boolean isHttpUrllicenseImage = licenseImage.startsWith("http");
+                    if (isHttpUrllicenseImage){
+                        // 是http开头 不处理
+                    }else {
+                        String newlicenseImage = domain + licenseImage;
+                        tVehicleAccessRecordsEntity.setLicenseImage(newlicenseImage);
+                    }
+
+                }
+            }
+        }
 
         return new PageResult<>(TVehicleAccessRecordsConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }

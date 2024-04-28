@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.TVehicleAccessLedgerService;
@@ -46,9 +47,29 @@ import java.util.stream.Collectors;
 public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAccessRecordsDao, TPersonAccessRecordsEntity> implements TPersonAccessRecordsService {
 
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
+    public StorageImagesProperties properties;
     @Override
     public PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query, UserDetail baseUser) {
         IPage<TPersonAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
+
+        List<TPersonAccessRecordsEntity> records = page.getRecords();
+        String domain = properties.getConfig().getDomain();
+
+        if (CollectionUtil.isNotEmpty(records)) {
+            for (int i = 0; i < records.size(); i++) {
+                TPersonAccessRecordsEntity tPersonAccessRecordsEntity = records.get(i);
+                if (StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getHeadUrl())) {
+                    String headUrl = tPersonAccessRecordsEntity.getHeadUrl();
+                    boolean isHttpheadUrl = headUrl.startsWith("http");
+                    if (isHttpheadUrl) {
+                        // 是http开头 不处理
+                    } else {
+                        String newheadUrl = domain + headUrl;
+                        tPersonAccessRecordsEntity.setHeadUrl(newheadUrl);
+                    }
+                }
+            }
+        }
 
         return new PageResult<>(TPersonAccessRecordsConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }

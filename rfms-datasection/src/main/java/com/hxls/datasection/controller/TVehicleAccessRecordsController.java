@@ -134,7 +134,7 @@ public class TVehicleAccessRecordsController extends BaseController {
       */
     @GetMapping("/exportTVehicleAccessRecords")
     @Operation(summary = "导出车辆通行记录")
-//    @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:export')")
+    @PreAuthorize("hasAuthority('datasection:TVehicleAccessRecords:export')")
     public void exportTVehicleAccessRecords(@ParameterObject @Valid TVehicleAccessRecordsQuery query, @ModelAttribute("baseUser") UserDetail baseUser){
         PageResult<TVehicleAccessRecordsVO> page = tVehicleAccessRecordsService.page(query,baseUser);
 
