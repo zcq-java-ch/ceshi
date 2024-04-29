@@ -2,12 +2,15 @@ package com.hxls.system.service.impl;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.cache.MainPlatformCache;
@@ -101,10 +104,51 @@ public class SysPostServiceImpl extends BaseServiceImpl<SysPostDao, SysPostEntit
         sysUserPostService.deleteByPostIdList(idList);
     }
 
+//    @Override
+//    public List<MainPostVO> queryByMainPosts(SysPostQuery query) {
+//        OkHttpClient client = new OkHttpClient();
+//        //获取mainAccessToken
+//        String accessToken = mainPlatformCache.getAccessToken();
+//        if(!StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
+//            sysUserService.cardLogin();
+//            //更新accessToken
+//            accessToken = mainPlatformCache.getAccessToken();
+//        }
+//
+//        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/main_post/query_page";
+//        JSONObject params = new JSONObject();
+//        params.set("page",query.getPage());
+//        params.set("pageSize",query.getLimit());
+//        // 将参数封装到请求体中
+//        RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), params.toString());
+//        // 将accessToken放入请求头
+//        Request secondRequest = new Request.Builder()
+//                .url(secondRequestUrl)
+//                .post(secondRequestBody)
+//                .addHeader("access-token", accessToken)
+//                .build();
+//        // 执行请求
+//        try {
+//            Response secondResponse = client.newCall(secondRequest).execute();
+//            if (secondResponse.isSuccessful()) {
+//                JSONObject rel1 = new JSONObject(secondResponse.body().string());
+//                System.out.println(rel1);
+//                JSONObject rel2 = new JSONObject(rel1.get("data").toString());
+//                List<MainPostVO> mainPostVOS = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<MainPostVO>>() {}, true);
+//                return mainPostVOS;
+//            }
+//
+//        }catch (Exception e) {
+//            // 网络异常处理
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
+
     @Override
     public List<MainPostVO> queryByMainPosts(SysPostQuery query) {
-        OkHttpClient client = new OkHttpClient();
-        //获取mainAccessToken
+        // 获取mainAccessToken
         String accessToken = mainPlatformCache.getAccessToken();
         if(!StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
             sysUserService.cardLogin();
@@ -116,31 +160,24 @@ public class SysPostServiceImpl extends BaseServiceImpl<SysPostDao, SysPostEntit
         JSONObject params = new JSONObject();
         params.set("page",query.getPage());
         params.set("pageSize",query.getLimit());
-        // 将参数封装到请求体中
-        RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), params.toString());
-        // 将accessToken放入请求头
-        Request secondRequest = new Request.Builder()
-                .url(secondRequestUrl)
-                .post(secondRequestBody)
-                .addHeader("access-token", accessToken)
-                .build();
-        // 执行请求
-        try {
-            Response secondResponse = client.newCall(secondRequest).execute();
-            if (secondResponse.isSuccessful()) {
-                JSONObject rel1 = new JSONObject(secondResponse.body().string());
-                System.out.println(rel1);
-                JSONObject rel2 = new JSONObject(rel1.get("data").toString());
-                List<MainPostVO> mainPostVOS = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<MainPostVO>>() {}, true);
-                return mainPostVOS;
-            }
 
-        }catch (Exception e) {
-            // 网络异常处理
-            e.printStackTrace();
+        // 发送POST请求
+        HttpResponse response = HttpUtil.createPost(secondRequestUrl)
+                .header("access-token", accessToken)
+                .body(params.toString())
+                .execute();
+
+        // 处理响应
+        if (response.isOk()) {
+            JSONObject rel1 = JSONUtil.parseObj(response.body());
+            System.out.println(rel1);
+            JSONObject rel2 = new JSONObject(rel1.get("data").toString());
+            List<MainPostVO> mainPostVOS = JSONUtil.toList(rel2.get("data").toString(), MainPostVO.class);
+            return mainPostVOS;
+        } else {
+            throw new ServerException("请求主数据岗位异常");
         }
-
-        return null;
     }
+
 
 }
