@@ -31,7 +31,6 @@ import java.util.List;
  * 用户管理
  *
  * @author
- *
  */
 @RestController
 @RequestMapping("sys/user")
@@ -43,7 +42,6 @@ public class SysUserController {
     private final SysUserPostService sysUserPostService;
     private final SysPostService sysPostService;
     private final PasswordEncoder passwordEncoder;
-    private final TVehicleService tVehicleService;
     private final SysOrgService sysOrgService;
     private final SysRoleDataScopeService sysRoleDataScopeService;
 
@@ -61,7 +59,7 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> pageByGys(@ParameterObject @Valid SysUserQuery query) {
         UserDetail user = SecurityUser.getUser();
-        if(user.getOrgId() != null ){
+        if (user.getOrgId() != null) {
             query.setOrgId(user.getOrgId());
         }
         PageResult<SysUserVO> page = sysUserService.pageByGys(query);
@@ -85,7 +83,7 @@ public class SysUserController {
         vo.setPostIdList(postIdList);
 
         //查询组织名字
-        if(entity.getOrgId() != null){
+        if (entity.getOrgId() != null) {
             SysOrgEntity byId = sysOrgService.getById(entity.getOrgId());
             vo.setOrgName(byId.getName());
         }
@@ -97,7 +95,7 @@ public class SysUserController {
     @Operation(summary = "登录用户")
     public Result<SysUserVO> info() {
         SysUserVO user = SysUserConvert.INSTANCE.convert(SecurityUser.getUser());
-        if (user == null){
+        if (user == null) {
             throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
 
@@ -113,15 +111,20 @@ public class SysUserController {
         user.setPostNameList(postNameList);
 
         //用户站点名字
-        if(user.getStationId() != null){
+        if (user.getStationId() != null) {
             SysOrgEntity byId = sysOrgService.getById(user.getStationId());
             user.setStationName(byId.getName());
         }
 
-        //查询组织名字
-        if(user.getOrgId() != null){
+        //查询组织名字  -- 修改为全路径
+        if (user.getOrgId() != null) {
+
             SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
-            user.setOrgName(byId.getName());
+            String orgName = byId.getName();
+
+            String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
+
+            user.setOrgName(OverallOrgStructure);
         }
 
         //用户管理的站点数据权限
@@ -131,15 +134,31 @@ public class SysUserController {
         return Result.ok(user);
     }
 
+    /**
+     * 获取全组织结构
+     *
+     * @param orgCode
+     * @param orgName
+     * @return
+     */
+    private String getOverallOrgStructure(String orgCode, String orgName) {
+
+        SysOrgEntity byId = sysOrgService.getByCode(orgCode);
+        if (byId == null) {
+            return orgName;
+        }
+        return getOverallOrgStructure(byId.getPcode(), byId.getName() + "/" + orgName);
+    }
+
     @PutMapping("info")
     @Operation(summary = "修改登录用户信息")
     @OperateLog(type = OperateTypeEnum.UPDATE)
     public Result<String> loginInfo(@RequestBody @Valid SysUserBaseVO vo) {
         UserDetail user = SecurityUser.getUser();
-        if (user == null){
+        if (user == null) {
             throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
-        sysUserService.updateLoginInfo(vo,user);
+        sysUserService.updateLoginInfo(vo, user);
         return Result.ok();
     }
 
@@ -229,7 +248,7 @@ public class SysUserController {
         if (vo.getImageUrl().isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
-        sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls1234"),vo.getOrgId());
+        sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls1234"), vo.getOrgId());
 
         return Result.ok();
     }
@@ -247,7 +266,7 @@ public class SysUserController {
     @Operation(summary = "主数据人员下拉数据")
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<List<MainUserVO>> queryByMainUsers() {
-        List<MainUserVO> userVOS= sysUserService.queryByMainUsers();
+        List<MainUserVO> userVOS = sysUserService.queryByMainUsers();
         return Result.ok(userVOS);
     }
 
