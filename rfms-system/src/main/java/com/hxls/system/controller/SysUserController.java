@@ -113,7 +113,10 @@ public class SysUserController {
         //用户站点名字
         if (user.getStationId() != null) {
             SysOrgEntity byId = sysOrgService.getById(user.getStationId());
-            user.setStationName(byId.getName());
+            if (byId !=null){
+                user.setStationName(byId.getName());
+            }
+
         }
 
         //查询组织名字  -- 修改为全路径
@@ -121,10 +124,10 @@ public class SysUserController {
 
             SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
             String orgName = byId.getName();
-
+            user.setOrgName(orgName);
             String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
+            user.setOverallOrgStructure(OverallOrgStructure);
 
-            user.setOrgName(OverallOrgStructure);
         }
 
         //用户管理的站点数据权限

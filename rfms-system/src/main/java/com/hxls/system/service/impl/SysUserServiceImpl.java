@@ -180,7 +180,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         baseMapper.insert(entity);
 
         //TODO  添加用户的时候人脸下发  还需要判断是否有场站
-        if (entity.getStationId() !=null) {
+        if (entity.getStationId() != null && entity.getStationId().equals( Constant.EMPTY )) {
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));
@@ -204,6 +204,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     public void update(SysUserVO vo) {
         SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
+
+        if (entity.getStationId() ==null){
+            entity.setStationId(Constant.EMPTY);
+        }
 
         // 判断用户名是否存在
         SysUserEntity user = baseMapper.getByUsername(entity.getUsername());
