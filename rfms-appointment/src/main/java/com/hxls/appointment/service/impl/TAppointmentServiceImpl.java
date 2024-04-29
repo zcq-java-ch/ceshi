@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.system.UserFeign;
+import com.hxls.appointment.config.StorageImagesProperties;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
 import com.hxls.appointment.convert.TAppointmentVehicleConvert;
@@ -80,6 +81,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      * 发送消息feign
      */
     private final UserFeign userFeign;
+
+    private final StorageImagesProperties properties;
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
@@ -414,9 +417,11 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     TAppointmentVehicle::getAppointmentId, id
             ));
 
-            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<>());
+            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
+                    .eq(TAppointmentPersonnel::getAppointmentId , id));
 
             if (CollectionUtils.isNotEmpty(personnelList)) {
+                String domain = properties.getConfig().getDomain();
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                 List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                 for (String device : strings) {
@@ -432,7 +437,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                             entries.set("peopleName", personnel.getExternalPersonnel());
                             entries.set("peopleCode", personnel.getUserId());
-                            entries.set("faceUrl", personnel.getHeadUrl());
+                            entries.set("faceUrl", domain+personnel.getHeadUrl());
                             entries.set("masterIp", masterIp);
                             entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
