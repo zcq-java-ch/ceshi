@@ -14,16 +14,17 @@ public class MqFactory {
     @Bean
     public ConnectionFactory connectionFactory(RabbitMqProperties rabbitMqProperties) {
 
+        System.out.println("此时的参数为:"+rabbitMqProperties);
         //创建工厂类
         CachingConnectionFactory cachingConnectionFactory=new CachingConnectionFactory();
         //用户名
-        cachingConnectionFactory.setUsername(rabbitMqProperties.getUser());
+        cachingConnectionFactory.setUsername(rabbitMqProperties.getUsername());
         //密码
-        cachingConnectionFactory.setPassword(rabbitMqProperties.getPsw());
+        cachingConnectionFactory.setPassword(rabbitMqProperties.getPassword());
         //rabbitMQ地址
-        cachingConnectionFactory.setHost(rabbitMqProperties.getIp());
+        cachingConnectionFactory.setHost(rabbitMqProperties.getHost());
         //rabbitMQ端口
-        cachingConnectionFactory.setPort(Integer.parseInt(rabbitMqProperties.getPost()));
+        cachingConnectionFactory.setPort(Integer.parseInt(rabbitMqProperties.getPort()));
         cachingConnectionFactory.setCacheMode(CachingConnectionFactory.CacheMode.CHANNEL);
         return  cachingConnectionFactory;
     }

@@ -5,27 +5,27 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "rabbit")
+@ConfigurationProperties(prefix = "mybatis-plus.rabbitmq")
 @Data
 public class RabbitMqProperties {
 
     /**
      * ip
      */
-    private String ip;
+    private String host;
 
     /**
-     * post
+     * port
      */
-    private String post;
+    private String port;
 
     /**
      * 用户名
      */
-    private String user;
+    private String username;
 
     /**
      * 密码
      */
-    private String psw;
+    private String password;
 }
