@@ -1,6 +1,9 @@
 package com.hxls.system.service.impl;
 
 import cn.hutool.core.lang.TypeReference;
+import cn.hutool.http.ContentType;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -374,47 +377,72 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         ExcelUtils.excelExport(SysUserExcelVO.class, "system_user_excel" + DateUtils.format(new Date()), null, userExcelVOS);
     }
 
+//    @Override
+//    public void cardLogin() {
+//        //请求小基础数据 1、请求登录接口，获取返回的token   2、根据token去请求小基础组织数据
+//        OkHttpClient client = new OkHttpClient();
+//        String jsonBody = "{\"idCard\":\"rfms\"}";
+//        // 创建RequestBody实例
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonBody);
+//
+//        // 构建请求
+//        Request request = new Request.Builder()
+//                .url("https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin")
+//                .post(body) // 设置POST方法
+//                .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
+//                .build();
+//
+//        // 发送请求并处理响应
+//        try {
+//            Response firstResponse = client.newCall(request).execute();
+//
+//            if (firstResponse.isSuccessful()) {
+//                // 请求成功，处理响应数据
+//                String responseBody = firstResponse.body().string();
+//                // 解析响应体为Map，这里假设JSON结构是标准的
+//                JSONObject json1 = new JSONObject(responseBody);
+//                JSONObject json2 = new JSONObject(json1.get("data"));
+//                // 从响应中提取accessToken
+//                String accessToken = json2.get("accessToken").toString();
+//                //将accessToken存到缓存中，有效期一个半小时
+//                mainPlatformCache.saveAccessToken(accessToken);
+//            }
+//
+//        }catch (Exception e) {
+//            // 网络异常处理
+//            e.printStackTrace();
+//        }
+//
+//    }
+
     @Override
     public void cardLogin() {
-        //请求小基础数据 1、请求登录接口，获取返回的token   2、根据token去请求小基础组织数据
-        OkHttpClient client = new OkHttpClient();
+        String url = "https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin";
         String jsonBody = "{\"idCard\":\"rfms\"}";
-        // 创建RequestBody实例
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonBody);
 
-        // 构建请求
-        Request request = new Request.Builder()
-                .url("https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin")
-                .post(body) // 设置POST方法
-                .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
-                .build();
+        // 发送POST请求
+        HttpResponse response = HttpUtil.createPost(url)
+                .body(jsonBody, ContentType.JSON.toString())
+                .execute();
 
-        // 发送请求并处理响应
-        try {
-            Response firstResponse = client.newCall(request).execute();
-
-            if (firstResponse.isSuccessful()) {
-                // 请求成功，处理响应数据
-                String responseBody = firstResponse.body().string();
-                // 解析响应体为Map，这里假设JSON结构是标准的
-                JSONObject json1 = new JSONObject(responseBody);
-                JSONObject json2 = new JSONObject(json1.get("data"));
-                // 从响应中提取accessToken
-                String accessToken = json2.get("accessToken").toString();
-                //将accessToken存到缓存中，有效期一个半小时
-                mainPlatformCache.saveAccessToken(accessToken);
-            }
-
-        }catch (Exception e) {
-            // 网络异常处理
-            e.printStackTrace();
+        // 处理响应
+        if (response.isOk()) {
+            // 请求成功，处理响应数据
+            String responseBody = response.body();
+            JSONObject json1 = new JSONObject(responseBody);
+            JSONObject json2 = json1.getJSONObject("data");
+            String accessToken = json2.get("accessToken").toString();
+            //将accessToken存到缓存中，有效期一个半小时
+            mainPlatformCache.saveAccessToken(accessToken);
+        } else {
+            // 请求失败，处理错误信息
+            System.out.println("Request failed: " + response.getStatus() + ", " + response.body());
         }
-
     }
+
 
     @Override
     public List<MainUserVO> queryByMainUsers() {
-        OkHttpClient client = new OkHttpClient();
         //获取mainAccessToken
         String accessToken = mainPlatformCache.getAccessToken();
         if(!StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
@@ -424,28 +452,20 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
         String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/employee/queryList";
-        RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), "");
-        Request secondRequest = new Request.Builder()
-                .url(secondRequestUrl)
-                .post(secondRequestBody)
-                .addHeader("access-token", accessToken) // 将accessToken放入请求头
-                .build();
+        HttpResponse httpResponse = HttpUtil.createPost(secondRequestUrl)
+                .header("access-token", accessToken)  // 设置请求头
+                .execute();
 
-
-        try {
-            Response secondResponse = client.newCall(secondRequest).execute();
-            if (secondResponse.isSuccessful()) {
-                JSONObject rel1 = new JSONObject(secondResponse.body().string());
-                List<MainUserVO> mainUserVOS = JSONUtil.toBean(rel1.get("data").toString(), new TypeReference<List<MainUserVO>>() {}, true);
-                return mainUserVOS;
-            }
-
-        }catch (Exception e) {
-            // 网络异常处理
-            e.printStackTrace();
+        // 处理响应
+        if (httpResponse.isOk()) {
+            // 获取响应体
+            String body = httpResponse.body();
+            JSONObject rel1 = new JSONObject(body);
+            List<MainUserVO> mainUserVOS = JSONUtil.toBean(rel1.get("data").toString(), new TypeReference<List<MainUserVO>>() {}, true);
+            return mainUserVOS;
+        }else {
+            throw new ServerException("请求主数据人员异常");
         }
-
-        return null;
     }
 
     @Override
