@@ -283,4 +283,13 @@ public class SysUserController {
         sysUserService.updateStatus(list);
         return Result.ok();
     }
+
+    @PostMapping("synOrg")
+    @Operation(summary = "同步组织结构")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    public Result<String> synOrg() {
+        sysUserService.synOrg();
+
+        return Result.ok();
+    }
 }

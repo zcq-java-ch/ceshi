@@ -49,8 +49,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> implements SysOrgService {
     private final SysUserDao sysUserDao;
-    private final MainPlatformCache mainPlatformCache;
-    private final SysUserService sysUserService;
 
     @Override
     public PageResult<SysOrgVO> page(SysOrgQuery query) {
@@ -183,52 +181,6 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
                 subIdList.add(org.getId());
             }
-        }
-    }
-
-
-    @Override
-    public void synOrg() {
-        //获取mainAccessToken
-        String accessToken = mainPlatformCache.getAccessToken();
-        if(!com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
-            sysUserService.cardLogin();
-            //更新accessToken
-            accessToken = mainPlatformCache.getAccessToken();
-        }
-
-        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/administrative_organization/query_page";
-        JSONObject params = new JSONObject();
-        params.set("page",1);
-        params.set("pageSize",1000000);
-        params.set("status",1);
-
-        // 发送POST请求
-        HttpResponse response = HttpUtil.createPost(secondRequestUrl)
-                .header("access-token", accessToken)
-                .body(params.toString())
-                .execute();
-
-        // 处理响应
-        if (response.isOk()) {
-            JSONObject rel1 = JSONUtil.parseObj(response.body());
-            JSONObject rel2 = JSONUtil.parseObj(rel1.get("data"));
-            List<OrganizationVO> organizationList = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<OrganizationVO>>() {}, true);
-            // 处理解析后的数据
-            for (OrganizationVO organization : organizationList) {
-                SysOrgEntity sysOrgEntity = new SysOrgEntity();
-                sysOrgEntity.setCode(organization.getCode());
-                sysOrgEntity.setName(organization.getName());
-                sysOrgEntity.setPcode(organization.getPcode());
-                sysOrgEntity.setPname(organization.getPname());
-                sysOrgEntity.setSort(1);
-                sysOrgEntity.setStatus(1);
-                sysOrgEntity.setProperty(Integer.parseInt(organization.getProperty()+""));
-                sysOrgEntity.setVirtualFlag(0);
-                baseMapper.insert(sysOrgEntity);
-            }
-        } else {
-            throw new ServerException("请求主数据岗位异常");
         }
     }
 

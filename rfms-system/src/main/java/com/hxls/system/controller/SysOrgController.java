@@ -121,15 +121,6 @@ public class SysOrgController {
         return Result.ok();
     }
 
-    @PostMapping("synOrg")
-    @Operation(summary = "同步组织结构")
-    @OperateLog(type = OperateTypeEnum.UPDATE)
-    public Result<String> synOrg() {
-        sysOrgService.synOrg();
-
-        return Result.ok();
-    }
-
     @PostMapping("updateStatus")
     @Operation(summary = "批量修改状态")
     @OperateLog(type = OperateTypeEnum.UPDATE)

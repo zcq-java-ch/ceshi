@@ -88,4 +88,11 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * @param vo
      */
     void updateByUser(SysUserVO vo);
+
+    /**
+     * @Author zhaohong
+     * @Description  同步组织结构
+     * @Date 18:08 2024/3/26
+     **/
+    void synOrg();
 }
