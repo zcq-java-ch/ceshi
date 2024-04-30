@@ -214,7 +214,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         if (byId == null ){
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
-        if (!byId.getStationId().equals(entity.getStationId())){
+        if (byId.getStationId()!=null &&!byId.getStationId().equals(entity.getStationId())){
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));

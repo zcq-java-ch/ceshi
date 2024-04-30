@@ -34,6 +34,17 @@ public abstract class StorageService {
         return   prefix + "_" + time + "." + suffix;
     }
 
+    public String getFileName(String fileName) {
+        // 主文件名，不包含扩展名
+        String prefix = FileNameUtil.getPrefix(fileName);
+        // 文件扩展名
+        String suffix = FileNameUtil.getSuffix(fileName);
+        // 把当天HH:mm:ss，转换成秒
+        long time = new Date().getTime();
+        // 新文件名
+        return   time + "." + suffix;
+    }
+
     /**
      * 生成路径，不包含文件名
      *
@@ -58,7 +69,7 @@ public abstract class StorageService {
      * @return 生成文件路径
      */
     public String getPath(String fileName) {
-        return getPath() + "/" + getNewFileName(fileName);
+        return getPath() + "/" + getFileName(fileName);
     }
 
     /**
