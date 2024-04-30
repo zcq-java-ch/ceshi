@@ -13,6 +13,7 @@ import com.fhs.trans.service.impl.TransService;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.excel.ExcelFinishCallBack;
+import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.ExcelUtils;
@@ -180,7 +181,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         baseMapper.insert(entity);
 
         //TODO  添加用户的时候人脸下发  还需要判断是否有场站
-        if (entity.getStationId() !=null) {
+        if (entity.getStationId() != null && entity.getStationId().equals( Constant.EMPTY )) {
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));
@@ -204,6 +205,29 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     public void update(SysUserVO vo) {
         SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
+        if ( entity.getStationId() == null ){
+            entity.setStationId(Constant.EMPTY);
+        }
+        //判断是否需要删除原有厂站的数据
+        Long id = vo.getId();
+        SysUserEntity byId = baseMapper.getById(id);
+        if (byId == null ){
+            throw new ServerException(ErrorCode.NOT_FOUND);
+        }
+        if (byId.getStationId()!=null &&!byId.getStationId().equals(entity.getStationId())){
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(entity));
+            person.set("DELETE" , "DELETE");
+            appointmentFeign.issuedPeople(person);
+            if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                vehicle.set("DELETE" , "DELETE");
+                appointmentFeign.issuedPeople(vehicle);
+            }
+        }
 
         // 判断用户名是否存在
         SysUserEntity user = baseMapper.getByUsername(entity.getUsername());
@@ -223,26 +247,22 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             throw new ServerException("用户名已经存在");
         }
 
-
         // 判断手机号是否存在
         user = baseMapper.getByUsername(entity.getMobile());
         if (user != null && !user.getId().equals(entity.getId())) {
             throw new ServerException("手机号已经存在");
         }
 
-
         // 更新用户
         updateById(entity);
 
         if (entity.getStationId() !=null) {
-            //TODO 修改用户的时候人脸下发
+            
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));
             appointmentFeign.issuedPeople(person);
-
-            //TODO 修改用户的时候车辆下发 ---判断是否有值
-
+            
             if (StringUtils.isNotEmpty(entity.getLicensePlate())){
                 JSONObject vehicle = new JSONObject();
                 vehicle.set("sendType","2");

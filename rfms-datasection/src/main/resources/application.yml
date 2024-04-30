@@ -19,11 +19,3 @@ spring:
     import:
       - optional:nacos:datasource.yaml
       - optional:nacos:common.yaml
-  rabbitmq:
-    host: 182.151.27.114
-    port: 5672
-    username: admin
-    password: 123456
-    listener:
-      simple:
-        missing-queues-fatal: false

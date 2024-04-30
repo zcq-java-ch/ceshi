@@ -48,6 +48,8 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     public StorageImagesProperties properties;
     private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
+    private final static String CARTYPEHC = "2";
+    private final static String CARTYPEGC = "3";
     @Override
     public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser) {
         IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
@@ -347,75 +349,86 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                 .filter(tVehicleAccessRecordsEntity -> ObjectUtils.isNotEmpty(tVehicleAccessRecordsEntity.getPlateNumber()))
                 .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
         groupedByManufacturerId.forEach((plateNumber, recordsList) -> {
-            System.out.println("车牌: " + plateNumber);
-            System.out.println("Records:");
-
-//            recordsList.forEach(System.out::println);
-//            recordsList.forEach(record -> {
-//                String formattedRecordTime = sdf.format(record.getRecordTime());
-//                System.out.println(formattedRecordTime);
-//            });
-            System.out.println("---------------------------------");
 
             // 在通用车辆管理里面查询是否有这个车牌
             JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
             if (ObjectUtils.isNotEmpty(jsonObject)){
-                // 或者使用Java 8的Stream API进行排序
-                recordsList.sort(Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
-                recordsList.forEach(record -> {
-                    String formattedRecordTime = sdf.format(record.getRecordTime());
-//                System.out.println(formattedRecordTime);
-                    if ("1".equals(record.getAccessType())){
-                        // 如果是入场数据
-                        // 如果是入的记录 则直接插入一条
-                        // 先通过车牌找到对应的平台车辆信息
+                // 还要判断这个车型是不是大车，字典类型为2.3
+                String carType = jsonObject.getString("carType");
+                if (StringUtils.isNotEmpty(carType)){
+                    if (CARTYPEHC.equals(carType) || CARTYPEGC.equals(carType)){
+                        // 或者使用Java 8的Stream API进行排序
+                        recordsList.sort(Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
 
-                        TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
-                        tVehicleAccessLedgerEntity.setVehicleModel(record.getVehicleModel());
-                        tVehicleAccessLedgerEntity.setEmissionStandard(record.getEmissionStandard());
-                        tVehicleAccessLedgerEntity.setLicenseImage(record.getLicenseImage());
-                        tVehicleAccessLedgerEntity.setEnvirList(jsonObject.getString("images"));
-                        tVehicleAccessLedgerEntity.setFleetName(jsonObject.getString("fleetName"));
-                        tVehicleAccessLedgerEntity.setVinNumber(jsonObject.getString("vinNumber"));
-                        tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.getString("engineNumber"));
+                        TVehicleAccessRecordsEntity inData = null;
+                        TVehicleAccessRecordsEntity outData;
+                        for (int i = 0; i < recordsList.size(); i++) {
+                            TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = recordsList.get(i);
+                            if ("1".equals(tVehicleAccessRecordsEntity.getAccessType())){
+                                // 入场
+                                inData = tVehicleAccessRecordsEntity;
+                            }else if("2".equals(tVehicleAccessRecordsEntity.getAccessType())) {
+                                // 出场
+                                outData = tVehicleAccessRecordsEntity;
+                                // 存储记录
+                                if (ObjectUtils.isNotEmpty(inData)){
+                                    saveData(inData, outData, jsonObject);
+                                }
+                                inData = null;
+                                outData = null;
+                            }else {
 
-                        tVehicleAccessLedgerEntity.setSiteId(record.getSiteId());
-                        tVehicleAccessLedgerEntity.setSiteName(record.getSiteName());
-                        tVehicleAccessLedgerEntity.setPlateNumber(record.getPlateNumber());
-                        tVehicleAccessLedgerEntity.setInTime(record.getRecordTime());
-                        tVehicleAccessLedgerEntity.setInPic(record.getCarUrl());
-                        tVehicleAccessLedgerEntity.setIsOver(0);
-                        tVehicleAccessLedgerEntity.setCreateTime(new Date());
-                        tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
-                    }else if("2".equals(record.getAccessType())){
-                        // 如果是出场数据
-                        // 如果是出的，则需要找到对应的最近一条入的台账
-                        LambdaQueryWrapper<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getPlateNumber, plateNumber);
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getStatus, 1);
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getDeleted, 0);
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getIsOver, 0);
-
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.orderByDesc(TVehicleAccessLedgerEntity::getInTime);
-                        tVehicleAccessLedgerEntityLambdaQueryWrapper.last("LIMIT 1"); // 限制只查询一条数据
-                        List<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntities = tVehicleAccessLedgerDao.selectList(tVehicleAccessLedgerEntityLambdaQueryWrapper);
-
-                        if(CollectionUtil.isNotEmpty(tVehicleAccessLedgerEntities)){
-                            TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = tVehicleAccessLedgerEntities.get(0);
-                            tVehicleAccessLedgerEntity.setIsOver(1);
-                            tVehicleAccessLedgerEntity.setOutPic(record.getCarUrl());
-                            tVehicleAccessLedgerEntity.setOutTime(record.getRecordTime());
-                            tVehicleAccessLedgerEntity.setUpdateTime(new Date());
-                            tVehicleAccessLedgerDao.updateById(tVehicleAccessLedgerEntity);
+                            }
                         }
-                    }else {
-                        // 数据错误不处理
 
+                        // 当最后循环后，发现入库记录还不为空，那么说明有车辆在内还没出来，也要生成记录
+                        if (ObjectUtils.isNotEmpty(inData)){
+                            TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
+                            tVehicleAccessLedgerEntity.setVehicleModel(inData.getVehicleModel());
+                            tVehicleAccessLedgerEntity.setEmissionStandard(inData.getEmissionStandard());
+                            tVehicleAccessLedgerEntity.setLicenseImage(inData.getLicenseImage());
+                            tVehicleAccessLedgerEntity.setEnvirList(jsonObject.getString("images"));
+                            tVehicleAccessLedgerEntity.setFleetName(jsonObject.getString("fleetName"));
+                            tVehicleAccessLedgerEntity.setVinNumber(jsonObject.getString("vinNumber"));
+                            tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.getString("engineNumber"));
+
+                            tVehicleAccessLedgerEntity.setSiteId(inData.getSiteId());
+                            tVehicleAccessLedgerEntity.setSiteName(inData.getSiteName());
+                            tVehicleAccessLedgerEntity.setPlateNumber(inData.getPlateNumber());
+                            tVehicleAccessLedgerEntity.setInTime(inData.getRecordTime());
+                            tVehicleAccessLedgerEntity.setInPic(inData.getCarUrl());
+                            tVehicleAccessLedgerEntity.setIsOver(0);
+                            tVehicleAccessLedgerEntity.setCreateTime(new Date());
+
+                            tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
+                        }
                     }
-
-
-                });
+                }
             }
         });
+    }
+
+    private void saveData(TVehicleAccessRecordsEntity inData, TVehicleAccessRecordsEntity outData, JSONObject carInfo) {
+        TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
+        tVehicleAccessLedgerEntity.setVehicleModel(inData.getVehicleModel());
+        tVehicleAccessLedgerEntity.setEmissionStandard(inData.getEmissionStandard());
+        tVehicleAccessLedgerEntity.setLicenseImage(inData.getLicenseImage());
+        tVehicleAccessLedgerEntity.setEnvirList(carInfo.getString("images"));
+        tVehicleAccessLedgerEntity.setFleetName(carInfo.getString("fleetName"));
+        tVehicleAccessLedgerEntity.setVinNumber(carInfo.getString("vinNumber"));
+        tVehicleAccessLedgerEntity.setEngineNumber(carInfo.getString("engineNumber"));
+
+        tVehicleAccessLedgerEntity.setSiteId(inData.getSiteId());
+        tVehicleAccessLedgerEntity.setSiteName(inData.getSiteName());
+        tVehicleAccessLedgerEntity.setPlateNumber(inData.getPlateNumber());
+        tVehicleAccessLedgerEntity.setInTime(inData.getRecordTime());
+        tVehicleAccessLedgerEntity.setInPic(inData.getCarUrl());
+        tVehicleAccessLedgerEntity.setIsOver(1);
+        tVehicleAccessLedgerEntity.setCreateTime(new Date());
+
+        tVehicleAccessLedgerEntity.setOutPic(outData.getCarUrl());
+        tVehicleAccessLedgerEntity.setOutTime(outData.getRecordTime());
+        tVehicleAccessLedgerEntity.setUpdateTime(new Date());
+        tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
     }
 }
