@@ -88,15 +88,14 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
     @Transactional(rollbackFor = Exception.class)
     public void save(SysOrgVO vo) {
         SysOrgEntity entity = SysOrgConvert.INSTANCE.convert(vo);
-
         baseMapper.insert(entity);
 
         //添加组织编码(RFMS + 组织ID)
         if(StringUtils.isEmpty(entity.getCode())){
             entity.setCode("RFMS"+entity.getId());
+            updateById(entity);
         }
 
-        updateById(entity);
     }
 
     @Override
