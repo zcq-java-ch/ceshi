@@ -2,6 +2,8 @@ package com.hxls.system.service.impl;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,6 +16,7 @@ import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.dao.SysOrgDao;
 import com.hxls.system.dao.SysUserDao;
@@ -21,6 +24,8 @@ import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.service.SysOrgService;
+import com.hxls.system.service.SysUserService;
+import com.hxls.system.vo.MainPostVO;
 import com.hxls.system.vo.OrganizationVO;
 import com.hxls.system.vo.SysOrgVO;
 import com.squareup.okhttp.*;
@@ -44,6 +49,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> implements SysOrgService {
     private final SysUserDao sysUserDao;
+    private final MainPlatformCache mainPlatformCache;
+    private final SysUserService sysUserService;
 
     @Override
     public PageResult<SysOrgVO> page(SysOrgQuery query) {
@@ -182,79 +189,47 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
     @Override
     public void synOrg() {
-        //请求小基础数据 1、请求登录接口，获取返回的token   2、根据token去请求小基础组织数据
-        OkHttpClient client = new OkHttpClient();
-        String jsonBody = "{\"idCard\":\"rfms\"}";
-        // 创建RequestBody实例
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonBody);
-
-        // 构建请求
-        Request request = new Request.Builder()
-                .url("https://jcmdm.huashijc.com/MainPlatform/userLogin/cardLogin")
-                .post(body) // 设置POST方法
-                .addHeader("Content-Type", "application/json") // 通常OkHttp会自动设置，这里可以省略
-                .build();
-
-        // 发送请求并处理响应
-        try {
-            Response firstResponse = client.newCall(request).execute();
-
-            // 检查响应码
-            if (firstResponse.isSuccessful()) {
-                // 请求成功，处理响应数据
-                String responseBody = firstResponse.body().string();
-                // 解析响应体为Map，这里假设JSON结构是标准的
-                JSONObject json1 = new JSONObject(responseBody);
-                JSONObject json2 = new JSONObject(json1.get("data"));
-                // 从响应中提取accessToken
-                String accessToken =json2.get("accessToken").toString();
-                if (accessToken != null) {
-                    // 第二次请求的URL和请求头
-                    String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/administrative_organization/query_page"; // 替换为实际的第二个接口URL
-                    JSONObject params = new JSONObject();
-                    params.set("page",1);
-                    params.set("pageSize",1000000);
-                    params.set("status",1);
-                    RequestBody secondRequestBody = RequestBody.create(MediaType.parse("application/json"), params.toString()); // 第二个请求的JSON体
-                    Request secondRequest = new Request.Builder()
-                            .url(secondRequestUrl)
-                            .post(secondRequestBody)
-                            .addHeader("access-token", accessToken) // 将accessToken放入请求头
-                            .build();
-
-                    // 发送第二个请求
-                    Response secondResponse = client.newCall(secondRequest).execute();
-                    if (secondResponse.isSuccessful()) {
-                        JSONObject rel1 = new JSONObject(secondResponse.body().string());
-                        JSONObject rel2 = new JSONObject(rel1.get("data"));
-                        List<OrganizationVO> organizationList = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<OrganizationVO>>() {}, true);
-                        // 处理解析后的数据
-                        for (OrganizationVO organization : organizationList) {
-                            // 例如，打印每个OrganizationVO的名称
-                            System.out.println(organization.getName());
-
-                            SysOrgEntity sysOrgEntity = new SysOrgEntity();
-
-                            sysOrgEntity.setCode(organization.getCode());
-                            sysOrgEntity.setName(organization.getName());
-                            sysOrgEntity.setPcode(organization.getPcode());
-                            sysOrgEntity.setPname(organization.getPname());
-                            sysOrgEntity.setSort(1);
-                            sysOrgEntity.setStatus(1);
-                            sysOrgEntity.setProperty(Integer.parseInt(organization.getProperty()+""));
-                            sysOrgEntity.setVirtualFlag(0);
-                            baseMapper.insert(sysOrgEntity);
-                        }
-                    }
-
-                }
-            }
-        } catch (Exception e) {
-            // 网络异常处理
-            e.printStackTrace();
+        //获取mainAccessToken
+        String accessToken = mainPlatformCache.getAccessToken();
+        if(!com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotEmpty(accessToken)){//如果mainAccessToken过期的话，就重新更新mainAccessToken
+            sysUserService.cardLogin();
+            //更新accessToken
+            accessToken = mainPlatformCache.getAccessToken();
         }
-        //根据小基础数据添加未同步的组织数据
 
+        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/administrative_organization/query_page";
+        JSONObject params = new JSONObject();
+        params.set("page",1);
+        params.set("pageSize",1000000);
+        params.set("status",1);
+
+        // 发送POST请求
+        HttpResponse response = HttpUtil.createPost(secondRequestUrl)
+                .header("access-token", accessToken)
+                .body(params.toString())
+                .execute();
+
+        // 处理响应
+        if (response.isOk()) {
+            JSONObject rel1 = JSONUtil.parseObj(response.body());
+            JSONObject rel2 = JSONUtil.parseObj(rel1.get("data"));
+            List<OrganizationVO> organizationList = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<OrganizationVO>>() {}, true);
+            // 处理解析后的数据
+            for (OrganizationVO organization : organizationList) {
+                SysOrgEntity sysOrgEntity = new SysOrgEntity();
+                sysOrgEntity.setCode(organization.getCode());
+                sysOrgEntity.setName(organization.getName());
+                sysOrgEntity.setPcode(organization.getPcode());
+                sysOrgEntity.setPname(organization.getPname());
+                sysOrgEntity.setSort(1);
+                sysOrgEntity.setStatus(1);
+                sysOrgEntity.setProperty(Integer.parseInt(organization.getProperty()+""));
+                sysOrgEntity.setVirtualFlag(0);
+                baseMapper.insert(sysOrgEntity);
+            }
+        } else {
+            throw new ServerException("请求主数据岗位异常");
+        }
     }
 
     @Override
