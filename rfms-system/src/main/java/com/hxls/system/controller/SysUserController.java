@@ -115,7 +115,9 @@ public class SysUserController {
         //用户站点名字
         if(user.getStationId() != null){
             SysOrgEntity byId = sysOrgService.getById(user.getStationId());
-            user.setStationName(byId.getName());
+            if(byId != null){
+                user.setStationName(byId.getName());
+            }
         }
 
         //查询组织名字
