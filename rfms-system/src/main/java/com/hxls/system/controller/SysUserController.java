@@ -121,12 +121,14 @@ public class SysUserController {
 
         //查询组织名字  -- 修改为全路径
         if (user.getOrgId() != null) {
-
             SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
-            String orgName = byId.getName();
-            user.setOrgName(orgName);
-            String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
-            user.setOverallOrgStructure(OverallOrgStructure);
+            if (byId !=null){
+                String orgName = byId.getName();
+                user.setOrgName(orgName);
+                String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
+                user.setOverallOrgStructure(OverallOrgStructure);
+            }
+
 
         }
 
