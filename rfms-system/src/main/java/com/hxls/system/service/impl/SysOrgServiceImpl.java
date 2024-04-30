@@ -92,7 +92,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         baseMapper.insert(entity);
 
         //添加组织编码(RFMS + 组织ID)
-        if(entity.getCode() == null){
+        if(StringUtils.isEmpty(entity.getCode())){
             entity.setCode("RFMS"+entity.getId());
         }
 
