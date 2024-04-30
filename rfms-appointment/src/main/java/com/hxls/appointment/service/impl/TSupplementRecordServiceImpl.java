@@ -266,7 +266,13 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                         tAppointmentPersonnel.setUserId(jsonObject.getLong("id"));
                         tAppointmentPersonnel.setSupervisorName(jsonObject.getString("supervisor"));
                         tAppointmentPersonnel.setOrgCode(jsonObject.getString("org_id"));
+                        String orgName = appointmentDao.selectOrgName(Long.parseLong(tAppointmentPersonnel.getOrgCode()));
+                        tAppointmentPersonnel.setOrgName(orgName);
                         tAppointmentPersonnel.setPostCode(jsonObject.getString("post_id"));
+                        tAppointmentPersonnel.setExternalPersonnel(item.getUserName());
+                        tAppointmentPersonnel.setPhone(item.getPhone());
+                        tAppointmentPersonnel.setIdCardNumber(item.getIdCardNumber());
+                        tAppointmentPersonnel.setPositionName(item.getPositionName());
                     }else {
                         tAppointmentPersonnel.setExternalPersonnel(item.getUserName());
                         tAppointmentPersonnel.setPhone(item.getPhone());

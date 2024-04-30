@@ -22,6 +22,7 @@ import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.cache.TokenStoreCache;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
+import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
@@ -60,6 +61,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     private final TransService transService;
     private final MainPlatformCache mainPlatformCache;
     private final AppointmentFeign appointmentFeign;
+    private final StorageProperties properties;
 
     @Override
     public PageResult<SysUserVO> page(SysUserQuery query) {
@@ -348,7 +350,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Transactional(rollbackFor = Exception.class)
     public void importByExcel(String file, String password,Long orgId) {
         SysOrgEntity byId = sysOrgService.getById(orgId);
-        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
+
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain + file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
             @Override
             public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
                 saveUser(result);

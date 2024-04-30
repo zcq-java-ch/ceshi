@@ -56,6 +56,7 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
    String selectSiteNameById(@Param("id") Long id);
 
+   String selectOrgName(@Param("id") Long id);
 
    /**
     * 通过id查询场站code

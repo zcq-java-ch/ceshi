@@ -119,4 +119,9 @@
     </select>
 
 
+    <select id="selectOrgName" resultType="java.lang.String">
+        SELECT name FROM sys_org where  id = #{id} and deleted = 0
+    </select>
+
+
 </mapper>

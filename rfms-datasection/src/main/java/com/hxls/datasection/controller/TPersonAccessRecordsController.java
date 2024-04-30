@@ -66,7 +66,6 @@ public class TPersonAccessRecordsController extends BaseController {
         log.info("获取到token用户信息：{}",baseUser);
         List<Long> dataScopeList = baseUser.getDataScopeList();
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query, baseUser);
-
         return Result.ok(page);
     }
 
