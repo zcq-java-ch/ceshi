@@ -1,5 +1,7 @@
 package com.hxls.datasection.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +13,9 @@ import com.hxls.datasection.query.TVehicleAccessLedgerQuery;
 import com.hxls.datasection.vo.TVehicleAccessLedgerVO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -40,6 +45,26 @@ public class TVehicleAccessLedgerController extends BaseController {
         PageResult<TVehicleAccessLedgerVO> page = tVehicleAccessLedgerService.page(query, baseUser);
 
         return Result.ok(page);
+    }
+
+    /**
+      * @author Mryang
+      * @description 在调用查看台账数据前，发送该接口，返回所有车队列表
+      * @date 11:17 2024/4/30
+      * @param
+      * @return
+      */
+    @GetMapping("getAlllistOfFleets")
+    @Operation(summary = "查询台账车队列表")
+    public Result<List<String>> getAlllistOfFleets(@RequestParam("siteId") String siteId){
+        LambdaQueryWrapper<TVehicleAccessLedgerEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getSiteId, siteId);
+        List<String> list = tVehicleAccessLedgerService.list(objectLambdaQueryWrapper)
+                .stream()
+                .map(TVehicleAccessLedgerEntity::getFleetName)
+                .collect(Collectors.toList());
+
+        return Result.ok(list);
     }
 
 }
