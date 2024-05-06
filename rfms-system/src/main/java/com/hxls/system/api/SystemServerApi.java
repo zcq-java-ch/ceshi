@@ -336,6 +336,12 @@ public class SystemServerApi {
                 postobjects.put(entry2.getKey(), entry2.getValue());
             }
             entries.put("postobjects", postobjects);
+        }else {
+            // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
+            entries.put("numberOfPeopleRegistered", 0);
+            entries.put("numberOfPeopleRegisteredIdList", new ArrayList<>());
+            entries.put("jobs", new JSONObject());
+            entries.put("postobjects", new JSONObject());
         }
         return entries;
     }
