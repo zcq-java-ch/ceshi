@@ -50,6 +50,9 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     public StorageImagesProperties properties;
     @Override
     public PageResult<TPersonAccessRecordsVO> page(TPersonAccessRecordsQuery query, UserDetail baseUser) {
+        if (!baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN) && !org.apache.commons.collections4.CollectionUtils.isNotEmpty(baseUser.getDataScopeList())){
+            return new PageResult<>(new ArrayList<>(), 0);
+        }
         IPage<TPersonAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
 
         List<TPersonAccessRecordsEntity> records = page.getRecords();
@@ -114,6 +117,10 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
     @Override
     public PageResult<TPersonAccessRecordsVO> pageUnidirectionalTpersonAccessRecords(TPersonAccessRecordsQuery query, UserDetail baseUser) {
+        if (!baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN) && !org.apache.commons.collections4.CollectionUtils.isNotEmpty(baseUser.getDataScopeList())){
+            return new PageResult<>(new ArrayList<>(), 0);
+        }
+
         LocalDate today = LocalDate.now();
         // 获取今天的开始时间（00:00:00）
         LocalDateTime startOfDay = today.atStartOfDay();

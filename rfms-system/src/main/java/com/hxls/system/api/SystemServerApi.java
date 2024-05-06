@@ -421,7 +421,7 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
         // 只查询组织类型为站点的
-        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 3);
+        objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4);
         List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
 
         LambdaQueryWrapper<SysSiteAreaEntity> objectLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
