@@ -154,16 +154,18 @@ public class AppointmentApiController {
 
                 AllpersonnelList.addAll(personnelList);
             }
-            // 按照 busis 字段进行分组
-            Map<String, Long> postCounts = AllpersonnelList.stream()
-                    .filter(tAppointmentPersonnel -> ObjectUtils.isNotEmpty(tAppointmentPersonnel.getPostCode()))
-                    .collect(Collectors.groupingBy(TAppointmentPersonnel::getPostCode, Collectors.counting()));
-            // 打印每个类型及其数量
-            for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
-                System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
-                postobjects.putOnce(entry2.getKey(), entry2.getValue());
-            }
+
         }
+        // 按照 busis 字段进行分组
+        Map<String, Long> postCounts = AllpersonnelList.stream()
+                .filter(tAppointmentPersonnel -> ObjectUtils.isNotEmpty(tAppointmentPersonnel.getPostCode()))
+                .collect(Collectors.groupingBy(TAppointmentPersonnel::getPostCode, Collectors.counting()));
+        // 打印每个类型及其数量
+        for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
+            System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
+            postobjects.putOnce(entry2.getKey(), entry2.getValue());
+        }
+
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.putOnce("pzNum", pzNum);
@@ -197,6 +199,20 @@ public class AppointmentApiController {
     @Operation(summary = "查询派驻和外部预约数量")
     public com.alibaba.fastjson.JSONObject queryStatisticsallPeopleReservation() {
         com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryStatisticsallPeopleReservation();
+        return objects;
+    }
+
+    /**
+      * @author Mryang
+      * @description PC端-厂站看板-查询指定站点的外部预约的所有人总数
+      * @date 15:21 2024/5/6
+      * @param
+      * @return
+      */
+    @GetMapping("queryTotalAppointments")
+    @Operation(summary = "查询外部预约总数")
+    public com.alibaba.fastjson.JSONObject queryTotalAppointments(@RequestParam Long siteId) {
+        com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryTotalAppointments(siteId);
         return objects;
     }
 }

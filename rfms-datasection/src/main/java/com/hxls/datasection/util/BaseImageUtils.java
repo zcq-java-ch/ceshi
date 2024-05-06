@@ -28,7 +28,8 @@ public class BaseImageUtils {
 
         // 目标API的URL
 //        String apiUrl = "http://113.250.190.179:8899/api/rfms-system/sys/file/httpUpload"; //测试环境
-        String apiUrl = "http://182.150.57.78:18899/api/rfms-system/sys/file/httpUpload";
+//        String apiUrl = "http://182.150.57.78:18899/api/rfms-system/sys/file/httpUpload";
+        String apiUrl = "https://rns.huashijc.com/api/rfms-system/sys/file/httpUpload";
 
         // 创建HttpPost请求
         HttpPost httpPost = new HttpPost(apiUrl);

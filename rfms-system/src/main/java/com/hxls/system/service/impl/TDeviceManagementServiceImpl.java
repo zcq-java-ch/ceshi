@@ -83,7 +83,7 @@ public class TDeviceManagementServiceImpl extends BaseServiceImpl<TDeviceManagem
                 // 查询设备是否已经绑定了通道
                 Long deviceId = vo.getId();
                 SysSiteAreaEntity sysSiteAreaEntity = sysAreacodeDeviceService.queryChannelByDeviceId(deviceId);
-                if (ObjectUtils.isNotEmpty(sysSiteAreaEntity)){
+                if (ObjectUtils.isEmpty(sysSiteAreaEntity)){
                     entity.setStatus(vo.getStatus());
                 }else {
                     String deviceName = vo.getDeviceName();

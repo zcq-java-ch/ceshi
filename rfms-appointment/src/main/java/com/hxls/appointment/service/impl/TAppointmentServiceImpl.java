@@ -587,6 +587,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public void issuedPeople(JSONObject data) {
         log.info("下发的消息：{}",data);
         String sendType = data.getStr("sendType");
+        String domain = properties.getConfig().getDomain();
         switch (sendType) {
             case "1" -> {
                 //人脸进入
@@ -615,6 +616,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("peopleName", peopleName);
                         sendData.set("peopleCode", code);
                         sendData.set("faceUrl", faceUrl);
+                        sendData.set("masterIp", key);
+                        sendData.set("faceUrl", domain+faceUrl);
                         sendData.set("masterIp", key);
                         sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                         sendData.set("password" , jsonObjects.get(0).getString("password"));
@@ -792,6 +795,33 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
         com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
         jsonObject.put("numberOfResidents", numberOfResidents);
+        jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
+        return jsonObject;
+    }
+
+    @Override
+    public com.alibaba.fastjson.JSONObject queryTotalAppointments(Long siteId) {
+        LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getSiteId, siteId);
+        List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+
+        // 筛选出预约类型是外部预约的
+        List<Long> list1 = tAppointmentEntities.stream()
+                .filter(entity -> List.of("3", "4", "5").contains(entity.getAppointmentType()))
+                .map(TAppointmentEntity::getId)
+                .toList();
+
+
+        LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, list1);
+        List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
+        int numberOfExternalAppointments = 0;
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+            numberOfExternalAppointments = tAppointmentPersonnelList2.size();
+        }
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
         jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
         return jsonObject;
     }

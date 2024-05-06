@@ -100,7 +100,7 @@ public class TDeviceManagementController {
     public Result<String> updateStatus(@RequestBody List<TDeviceManagementVO> list) {
         List<String> strings = tDeviceManagementService.updateStatus(list);
         if (CollectionUtils.isNotEmpty(strings)){
-            return Result.error("以下设备已经被绑定不能删除："+strings.toString());
+            return Result.error("以下设备已经被绑定不能更改状态："+strings.toString());
         }else {
             return Result.ok();
         }

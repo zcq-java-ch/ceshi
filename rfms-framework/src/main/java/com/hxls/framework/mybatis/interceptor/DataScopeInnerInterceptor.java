@@ -73,7 +73,7 @@ public class DataScopeInnerInterceptor implements InnerInterceptor {
                 plainSelect.setWhere(andExpression);
             }
 
-            return select.toString().replaceAll("'", "");
+            return select.toString().replaceAll("'", "").replaceAll("%","'%'");
         } catch (JSQLParserException e) {
             return buildSql;
         }

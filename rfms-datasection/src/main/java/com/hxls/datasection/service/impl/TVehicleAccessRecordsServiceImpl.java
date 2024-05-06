@@ -24,6 +24,7 @@ import com.hxls.datasection.vo.TVehicleAccessRecordsVO;
 import com.hxls.datasection.dao.TVehicleAccessRecordsDao;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     private final static String CARTYPEGC = "3";
     @Override
     public PageResult<TVehicleAccessRecordsVO> page(TVehicleAccessRecordsQuery query, UserDetail baseUser) {
+        if (!baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN) && !CollectionUtils.isNotEmpty(baseUser.getDataScopeList())){
+            return new PageResult<>(new ArrayList<>(), 0);
+        }
         IPage<TVehicleAccessRecordsEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query, baseUser));
 
         List<TVehicleAccessRecordsEntity> records = page.getRecords();

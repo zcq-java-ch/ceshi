@@ -7,6 +7,7 @@ import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.ServerNames;
 import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,5 +75,6 @@ public interface AppointmentFeign {
 
     @PostMapping("api/appointment/queryStatisticsallPeopleReservation")
     JSONObject queryStatisticsallPeopleReservation();
-
+    @GetMapping("api/appointment/queryTotalAppointments")
+    public com.alibaba.fastjson.JSONObject queryTotalAppointments(@RequestParam Long siteId);
 }
