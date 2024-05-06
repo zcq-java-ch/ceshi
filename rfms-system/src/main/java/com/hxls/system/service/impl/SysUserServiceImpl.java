@@ -216,16 +216,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         if (byId == null ){
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
-        if (byId.getStationId()!=null &&!byId.getStationId().equals(entity.getStationId())){
+        if (byId.getStationId() != null &&  !byId.getStationId().equals(Constant.EMPTY) && !byId.getStationId().equals(entity.getStationId())){
+            System.out.println("开始删除之前的");
             JSONObject person = new JSONObject();
             person.set("sendType","1");
-            person.set("data" , JSONUtil.toJsonStr(entity));
+            person.set("data" , JSONUtil.toJsonStr(byId));
             person.set("DELETE" , "DELETE");
             appointmentFeign.issuedPeople(person);
             if (StringUtils.isNotEmpty(entity.getLicensePlate())){
                 JSONObject vehicle = new JSONObject();
                 vehicle.set("sendType","2");
-                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                vehicle.set("data" , JSONUtil.toJsonStr(byId));
                 vehicle.set("DELETE" , "DELETE");
                 appointmentFeign.issuedPeople(vehicle);
             }
@@ -258,8 +259,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         // 更新用户
         updateById(entity);
 
-        if (entity.getStationId() !=null) {
-
+        if (entity.getStationId() !=null && !entity.getStationId().equals(Constant.EMPTY)) {
             JSONObject person = new JSONObject();
             person.set("sendType","1");
             person.set("data" , JSONUtil.toJsonStr(entity));
