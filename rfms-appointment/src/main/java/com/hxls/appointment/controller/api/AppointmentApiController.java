@@ -127,7 +127,6 @@ public class AppointmentApiController {
         }catch (Exception e){
             return false;
         }
-
         return true;
     }
 

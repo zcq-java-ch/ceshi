@@ -32,6 +32,7 @@ import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -55,6 +56,7 @@ import com.hxls.framework.common.query.Query;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TAppointmentEntity> implements TAppointmentService {
 
     /**
@@ -425,9 +427,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                 List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                 for (String device : strings) {
-
                     List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,byId.getSiteId());
-
                     List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1" ,byId.getSiteId());
                     for (String masterIp : masterIpById) {
                         for (TAppointmentPersonnel personnel : personnelList) {
@@ -437,7 +437,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                             entries.set("peopleName", personnel.getExternalPersonnel());
                             entries.set("peopleCode", personnel.getUserId());
-                            entries.set("faceUrl", domain+personnel.getHeadUrl());
+                            entries.set("faceUrl", domain + personnel.getHeadUrl());
                             entries.set("masterIp", masterIp);
                             entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
@@ -449,21 +449,25 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
             if (CollectionUtils.isNotEmpty(list)) {
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
-                List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "2");
-                for (String device : strings) {
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectMasterById(device, "2");
-                    for (com.alibaba.fastjson.JSONObject jsonObject : jsonObjects) {
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(byId.getSiteId(), "2");
+                //主机分组
+                Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
+                //遍历
+                for (String key : master.keySet()) {
+                    //主机下面带的设备
+                    for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
+                        //遍历预约车辆
                         for (TAppointmentVehicle tAppointmentVehicle : list) {
                             JSONObject entries = new JSONObject();
-                            entries.set("type", device);
+                            entries.set("type", jsonObject.getString("type"));
                             entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
                             entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                             entries.set("carNumber", tAppointmentVehicle.getPlateNumber());
                             entries.set("status", "add");
                             entries.set("masterIp", jsonObject.get("master_ip"));
-                            entries.set("databaseName",jsonObject.get("master_sn"));
-                            entries.set("username",jsonObject.get("master_account"));
-                            entries.set("password",jsonObject.get("master_password"));
+                            entries.set("databaseName", jsonObject.get("master_sn"));
+                            entries.set("username", jsonObject.get("master_account"));
+                            entries.set("password", jsonObject.get("master_password"));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                         }
                     }
@@ -581,6 +585,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     @Override
     public void issuedPeople(JSONObject data) {
+        log.info("下发的消息：{}",data);
         String sendType = data.getStr("sendType");
         switch (sendType) {
             case "1" -> {
@@ -596,25 +601,25 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String code = entries.getStr("id");
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
-                //场站设备集合
-                List<String> strings = appointmentDao.selectManuFacturerIdById(Long.parseLong(stationId), "1");
-
-                //设备便历
-                for (String device : strings) {
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,Long.parseLong(stationId));
-                    //获取主机ip
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1", Long.parseLong(stationId));
-                    for (String masterIp : masterIpById) {
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId) , sendType);
+                //主机分组
+                Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
+                //遍历
+                for (String key : master.keySet()) {
+                    //主机下面带的设备
+                    for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
                         JSONObject sendData = new JSONObject();
-                        sendData.set("type", device);
+                        sendData.set("type", jsonObject.getString("type"));
                         sendData.set("startTime", "2024-04-01 00:00:00");
                         sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("peopleName", peopleName);
                         sendData.set("peopleCode", code);
                         sendData.set("faceUrl", faceUrl);
-                        sendData.set("masterIp", masterIp);
+                        sendData.set("masterIp", key);
                         sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                         sendData.set("password" , jsonObjects.get(0).getString("password"));
+                        sendData.set("DELETE" , data.getStr("DELETE"));
+                        log.info("发送的消息："+sendData);
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
                     }
                 }
@@ -629,22 +634,26 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String licensePlate = entries.getStr("licensePlate");
 
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
-                List<String> strings = appointmentDao.selectManuFacturerIdById(Long.parseLong(stationId), "2");
-                for (String device : strings) {
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectMasterById(device, "2");
-                    for (com.alibaba.fastjson.JSONObject jsonObject : jsonObjects) {
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId) , sendType);
+                //主机分组
+                Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
+                //遍历
+                for (String key : master.keySet()) {
+                    //主机下面带的设备
+                    for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
                         JSONObject sendData = new JSONObject();
-                        sendData.set("type", device);
+                        sendData.set("type", jsonObject.getString("type"));
                         sendData.set("startTime", "2024-04-01 00:00:00");
                         sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("carNumber", licensePlate);
-                        sendData.set("status", "add");
-                        sendData.set("masterIp", jsonObject.get("master_ip"));
+                        sendData.set("status", data.getStr("DELETE")==null ? "add" : "delete" );
+                        sendData.set("masterIp", jsonObject.get("master"));
                         sendData.set("databaseName",jsonObject.get("master_sn"));
                         sendData.set("username",jsonObject.get("master_account"));
                         sendData.set("password",jsonObject.get("master_password"));
+                        sendData.set("DELETE" , data.getStr("DELETE"));
+                        log.info("发送的消息："+sendData);
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
-
                     }
                 }
             }

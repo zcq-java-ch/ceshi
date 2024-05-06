@@ -123,5 +123,10 @@
         SELECT name FROM sys_org where  id = #{id} and deleted = 0
     </select>
 
+    <select id="selectDevices" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT  device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password,
+                master_ip as master ,manufacturer_code as type  FROM t_device_management where device_type = #{deviceType} and site_id = #{siteId} and deleted = 0 and status = 1
+    </select>
+
 
 </mapper>
