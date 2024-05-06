@@ -582,6 +582,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public void issuedPeople(JSONObject data) {
         String sendType = data.getStr("sendType");
+        String domain = properties.getConfig().getDomain();
         switch (sendType) {
             case "1" -> {
                 //人脸进入
@@ -611,7 +612,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("peopleName", peopleName);
                         sendData.set("peopleCode", code);
-                        sendData.set("faceUrl", faceUrl);
+                        sendData.set("faceUrl", domain+faceUrl);
                         sendData.set("masterIp", masterIp);
                         sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                         sendData.set("password" , jsonObjects.get(0).getString("password"));
