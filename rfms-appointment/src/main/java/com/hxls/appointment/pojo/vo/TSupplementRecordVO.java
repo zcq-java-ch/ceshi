@@ -94,6 +94,7 @@ public class TSupplementRecordVO implements Serializable {
      * 创建时间
      */
     @Schema(description = "创建时间")
+    @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
     private Date createTime;
 
 
