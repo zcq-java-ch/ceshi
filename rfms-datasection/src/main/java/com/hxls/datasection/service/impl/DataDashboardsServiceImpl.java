@@ -60,6 +60,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
         JSONObject entries = jsonObject1.getJSONObject("jobs");
 
+        // 查询外部预约总数
+        JSONObject jsonObject4 = appointmentFeign.queryTotalAppointments(stationId);
+        Integer wbyyzs = jsonObject4.getInteger("numberOfExternalAppointments");
+
         JSONObject jsonObject = new JSONObject();
         // 在册人数
         jsonObject.put("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum);
@@ -76,7 +80,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         // 派驻人员
         jsonObject.put("residency", wbzp);
         // 外部预约
-        jsonObject.put("externalAppointments", "10");
+        jsonObject.put("externalAppointments", wbyyzs);
 
         // 工种人员数量集合
         jsonObject.put("jobs", postAll);

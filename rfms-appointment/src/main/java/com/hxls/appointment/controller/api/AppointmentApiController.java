@@ -200,4 +200,18 @@ public class AppointmentApiController {
         com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryStatisticsallPeopleReservation();
         return objects;
     }
+
+    /**
+      * @author Mryang
+      * @description PC端-厂站看板-查询指定站点的外部预约的所有人总数
+      * @date 15:21 2024/5/6
+      * @param
+      * @return
+      */
+    @GetMapping("queryTotalAppointments")
+    @Operation(summary = "查询外部预约总数")
+    public com.alibaba.fastjson.JSONObject queryTotalAppointments(@RequestParam Long siteId) {
+        com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryTotalAppointments(siteId);
+        return objects;
+    }
 }
