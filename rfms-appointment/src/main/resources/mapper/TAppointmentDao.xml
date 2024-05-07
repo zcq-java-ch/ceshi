@@ -129,4 +129,9 @@
     </select>
 
 
+    <select id="selectRecordTime" resultType="java.lang.String">
+        SELECT record_time FROM t_vehicle_access_records WHERE access_type =1 AND plate_number = #{carNumber} AND record_time &lt; #{secondTime} LIMIT 1;
+    </select>
+
+
 </mapper>

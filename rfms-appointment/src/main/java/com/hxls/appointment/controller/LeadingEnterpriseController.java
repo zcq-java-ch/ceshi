@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import com.hxls.appointment.pojo.vo.leadingVO.*;
 import com.hxls.framework.common.cache.RedisCache;
@@ -33,6 +34,11 @@ public class LeadingEnterpriseController {
 
     @Resource
     private  RedisCache redisCache;
+    /**
+     * 自定义sql方法的mapper
+     */
+    @Resource
+    private  TAppointmentDao appointmentDao;
 
 
     private static void getToken() {
@@ -104,11 +110,17 @@ public class LeadingEnterpriseController {
 
             List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
             //创建时间等于出场时间加1s
-            recordInfos1.forEach(item -> {
+            for (recordInfo item : recordInfos1) {
+                if(item.getUnit().equals("m³") && checkTime(item.getSecondTime())){
+                    String selectRecordTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum());
+                    if (StrUtil.isNotEmpty(selectRecordTime)){
+                        item.setFirstTime(selectRecordTime);
+                    }
+                }
                 String secondTime = item.getSecondTime();
                 String s = addOneSecond(secondTime);
                 item.setCreatTime(s);
-            });
+            }
             pageInfo.setRecords(recordInfos1);
             pageInfo.setTotal(bean.getData().size());
             pageInfo.setCurrent(data.getPage());
@@ -117,6 +129,25 @@ public class LeadingEnterpriseController {
 
         } catch (Exception e) {
             return Result.error(500, e.getMessage());
+        }
+    }
+
+    /**
+     * 比较时间是否是在设备安装时间之前
+     * @param secondTime
+     * @return
+     */
+    private boolean checkTime(String secondTime) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date inputDate = dateFormat.parse(secondTime);
+            Date comparisonDate = dateFormat.parse("2024-04-01 00:00:00"); // 注意这里也包含了时分秒
+
+            return inputDate.after(comparisonDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            // 如果解析失败，你可以选择返回一个默认值或者抛出异常，这取决于你的需求
+            return false;
         }
     }
 

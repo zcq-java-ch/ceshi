@@ -119,4 +119,11 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     * @return
     */
    JSONObject selectByPhone(@Param("phone")String phone);
+
+   /**
+    * 通过时间去查询最近的入场
+    * @param secondTime
+    */
+    String selectRecordTime(@Param("secondTime")String secondTime ,@Param("carNumber")String carNumber);
+
 }
