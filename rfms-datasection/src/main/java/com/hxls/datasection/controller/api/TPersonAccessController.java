@@ -24,7 +24,6 @@ public class TPersonAccessController {
 
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
 
-
     @PostMapping("/saveTpersonAccessRecords")
     @Operation(summary = "保存")
     @OperateLog(type = OperateTypeEnum.INSERT)
@@ -38,5 +37,12 @@ public class TPersonAccessController {
             return Result.error("添加失败！");
         }
     }
+
+
+
+
+
+
+
 
 }
