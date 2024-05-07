@@ -55,10 +55,9 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class TPersonAccessRecordsController extends BaseController {
+
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
-    private final DeviceFeign deviceFeign;
-    private final UserFeign userFeign;
-    private final TransService transService;
+
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")

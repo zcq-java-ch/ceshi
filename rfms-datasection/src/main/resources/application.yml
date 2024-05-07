@@ -1,6 +1,10 @@
 server:
   port: 8070
 
+
+secret:
+  key: HXLSICPSPUSH
+
 spring:
   application:
     name: rfms-datasection
