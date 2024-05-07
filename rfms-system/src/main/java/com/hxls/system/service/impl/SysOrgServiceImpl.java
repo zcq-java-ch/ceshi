@@ -43,7 +43,6 @@ import java.util.Map;
  * 机构管理
  *
  * @author
- *
  */
 @Service
 @AllArgsConstructor
@@ -57,7 +56,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         return new PageResult<>(SysOrgConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
-    private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query){
+    private LambdaQueryWrapper<SysOrgEntity> getWrapper(SysOrgQuery query) {
         LambdaQueryWrapper<SysOrgEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(query.getId() != null, SysOrgEntity::getId, query.getId());
         wrapper.eq(SysOrgEntity::getDeleted, 0);
@@ -66,7 +65,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         wrapper.like(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
-        wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()),SysOrgEntity::getId, query.getOrgList());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
 
         return wrapper;
     }
@@ -91,8 +90,8 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         baseMapper.insert(entity);
 
         //添加组织编码(RFMS + 组织ID)
-        if(StringUtils.isEmpty(entity.getCode())){
-            entity.setCode("RFMS"+entity.getId());
+        if (StringUtils.isEmpty(entity.getCode())) {
+            entity.setCode("RFMS" + entity.getId());
             updateById(entity);
         }
 
@@ -115,6 +114,16 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         }
 
         updateById(entity);
+
+        //修改成功后需要更换人员表中的名称
+        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getOrgId, entity.getId()));
+        if (CollectionUtils.isNotEmpty(sysUserEntities)) {
+            for (SysUserEntity item : sysUserEntities) {
+                item.setOrgName(entity.getName());
+                sysUserDao.updateById(item);
+            }
+        }
+
     }
 
     @Override
@@ -193,9 +202,9 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         objectLambdaQueryWrapper.eq(SysOrgEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysOrgEntity::getDeleted, 0);
         List<SysOrgEntity> sysOrgEntities = baseMapper.selectList(objectLambdaQueryWrapper);
-        if(CollectionUtils.isNotEmpty(sysOrgEntities)){
+        if (CollectionUtils.isNotEmpty(sysOrgEntities)) {
             return sysOrgEntities.get(0);
-        }else {
+        } else {
             return null;
         }
     }
@@ -205,10 +214,10 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         for (SysOrgVO vo : list) {
             SysOrgEntity entity = new SysOrgEntity();
             entity.setId(vo.getId());
-            if(vo.getStatus() != null ){
+            if (vo.getStatus() != null) {
                 entity.setStatus(vo.getStatus());
             }
-            if(vo.getDeleted() != null ){
+            if (vo.getDeleted() != null) {
                 entity.setDeleted(vo.getDeleted());
             }
             // 更新实体
