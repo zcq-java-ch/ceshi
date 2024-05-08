@@ -103,12 +103,12 @@ public class AppointmentAuditController {
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        if (user.getSuperAdmin() < 1) {
-            List<Long> dataScopeList = user.getDataScopeList();
-            if (CollectionUtils.isNotEmpty(dataScopeList)) {
-                query.setSiteIds(dataScopeList);
-            } else {
-                query.setCreator(user.getId());
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            Set<Long> manageStation = user.getManageStation();
+            if (CollectionUtils.isNotEmpty(manageStation)){
+                query.setSiteIds((new ArrayList<>(manageStation)));
+            }else {
+                query.setSiteIds(List.of(Constant.EMPTY));
             }
         }
 

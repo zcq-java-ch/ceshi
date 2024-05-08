@@ -358,7 +358,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> pageByAuthority(TAppointmentQuery query) {
 
-        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query );
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper( query );
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
