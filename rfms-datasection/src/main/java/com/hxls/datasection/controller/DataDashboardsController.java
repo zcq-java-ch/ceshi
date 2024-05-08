@@ -10,6 +10,7 @@ import com.hxls.framework.common.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class DataDashboardsController {
       * @Param:
       * @return:
       */
+    @SneakyThrows
     @GetMapping("/factoryStationKanban")
     @Operation(summary = "数据看板-厂站看板")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")

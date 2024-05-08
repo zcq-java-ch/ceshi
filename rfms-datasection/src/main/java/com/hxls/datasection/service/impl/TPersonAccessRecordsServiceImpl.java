@@ -153,9 +153,35 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 System.out.println("---------------------------------");
 
                 // 按照 姓名 进行分组
-                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
-                        .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
-                        .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
+//                        .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                        .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+
+                // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+                List<TPersonAccessRecordsEntity> filteredList = recordsList.stream()
+                        .filter(entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            String personName = entity.getPersonName();
+                            // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                            return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                                    (personName != null && !personName.isEmpty());
+                        })
+                        .collect(Collectors.toList());
+
+                // 按照姓名进行分组，当devicePersonId为空时
+                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = filteredList.stream()
+                        .collect(Collectors.groupingBy(
+                                entity -> {
+                                    String devicePersonId = entity.getDevicePersonId();
+                                    if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                        return devicePersonId;
+                                    } else {
+                                        return entity.getPersonName();
+                                    }
+                                }
+                        ));
+
 
                 // 打印每个分组
                 groupedByPersonId.forEach((personId, records2List) -> {
@@ -170,7 +196,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                             .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getAccessType));
                     int size = groupedByAccessType.size();
                     if (size == 1){
-                        groupedByPersonId.forEach((accessType, records3List) -> {
+                        groupedByAccessType.forEach((accessType, records3List) -> {
                             TPersonAccessRecordsEntity tPersonAccessRecordsEntity = records3List.get(0);
                             TPersonAccessRecordsVO convert = TPersonAccessRecordsConvert.INSTANCE.convert(tPersonAccessRecordsEntity);
                             convert.setDirectionType("1".equals(convert.getAccessType()) ? "未出场" : "未入场");

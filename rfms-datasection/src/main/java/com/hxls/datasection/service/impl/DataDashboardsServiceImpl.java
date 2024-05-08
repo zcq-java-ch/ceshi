@@ -12,8 +12,12 @@ import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -147,7 +151,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * 车辆出入明细部分
      * */
     @Override
-    public JSONObject vehicleAccessDetails(Long stationId) {
+    public JSONObject vehicleAccessDetails(Long stationId) throws ParseException {
         JSONArray siteArray = tVehicleAccessRecordsService.queryTheDetailsOfSiteCar(stationId);
 
         JSONArray objects = new JSONArray();
@@ -167,7 +171,18 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
             // 排放标准
             jsonObject1.put("emissionStandards", jsonObject.getString("emissionStandards"));
             // 时间
-            jsonObject1.put("time", jsonObject.getString("time"));
+            String time = jsonObject.getString("time");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formattedDate = "";
+            try {
+                Date date = inputFormat.parse(time);
+                formattedDate = outputFormat.format(date);
+            } catch (ParseException e) {
+//                e.printStackTrace();
+                System.out.println("时间转化异常");
+            }
+            jsonObject1.put("time", formattedDate);
             // 进出类型
             jsonObject1.put("typeOfEntryAndExit", jsonObject.getString("typeOfEntryAndExit"));
             objects.add(jsonObject1);
