@@ -174,7 +174,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
             private void saveTVehicle(List<TVehicleExcelVO> result) {
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
-                tVehicleEntities.forEach(tVehicle -> tVehicle.setSiteId(siteId));
+                tVehicleEntities.forEach(tVehicle -> {
+                    tVehicle.setSiteId(siteId);
+                    tVehicle.setStatus(1);
+                });
                 saveBatch(tVehicleEntities);
             }
         });
