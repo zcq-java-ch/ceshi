@@ -62,6 +62,7 @@ public class TVehicleAccessLedgerController extends BaseController {
         List<String> list = tVehicleAccessLedgerService.list(objectLambdaQueryWrapper)
                 .stream()
                 .map(TVehicleAccessLedgerEntity::getFleetName)
+                .distinct()
                 .collect(Collectors.toList());
 
         return Result.ok(list);
