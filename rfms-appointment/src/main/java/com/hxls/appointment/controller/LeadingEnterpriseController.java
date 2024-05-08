@@ -7,9 +7,13 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.appointment.dao.TAppointmentDao;
+import com.hxls.appointment.pojo.vo.TPersonAccessRecordsVO;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import com.hxls.appointment.pojo.vo.leadingVO.*;
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.DateUtils;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.JsonUtils;
 import com.hxls.framework.common.utils.Result;
 import jakarta.annotation.Resource;
@@ -20,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -108,7 +113,11 @@ public class LeadingEnterpriseController {
                 recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
             }
 
-            List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
+            List<recordInfo> recordInfos1 = recordInfos;
+            if ( recordInfos.size() > endIndex ){
+                recordInfos1 = recordInfos.subList(startIndex, endIndex);
+            }
+
             //创建时间等于出场时间加1s
             for (recordInfo item : recordInfos1) {
                 if(item.getUnit().equals("m³") && checkTime(item.getSecondTime())){
@@ -121,6 +130,17 @@ public class LeadingEnterpriseController {
                 String s = addOneSecond(secondTime);
                 item.setCreatTime(s);
             }
+
+            // 使用 Collections.sort() 方法进行排序，并提供自定义的 Comparator
+            recordInfos1.sort(new Comparator<recordInfo>() {
+                @Override
+                public int compare(recordInfo r1, recordInfo r2) {
+                    // 根据 creatTime 字段比较两个对象
+                    return r2.getCreatTime().compareTo(r1.getCreatTime());
+                }
+            });
+
+
             pageInfo.setRecords(recordInfos1);
             pageInfo.setTotal(bean.getData().size());
             pageInfo.setCurrent(data.getPage());
@@ -162,7 +182,12 @@ public class LeadingEnterpriseController {
         int startIndex = (data.getPage() - 1) * data.getPageSize();
         PageInfo pageInfo = new PageInfo();
         int endIndex = Math.min(startIndex + data.getPageSize(), recordInfos.size());
-        List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
+
+        List<recordInfo> recordInfos1 = recordInfos;
+        if ( recordInfos.size() > endIndex ){
+             recordInfos1 = recordInfos.subList(startIndex, endIndex);
+        }
+
 
         //创建时间等于出场时间加1s
         recordInfos1.forEach(item -> {
@@ -212,7 +237,7 @@ public class LeadingEnterpriseController {
         });
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
-        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 600);
+        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 1800);
 
     }
 
@@ -295,6 +320,53 @@ public class LeadingEnterpriseController {
         }
     }
 
+
+
+    @PostMapping("export")
+    public void export(@RequestBody responseBodyList data ){
+
+        for (recordInfo recordInfo : data.getRecordInfoList()) {
+            //emissionStandard
+            recordInfo.setEmissionStandard( convertData(recordInfo.getEmissionStandard()));
+
+            if (recordInfo.getUnit().equals("t")) {
+                recordInfo.setFreightVolume(recordInfo.getFreightVolume().setScale(2, RoundingMode.HALF_UP));
+            }else {
+                recordInfo.setFreightVolume(recordInfo.getFreightVolume().setScale(0, RoundingMode.HALF_UP));
+            }
+        }
+
+       // ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfoList);
+        ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()),null,data.getRecordInfoList());
+
+    }
+
+    private String convertData(String emissionStandard) {
+        switch (emissionStandard){
+            case "1" -> {
+                return "国Ⅰ";
+            }
+            case "2" -> {
+                return "国Ⅱ";
+            }
+            case "3" -> {
+                return "国Ⅲ";
+            }
+            case "4" -> {
+                return "国Ⅳ";
+            }
+            case "5" -> {
+                return "国Ⅴ";
+            }
+            case "6" -> {
+                return "国Ⅵ";
+            }
+            default -> {
+                return "未标注";
+            }
+        }
+
+    }
 
 
 }

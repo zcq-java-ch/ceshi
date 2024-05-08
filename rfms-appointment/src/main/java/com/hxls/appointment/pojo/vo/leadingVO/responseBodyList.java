@@ -11,4 +11,6 @@ public class responseBodyList {
     private String codeMsg;
 
     private List<recordInfo> data;
+
+    private List<recordInfo> recordInfoList;
 }
