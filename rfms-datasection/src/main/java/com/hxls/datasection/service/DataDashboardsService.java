@@ -3,6 +3,8 @@ package com.hxls.datasection.service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.text.ParseException;
+
 
 public interface DataDashboardsService{
 
@@ -12,7 +14,7 @@ public interface DataDashboardsService{
 
     JSONObject sitePersonnelBreakdownSection(Long stationId);
 
-    JSONObject vehicleAccessDetails(Long stationId);
+    JSONObject vehicleAccessDetails(Long stationId) throws ParseException;
 
     JSONObject breakdownOfExternalAppointments(Long stationId);
 
