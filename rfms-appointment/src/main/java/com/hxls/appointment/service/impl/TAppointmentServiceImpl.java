@@ -470,6 +470,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("password", jsonObject.get("master_password"));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                         }
+                        //如果是科飞达智设备,就不需要循环
+                        if (jsonObject.getString("type").equals(Constant.KFDZ)){
+                            return;
+                        }
                     }
                 }
             }
@@ -657,6 +661,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("DELETE" , data.getStr("DELETE"));
                         log.info("发送的消息："+sendData);
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
+                        //如果是科飞达智设备,就不需要循环
+                        if (jsonObject.getString("type").equals(Constant.KFDZ)){
+                            return;
+                        }
                     }
                 }
             }

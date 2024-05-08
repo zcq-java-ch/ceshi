@@ -68,4 +68,9 @@ public interface Constant {
      */
     Long EMPTY = -1L;
 
+    /**
+     * 科飞达智直连数据库，不用循环
+     */
+    String KFDZ = "2";
+
 }
