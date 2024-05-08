@@ -378,7 +378,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     if (olduser != null) {
                         throw new ServerException("手机号已经存在");
                     }
-                    user.setUserType("3");
+                    user.setUserType("2");
                     user.setPassword(password);
                     user.setOrgId(orgId);
                     user.setUsername(user.getMobile());
