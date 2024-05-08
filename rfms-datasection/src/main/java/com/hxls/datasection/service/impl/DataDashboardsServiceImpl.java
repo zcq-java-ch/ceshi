@@ -178,7 +178,6 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
             try {
                 Date date = inputFormat.parse(time);
                 formattedDate = outputFormat.format(date);
-                System.out.println("Formatted Date: " + formattedDate);
             } catch (ParseException e) {
 //                e.printStackTrace();
                 System.out.println("时间转化异常");
