@@ -112,6 +112,12 @@ public class LeadingEnterpriseController {
             if (StrUtil.isNotEmpty(data.getCdName())){
                 recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
             }
+            //隔离车辆的数据
+            if (getDate()){
+                recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765"));
+            }
+
+
 
             List<recordInfo> recordInfos1 = recordInfos;
             if ( recordInfos.size() > endIndex ){
@@ -159,6 +165,23 @@ public class LeadingEnterpriseController {
             // 如果解析失败，你可以选择返回一个默认值或者抛出异常，这取决于你的需求
             return false;
         }
+    }
+
+    private boolean getDate(){
+        // 获取当前日期
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        // 设置开始日期为2024年5月1日
+        Calendar startDate = Calendar.getInstance();
+        startDate.set(2024, Calendar.MAY, 1);
+
+        // 设置结束日期为2024年7月1日
+        Calendar endDate = Calendar.getInstance();
+        endDate.set(2024, Calendar.JULY, 1);
+
+        // 检查当前日期是否在范围内
+        return calendar.after(startDate) && calendar.before(endDate);
     }
 
     private Result<?> CacheData(PageParams data) {
