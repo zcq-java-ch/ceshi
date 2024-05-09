@@ -36,6 +36,7 @@ import com.hxls.system.vo.*;
 import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +53,7 @@ import java.util.Map;
  */
 @Service
 @AllArgsConstructor
+@Slf4j
 public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntity> implements SysUserService {
     private final SysUserRoleService sysUserRoleService;
     private final SysUserPostService sysUserPostService;
@@ -498,11 +500,34 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         for (SysUserVO vo : list) {
             SysUserEntity entity = new SysUserEntity();
             entity.setId(vo.getId());
+
+            //查询人员详情
+            SysUserEntity byId = getById(vo.getId());
+
             if(vo.getStatus() != null ){
                 entity.setStatus(vo.getStatus());
             }
             // 更新实体
             this.updateById(entity);
+            //更新成功后 - 下发设备指令
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(byId));
+            if (!vo.getStatus().equals(Constant.ENABLE)){
+                log.info("此时发起禁用删除");
+                person.set("DELETE" , "DELETE");
+            }
+            appointmentFeign.issuedPeople(person);
+            if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                vehicle.set("data" , JSONUtil.toJsonStr(byId));
+                if (!vo.getStatus().equals(Constant.ENABLE)){
+                    log.info("此时发起禁用删除");
+                    vehicle.set("DELETE" , "DELETE");
+                }
+                appointmentFeign.issuedPeople(vehicle);
+            }
         }
     }
 
