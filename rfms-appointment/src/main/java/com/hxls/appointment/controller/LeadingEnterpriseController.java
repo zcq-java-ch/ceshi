@@ -108,10 +108,7 @@ public class LeadingEnterpriseController {
             if (StrUtil.isNotEmpty(data.getCdName())){
                 recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
             }
-            //隔离车辆的数据
-            if (getDate()){
-                recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765"));
-            }
+
 
             //分割大小
             PageInfo pageInfo = new PageInfo();
@@ -250,6 +247,10 @@ public class LeadingEnterpriseController {
             }
         });
 
+        //隔离车辆的数据
+        if (getDate()){
+            recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765"));
+        }
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
         redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 1800);
