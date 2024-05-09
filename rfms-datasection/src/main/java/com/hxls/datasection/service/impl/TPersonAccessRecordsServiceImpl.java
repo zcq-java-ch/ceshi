@@ -133,8 +133,13 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         String startOfDayString = startOfDay.format(formatter);
         String endOfDayString = endOfDay.format(formatter);
 
-        query.setStartRecordTime(startOfDayString);
-        query.setEndRecordTime(endOfDayString);
+        if (StringUtils.isEmpty(query.getStartRecordTime())){
+            query.setStartRecordTime(startOfDayString);
+        }
+        if (StringUtils.isEmpty(query.getEndRecordTime())){
+            query.setEndRecordTime(endOfDayString);
+        }
+
         LambdaQueryWrapper<TPersonAccessRecordsEntity> wrapper = getWrapper(query, baseUser);
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(tPersonAccessRecordsEntities)){
