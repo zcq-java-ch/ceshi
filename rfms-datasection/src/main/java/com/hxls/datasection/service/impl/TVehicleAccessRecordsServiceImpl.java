@@ -50,6 +50,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     public StorageImagesProperties properties;
     private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
+    private final static String CARTYPEXC = "1";
     private final static String CARTYPEHC = "2";
     private final static String CARTYPEGC = "3";
     @Override
@@ -399,7 +400,8 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                 // 还要判断这个车型是不是大车，字典类型为2.3
                 String carType = jsonObject.getString("carType");
                 if (StringUtils.isNotEmpty(carType)){
-                    if (CARTYPEHC.equals(carType) || CARTYPEGC.equals(carType)){
+//                    if (CARTYPEHC.equals(carType) || CARTYPEGC.equals(carType)){
+                    if (!CARTYPEXC.equals(carType)){
                         // 或者使用Java 8的Stream API进行排序
                         recordsList.sort(Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
 
