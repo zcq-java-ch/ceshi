@@ -1,5 +1,6 @@
 package com.hxls.api.dto.appointment;
 
+import cn.hutool.core.io.LimitedInputStream;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
@@ -10,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Tag(name="预约模块对象")
@@ -68,5 +70,9 @@ public class AppointmentDTO  implements Serializable {
 
     @Schema(description = "是否升序")
     boolean asc = false ;
+
+
+    @Schema(description = "预约类型（数据字典）")
+    private List<String> appointmentTypeList;
 
 }
