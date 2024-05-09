@@ -634,4 +634,48 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         }
         return numberOfFactoryStation;
     }
+
+    @Override
+    public JSONObject queryTheStatisticsOfTheTypeOfWorkBySiteId(Long stationId) {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper3 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
+        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
+
+        int numberOfFactoryStation = 0;
+        List<TPersonAccessRecordsEntity> objects = new ArrayList<>();
+        // 按照姓名id进行分组
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        // 打印每个分组并更新inNumer变量
+        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
+            List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+            // 找出每个分组中按照时间排序的最后一条数据
+            TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+            if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
+                numberOfFactoryStation += 1;
+                objects.add(lastRecord);
+            } else {
+                // 最后一次为出厂
+            }
+        }
+        // 过滤掉positionName为空的实体
+        List<TPersonAccessRecordsEntity> filteredList = objects.stream()
+                .filter(entity -> entity.getPositionName() != null && !entity.getPositionName().isEmpty())
+                .collect(Collectors.toList());
+
+        // 按positionName进行分组并计算每个组中的人数
+        Map<String, Long> groupCountMap = filteredList.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getPositionName, Collectors.counting()));
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("postAll", groupCountMap);
+        return jsonObject;
+    }
 }

@@ -52,4 +52,12 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
    *
    */
     JSONArray numberOfAssemblersAndVehicles(JSONArray siteCoor);
+
+    /**
+     * @Aouthor: Mryang
+     * @Date: 2024年5月9日 15点36分
+     * @describe: 给传入的所有站点数据 查询当日。所有入场人员的 工种分类统计
+     *
+     */
+    JSONObject queryTheStatisticsOfTheTypeOfWorkBySiteId(Long stationId);
 }

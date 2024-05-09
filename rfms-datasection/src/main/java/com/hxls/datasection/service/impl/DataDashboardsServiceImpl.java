@@ -53,7 +53,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         Integer pzNum = 0;
         pzNum += jsonObject3.getInteger("pzNum");
         List<Long> pzAllIds = jsonObject3.getObject("pzAllIds", ArrayList.class);
-        JSONObject postAll = jsonObject3.getJSONObject("postAll");
+//        JSONObject postAll = jsonObject3.getJSONObject("postAll");
 
         // 内部员工+派驻员工 在厂人数，实时在厂总人数，内部员工在厂数量，
         JSONObject jsonObject2 = tPersonAccessRecordsService.queryInformationOnkanbanPersonnelStation(stationId, numberOfPeopleRegisteredIdList, pzAllIds, numberOfPeopleRegistered);
@@ -64,6 +64,9 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
         JSONObject entries = jsonObject1.getJSONObject("jobs");
 
+        // 查询站点工种统计
+        JSONObject jsonObject5 = tPersonAccessRecordsService.queryTheStatisticsOfTheTypeOfWorkBySiteId(stationId);
+        JSONObject postAll = jsonObject5.getJSONObject("postAll");
         // 查询外部预约总数
         JSONObject jsonObject4 = appointmentFeign.queryTotalAppointments(stationId);
         Integer wbyyzs = jsonObject4.getInteger("numberOfExternalAppointments");
