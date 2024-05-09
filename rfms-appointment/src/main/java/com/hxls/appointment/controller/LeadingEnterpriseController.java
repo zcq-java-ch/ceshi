@@ -97,10 +97,6 @@ public class LeadingEnterpriseController {
             }
             bean.getData().addAll(recordInfoList);
 
-            int startIndex = (data.getPage() - 1) * data.getPageSize();
-            PageInfo pageInfo = new PageInfo();
-            int endIndex = Math.min(startIndex + data.getPageSize(), bean.getData().size());
-
             List<recordInfo> recordInfos = bean.getData();
 
             //todo 还需要通过车牌号找到车辆基础信息
@@ -117,14 +113,14 @@ public class LeadingEnterpriseController {
                 recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765"));
             }
 
+            //分割大小
+            PageInfo pageInfo = new PageInfo();
+            int startIndex = (data.getPage() - 1) * data.getPageSize();
+            int endIndex = Math.min(startIndex + data.getPageSize(), recordInfos.size());
 
+            List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
 
-            List<recordInfo> recordInfos1 = recordInfos;
-            if ( recordInfos.size() > endIndex ){
-                recordInfos1 = recordInfos.subList(startIndex, endIndex);
-            }
-
-            //创建时间等于出场时间加1s
+            //如果有过车数据，罐车就替换最近的过车数据
             for (recordInfo item : recordInfos1) {
                 if(item.getUnit().equals("m³") && checkTime(item.getSecondTime())){
                     String selectRecordTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum());
@@ -132,9 +128,6 @@ public class LeadingEnterpriseController {
                         item.setFirstTime(selectRecordTime);
                     }
                 }
-                String secondTime = item.getSecondTime();
-                String s = addOneSecond(secondTime);
-                item.setCreatTime(s);
             }
 
             pageInfo.setRecords(recordInfos1);
@@ -196,11 +189,8 @@ public class LeadingEnterpriseController {
         PageInfo pageInfo = new PageInfo();
         int endIndex = Math.min(startIndex + data.getPageSize(), recordInfos.size());
 
-        List<recordInfo> recordInfos1 = recordInfos;
-        if ( recordInfos.size() > endIndex ){
-             recordInfos1 = recordInfos.subList(startIndex, endIndex);
-        }
-
+        //List<recordInfo> recordInfos1 = recordInfos;
+        List<recordInfo>  recordInfos1 = recordInfos.subList(startIndex, endIndex);
 
         //创建时间等于出场时间加1s
         recordInfos1.forEach(item -> {
@@ -245,6 +235,9 @@ public class LeadingEnterpriseController {
                     item.setFreightVolume(bigDecimal);
                 }
             }
+            String secondTime = item.getSecondTime();
+            String s = addOneSecond(secondTime);
+            item.setCreatTime(s);
         });
 
 
