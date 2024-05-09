@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.appointment.dao.TVehicleAccessRecordsMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.appointment.pojo.entity.TVehicleAccessRecords">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="siteId" column="site_id" jdbcType="BIGINT"/>
+            <result property="accessType" column="access_type" jdbcType="VARCHAR"/>
+            <result property="channel" column="channel" jdbcType="VARCHAR"/>
+            <result property="recordTime" column="record_time" jdbcType="TIMESTAMP"/>
+            <result property="plateNumber" column="plate_number" jdbcType="VARCHAR"/>
+            <result property="vehicleModel" column="vehicle_model" jdbcType="VARCHAR"/>
+            <result property="emissionStandard" column="emission_standard" jdbcType="VARCHAR"/>
+            <result property="carUrl" column="car_url" jdbcType="VARCHAR"/>
+            <result property="driverName" column="driver_name" jdbcType="VARCHAR"/>
+            <result property="driverPhone" column="driver_phone" jdbcType="VARCHAR"/>
+            <result property="sort" column="sort" jdbcType="INTEGER"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,site_id,access_type,
+        channel,record_time,plate_number,
+        vehicle_model,emission_standard,car_url,
+        driver_name,driver_phone,sort,
+        version,status,deleted,
+        creator,create_time,updater,
+        update_time
+    </sql>
+</mapper>

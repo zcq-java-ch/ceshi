@@ -2,6 +2,7 @@ package com.hxls.appointment.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -441,6 +442,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("masterIp", masterIp);
                             entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
+
+                            //查看人员表中是否带有车辆信息
+                            String plateNumber = personnel.getPlateNumber();
+                            if (StrUtil.isNotEmpty(plateNumber)){
+                                TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
+                                tAppointmentVehicle.setPlateNumber(plateNumber);
+                                list.add(tAppointmentVehicle);
+                            }
+
+
                         }
                     }
                 }
@@ -460,8 +471,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         for (TAppointmentVehicle tAppointmentVehicle : list) {
                             JSONObject entries = new JSONObject();
                             entries.set("type", jsonObject.getString("type"));
-                            entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
-                            entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
+                            if (byId.getSupplierSubclass().equals(1)) {
+                                String deliveryDate = tAppointmentVehicle.getDeliveryDate();
+                                entries.set("startTime", deliveryDate.split(",")[0]);
+                                entries.set("deadline", deliveryDate.split(",")[1]);
+                            }else {
+                                entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
+                                entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
+                            }
                             entries.set("carNumber", tAppointmentVehicle.getPlateNumber());
                             entries.set("status", "add");
                             entries.set("masterIp", jsonObject.get("master_ip"));
