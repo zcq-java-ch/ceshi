@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("api/PushNotification")
 @Tag(name="icps推送通知")
@@ -27,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class IcpsPushNotification {
 
-    @Value("$secret.key")
+    @Value("${secret.key}")
     private static String secretKey;
 
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
@@ -41,6 +44,16 @@ public class IcpsPushNotification {
         try {
             System.out.println("获取到的数据 ： " + vo);
             if (StrUtil.isNotEmpty(vo.getSecretKey()) && secretKey.equals(vo.getSecretKey())){
+                //获取到了车辆
+                List<AccessRecordsVO.TVehicleAccessRecords> tVehicleAccessRecordsVOList = vo.getTVehicleAccessRecordsVOList();
+
+                List<String> plateNumberList = tVehicleAccessRecordsVOList.stream().map(AccessRecordsVO.TVehicleAccessRecords::getPlateNumber).toList();
+
+
+
+
+
+
                 return Result.ok();
             }
             return Result.error();

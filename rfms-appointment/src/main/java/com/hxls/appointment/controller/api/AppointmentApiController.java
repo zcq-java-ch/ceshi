@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.springdoc.core.annotations.ParameterObject;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @RequestMapping("api/appointment")
 @Tag(name = "api接口(免登录)")
 @AllArgsConstructor
+@Slf4j
 public class AppointmentApiController {
 
 
@@ -47,8 +49,8 @@ public class AppointmentApiController {
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
     public AppointmentDTO establish(@RequestBody AppointmentDTO data) {
-        System.out.println("接收到信息");
-        System.out.println(data);
+       log.info("建立站点队列接收到信息 : {}" , data);
+
         if (redisCache.get(data.getIp()) == null) {
             rabbitMqManager.declareExchangeAndQueue(data);
             data.setResult(true);
@@ -60,8 +62,7 @@ public class AppointmentApiController {
     @PostMapping("establishAgentToCloud")
     @Operation(summary = "用户客户端到平台的 建立站点队列")
     public AppointmentDTO establishAgentToCloud(@RequestBody AppointmentDTO data) {
-        System.out.println("接收到信息");
-        System.out.println(data);
+        log.info("用户客户端到平台的 建立站点队列 : {}" , data);
         rabbitMqManager.declareExchangeAndQueueToCloud(data);
         return data;
     }
@@ -102,9 +103,8 @@ public class AppointmentApiController {
     @PostMapping("board")
     @Operation(summary = "获取安防看板")
     public PageResult<TAppointmentVO> board(@RequestBody AppointmentDTO data) {
-        System.out.println("开始访问获取安防看板");
+       log.info("开始访问获取安防看板");
         PageResult<TAppointmentVO> result = tAppointmentService.pageBoard(data);
-        System.out.println(result);
         return result;
     }
 
@@ -121,7 +121,7 @@ public class AppointmentApiController {
     @PostMapping("issuedPeople")
     @Operation(summary = "下发信息")
     public Boolean issuedPeople(@RequestBody JSONObject data) {
-        System.out.println("下发信息");
+       log.info("下发信息");
         try{
             tAppointmentService.issuedPeople(data);
         }catch (Exception e){
@@ -162,7 +162,7 @@ public class AppointmentApiController {
 //                .collect(Collectors.groupingBy(TAppointmentPersonnel::getPostCode, Collectors.counting()));
 //        // 打印每个类型及其数量
 //        for (Map.Entry<String, Long> entry2 : postCounts.entrySet()) {
-//            System.out.println("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
+//           log.info("岗位：" + entry2.getKey() + "，数量：" + entry2.getValue());
 //            postobjects.putOnce(entry2.getKey(), entry2.getValue());
 //        }
 

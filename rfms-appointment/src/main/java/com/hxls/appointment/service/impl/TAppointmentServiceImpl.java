@@ -518,7 +518,11 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(StringUtils.isNotEmpty(data.getAppointmentType()), TAppointmentEntity::getAppointmentType, data.getAppointmentType());
         wrapper.eq(data.getSiteId() != null, TAppointmentEntity::getSiteId, data.getSiteId());
         wrapper.eq(TAppointmentEntity::getStatus, Constant.ENABLE);
+        wrapper.in(CollectionUtils.isNotEmpty(data.getAppointmentTypeList()) ,TAppointmentEntity::getAppointmentType , data.getAppointmentTypeList() );
         wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
+        wrapper.ge(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[0] : null );
+        wrapper.le(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[1] : null);
+
         Page<TAppointmentEntity> page = new Page<>(data.getPage(), data.getLimit());
 
         IPage<TAppointmentEntity> tAppointmentEntityPage = page(page, wrapper);

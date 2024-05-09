@@ -131,16 +131,6 @@ public class LeadingEnterpriseController {
                 item.setCreatTime(s);
             }
 
-            // 使用 Collections.sort() 方法进行排序，并提供自定义的 Comparator
-            recordInfos1.sort(new Comparator<recordInfo>() {
-                @Override
-                public int compare(recordInfo r1, recordInfo r2) {
-                    // 根据 creatTime 字段比较两个对象
-                    return r2.getCreatTime().compareTo(r1.getCreatTime());
-                }
-            });
-
-
             pageInfo.setRecords(recordInfos1);
             pageInfo.setTotal(bean.getData().size());
             pageInfo.setCurrent(data.getPage());
@@ -204,8 +194,8 @@ public class LeadingEnterpriseController {
     }
 
     private void getBasicInformation(List<recordInfo> recordInfos, List<String> carNumberList, PageParams data1) {
-
-        String post = HttpUtil.post("http://localhost:8099/car/listByCarNumber", JSONUtil.toJsonStr(carNumberList));
+        List<String> carNumbers = carNumberList.stream().distinct().toList();
+        String post = HttpUtil.post("http://localhost:8099/car/listByCarNumber", JSONUtil.toJsonStr(carNumbers));
         JSONObject entries = JSONUtil.parseObj(post);
         List<TVehicleVO> data = entries.getBeanList("data", TVehicleVO.class);
 
@@ -229,12 +219,21 @@ public class LeadingEnterpriseController {
                 BigDecimal freightVolume = item.getFreightVolume();
                 BigDecimal bigDecimal = new BigDecimal(tVehicleVO.getMaxCapacity());
                 if (bigDecimal.compareTo(freightVolume) < 0 ) {
-                    //随机生成一个比bigDecimal小2之内的小数
-                    BigDecimal randomDecimal = generateRandomDecimal(bigDecimal.subtract(new BigDecimal(2)), bigDecimal);
-                    item.setFreightVolume(randomDecimal);
+                    item.setFreightVolume(bigDecimal);
                 }
             }
         });
+
+
+        // 使用 Collections.sort() 方法进行排序，并提供自定义的 Comparator
+        recordInfos.sort(new Comparator<recordInfo>() {
+            @Override
+            public int compare(recordInfo r1, recordInfo r2) {
+                // 根据 creatTime 字段比较两个对象
+                return r2.getCreatTime().compareTo(r1.getCreatTime());
+            }
+        });
+
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
         redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 1800);
