@@ -176,9 +176,9 @@ public class LeadingEnterpriseController {
         Calendar startDate = Calendar.getInstance();
         startDate.set(2024, Calendar.MAY, 1);
 
-        // 设置结束日期为2024年7月1日
+        // 设置结束日期为2024年8月1日
         Calendar endDate = Calendar.getInstance();
-        endDate.set(2024, Calendar.JULY, 1);
+        endDate.set(2024, Calendar.AUGUST, 1);
 
         // 检查当前日期是否在范围内
         return calendar.after(startDate) && calendar.before(endDate);
