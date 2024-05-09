@@ -7,7 +7,7 @@
 		select t1.*
 		from sys_user t1 where t1.deleted = 0
 		<if test="username != null and username.trim() != ''">
-			and t1.username = #{username}
+			and t1.username like concat('%', #{username}, '%')
 		</if>
 		<if test="mobile != null and mobile.trim() != ''">
 			and t1.mobile like concat('%', #{mobile}, '%')
