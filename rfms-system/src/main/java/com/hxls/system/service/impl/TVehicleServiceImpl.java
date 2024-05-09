@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.excel.ExcelFinishCallBack;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
@@ -175,6 +176,15 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             }
             // 更新实体
             this.updateById(entity);
+            //删除车辆在设备上的信息
+            JSONObject vehicle = new JSONObject();
+            vehicle.set("sendType","2");
+            entity.setStationId(entity.getSiteId());
+            vehicle.set("data" , JSONUtil.toJsonStr(entity));
+            if (vo.getStatus().equals(Constant.DISABLE)){
+                vehicle.set("DELETE","DELETE");
+            }
+            appointmentFeign.issuedPeople(vehicle);
         }
     }
 
