@@ -110,5 +110,7 @@ public class TVehicleEntity extends BaseEntity {
 	 */
 	private String carType;
 
+	@TableField(exist = false)
+	private Long stationId;
 
 }

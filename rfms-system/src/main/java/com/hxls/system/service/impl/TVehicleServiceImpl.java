@@ -65,6 +65,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         //通用车辆下发
         JSONObject vehicle = new JSONObject();
         vehicle.set("sendType","2");
+        entity.setStationId(entity.getSiteId());
         vehicle.set("data" , JSONUtil.toJsonStr(entity));
         appointmentFeign.issuedPeople(vehicle);
 
@@ -75,10 +76,32 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     public void update(TVehicleVO vo) {
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
+        //修改之前要判断是否更换了厂站
+        Long id = vo.getId();
+        TVehicleEntity byId = getById(id);
+        if (ObjectUtil.isNull(byId)){
+            throw new ServerException(ErrorCode.NOT_FOUND);
+        }
+
+        //原厂站的id
+        Long siteId = byId.getSiteId();
+
         updateById(entity);
+
+        if (!siteId.equals(vo.getSiteId())){
+            //删除原厂站的信息
+            JSONObject vehicle = new JSONObject();
+            vehicle.set("sendType","2");
+            entity.setStationId(entity.getSiteId());
+            vehicle.set("data" , JSONUtil.toJsonStr(entity));
+            vehicle.set("DELETE","DELETE");
+            appointmentFeign.issuedPeople(vehicle);
+        }
+
 
         JSONObject vehicle = new JSONObject();
         vehicle.set("sendType","2");
+        entity.setStationId(entity.getSiteId());
         vehicle.set("data" , JSONUtil.toJsonStr(entity));
         appointmentFeign.issuedPeople(vehicle);
 
