@@ -13,6 +13,7 @@ import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.entity.TVehicleEntity;
@@ -40,6 +41,7 @@ import java.util.List;
 public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEntity> implements TVehicleService {
 
     private final AppointmentFeign appointmentFeign;
+    private final StorageProperties properties;
 
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
@@ -179,7 +181,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void importByExcel(String file,Long siteId){
-        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(file), TVehicleExcelVO.class, new ExcelFinishCallBack<TVehicleExcelVO>() {
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain + file), TVehicleExcelVO.class, new ExcelFinishCallBack<TVehicleExcelVO>() {
             @Override
             public void doAfterAllAnalysed(List<TVehicleExcelVO> result) {
                 saveTVehicle(result);
@@ -192,7 +197,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
             private void saveTVehicle(List<TVehicleExcelVO> result) {
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
-                tVehicleEntities.forEach(tVehicle -> tVehicle.setSiteId(siteId));
+                tVehicleEntities.forEach(tVehicle -> {
+                    tVehicle.setSiteId(siteId);
+                    tVehicle.setStatus(1);
+                });
                 saveBatch(tVehicleEntities);
             }
         });
