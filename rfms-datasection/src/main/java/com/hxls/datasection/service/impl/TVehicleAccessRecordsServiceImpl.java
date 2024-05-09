@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.config.StorageImagesProperties;
@@ -49,6 +50,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     public StorageImagesProperties properties;
     private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
+    private final static String CARTYPEXC = "1";
     private final static String CARTYPEHC = "2";
     private final static String CARTYPEGC = "3";
     @Override
@@ -161,55 +163,93 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             // 先通过车牌查询平台通用车辆管理数据，如果有才执行存储操作，如果没有则不进行操作
             String plateNumber = tVehicleAccessRecordsEntity.getPlateNumber();
             JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
-            if (ObjectUtils.isNotEmpty(jsonObject)){
-                if ("1".equals(tVehicleAccessRecordsEntity.getAccessType())){
-                    // 如果是入的记录 则直接插入一条
-                    // 先通过车牌找到对应的平台车辆信息
 
-                    TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
-                    tVehicleAccessLedgerEntity.setVehicleModel(jsonObject.getString("carType"));
-                    tVehicleAccessLedgerEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
-                    tVehicleAccessLedgerEntity.setLicenseImage(jsonObject.getString("licenseImage"));
-                    tVehicleAccessLedgerEntity.setEnvirList(jsonObject.getString("images"));
-                    tVehicleAccessLedgerEntity.setFleetName(jsonObject.getString("fleetName"));
-                    tVehicleAccessLedgerEntity.setVinNumber(jsonObject.getString("vinNumber"));
-                    tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.getString("engineNumber"));
+            // 先判断车辆类型如果是小车则不录入
+            String carType = jsonObject.getString("carType");
+            if(StringUtils.isNotEmpty(carType) && !"1".equals(carType)){
+                if (ObjectUtils.isNotEmpty(jsonObject)){
+                    if ("1".equals(tVehicleAccessRecordsEntity.getAccessType())){
+                        /**
+                         * 如果是入场记录，则先找上一条记录，判断是出场还是入场
+                         * 如果是入场记录，将原来的记录替换掉
+                         * 如果是出场记录，则插入一条
+                         * 如果没有，则插入一条
+                         * */
+                        TVehicleAccessLedgerEntity recordLedger = queryLastData(plateNumber);
 
-                    tVehicleAccessLedgerEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
-                    tVehicleAccessLedgerEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
-                    tVehicleAccessLedgerEntity.setPlateNumber(tVehicleAccessRecordsEntity.getPlateNumber());
-                    tVehicleAccessLedgerEntity.setInTime(tVehicleAccessRecordsEntity.getRecordTime());
-                    tVehicleAccessLedgerEntity.setInPic(tVehicleAccessRecordsEntity.getCarUrl());
-                    tVehicleAccessLedgerEntity.setIsOver(0);
-                    tVehicleAccessLedgerEntity.setCreateTime(new Date());
-                    tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
-                }else {
-                    // 如果是出的，则需要找到对应的最近一条入的台账
-                    LambdaQueryWrapper<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getPlateNumber, plateNumber);
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getStatus, 1);
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getDeleted, 0);
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getIsOver, 0);
+                        if (ObjectUtils.isNotEmpty(recordLedger) && recordLedger.getIsOver() == 0){
+                            // 如果上一条数据有数据，并且是未完成的数据，那么覆盖上条数据
+                            recordLedger.setStatus(0);
+                            recordLedger.setDeleted(1);
+                            tVehicleAccessLedgerDao.updateById(recordLedger);
+                        }
+                        TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = new TVehicleAccessLedgerEntity();
+                        tVehicleAccessLedgerEntity.setVehicleModel(jsonObject.getString("carType"));
+                        tVehicleAccessLedgerEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                        tVehicleAccessLedgerEntity.setLicenseImage(jsonObject.getString("licenseImage"));
+                        tVehicleAccessLedgerEntity.setEnvirList(jsonObject.getString("images"));
+                        tVehicleAccessLedgerEntity.setFleetName(jsonObject.getString("fleetName"));
+                        tVehicleAccessLedgerEntity.setVinNumber(jsonObject.getString("vinNumber"));
+                        tVehicleAccessLedgerEntity.setEngineNumber(jsonObject.getString("engineNumber"));
 
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.orderByDesc(TVehicleAccessLedgerEntity::getInTime);
-                    tVehicleAccessLedgerEntityLambdaQueryWrapper.last("LIMIT 1"); // 限制只查询一条数据
-                    List<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntities = tVehicleAccessLedgerDao.selectList(tVehicleAccessLedgerEntityLambdaQueryWrapper);
+                        tVehicleAccessLedgerEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
+                        tVehicleAccessLedgerEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
+                        tVehicleAccessLedgerEntity.setPlateNumber(tVehicleAccessRecordsEntity.getPlateNumber());
+                        tVehicleAccessLedgerEntity.setInTime(tVehicleAccessRecordsEntity.getRecordTime());
+                        tVehicleAccessLedgerEntity.setInPic(tVehicleAccessRecordsEntity.getCarUrl());
+                        tVehicleAccessLedgerEntity.setIsOver(0);
+                        tVehicleAccessLedgerEntity.setCreateTime(new Date());
+                        tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
+                    }else {
+                        // 如果是出的，则需要找到对应的最近一条入的台账
+                        LambdaQueryWrapper<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getPlateNumber, plateNumber);
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getStatus, 1);
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getDeleted, 0);
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getIsOver, 0);
 
-                    if(CollectionUtil.isNotEmpty(tVehicleAccessLedgerEntities)){
-                        TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = tVehicleAccessLedgerEntities.get(0);
-                        tVehicleAccessLedgerEntity.setIsOver(1);
-                        tVehicleAccessLedgerEntity.setOutPic(tVehicleAccessRecordsEntity.getCarUrl());
-                        tVehicleAccessLedgerEntity.setOutTime(tVehicleAccessRecordsEntity.getRecordTime());
-                        tVehicleAccessLedgerEntity.setUpdateTime(new Date());
-                        tVehicleAccessLedgerDao.updateById(tVehicleAccessLedgerEntity);
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.orderByDesc(TVehicleAccessLedgerEntity::getInTime);
+                        tVehicleAccessLedgerEntityLambdaQueryWrapper.last("LIMIT 1"); // 限制只查询一条数据
+                        List<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntities = tVehicleAccessLedgerDao.selectList(tVehicleAccessLedgerEntityLambdaQueryWrapper);
+
+                        if(CollectionUtil.isNotEmpty(tVehicleAccessLedgerEntities)){
+                            TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = tVehicleAccessLedgerEntities.get(0);
+                            tVehicleAccessLedgerEntity.setIsOver(1);
+                            tVehicleAccessLedgerEntity.setOutPic(tVehicleAccessRecordsEntity.getCarUrl());
+                            tVehicleAccessLedgerEntity.setOutTime(tVehicleAccessRecordsEntity.getRecordTime());
+                            tVehicleAccessLedgerEntity.setUpdateTime(new Date());
+                            tVehicleAccessLedgerDao.updateById(tVehicleAccessLedgerEntity);
+                        }
                     }
+                }else {
+                    log.info("当前车牌{}，在平台通用车辆管理中不存在，不纳入台账！",plateNumber);
                 }
             }else {
-                log.info("当前车牌{}，在平台通用车辆管理中不存在，不纳入台账！",plateNumber);
+                log.info("车辆类型是小客车，不录入");
             }
-
-
         }
+    }
+
+    /**
+     * @author: Mryang
+     * @Description: 查询指定车牌最后一条台账记录
+     * @Date: 2024/5/9 22:37
+     * @param
+     * @return:
+     */
+    private TVehicleAccessLedgerEntity queryLastData(String plateNumber) {
+        LambdaQueryWrapper<TVehicleAccessLedgerEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TVehicleAccessLedgerEntity::getPlateNumber, plateNumber);
+        objectLambdaQueryWrapper.orderByDesc(TVehicleAccessLedgerEntity::getInTime);
+        List<TVehicleAccessLedgerEntity> tVehicleAccessLedgerEntities = tVehicleAccessLedgerDao.selectList(objectLambdaQueryWrapper);
+        TVehicleAccessLedgerEntity tVehicleAccessLedgerEntity = null;
+
+        if (CollectionUtils.isNotEmpty(tVehicleAccessLedgerEntities)){
+            tVehicleAccessLedgerEntity = tVehicleAccessLedgerEntities.get(0);
+        }
+        return tVehicleAccessLedgerEntity;
     }
 
     /**
@@ -360,7 +400,8 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                 // 还要判断这个车型是不是大车，字典类型为2.3
                 String carType = jsonObject.getString("carType");
                 if (StringUtils.isNotEmpty(carType)){
-                    if (CARTYPEHC.equals(carType) || CARTYPEGC.equals(carType)){
+//                    if (CARTYPEHC.equals(carType) || CARTYPEGC.equals(carType)){
+                    if (!CARTYPEXC.equals(carType)){
                         // 或者使用Java 8的Stream API进行排序
                         recordsList.sort(Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
 
