@@ -1,5 +1,6 @@
 package com.hxls.appointment.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import com.hxls.framework.mybatis.entity.BaseEntity;
@@ -117,4 +118,7 @@ public class TAppointmentPersonnel extends BaseEntity {
      */
     private String postCode;
 
+
+    @TableField(exist = false)
+    private String stationId;
 }

@@ -65,5 +65,7 @@ public class TAppointmentVehicle extends BaseEntity {
      */
     private Integer status;
 
+    @TableField(exist = false)
+    private String stationId;
 
 }

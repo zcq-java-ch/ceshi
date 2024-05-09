@@ -413,16 +413,17 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         updateById(entity);
         //审核通过后会执行下发对应指定的厂站
         if (vo.getReviewStatus().equals(Constant.PASS)) {
+
             //根据指定通道下发数据
             Long id = entity.getId();
             TAppointmentEntity byId = getById(id);
             List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(
                     TAppointmentVehicle::getAppointmentId, id
             ));
-
             List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
                     .eq(TAppointmentPersonnel::getAppointmentId , id));
-
+            //审核通过之后,如果有修改，需要先删除之前的
+            deleteInfo(list , personnelList , byId.getSiteId());
             if (CollectionUtils.isNotEmpty(personnelList)) {
                 String domain = properties.getConfig().getDomain();
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
@@ -496,6 +497,33 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             }
         }
     }
+
+
+    private void deleteInfo(List<TAppointmentVehicle> list, List<TAppointmentPersonnel> personnelList, Long siteId) {
+        log.info("审核的时候优先删除");
+        if (CollectionUtils.isNotEmpty(list)){
+            for (TAppointmentVehicle tAppointmentVehicle : list) {
+                JSONObject person = new JSONObject();
+                tAppointmentVehicle.setStationId(siteId.toString());
+                person.set("sendType","2");
+                person.set("data" , JSONUtil.toJsonStr(tAppointmentVehicle));
+                person.set("DELETE" , "DELETE");
+                issuedPeople(person);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(personnelList)){
+            for (TAppointmentPersonnel tAppointmentPersonnel : personnelList) {
+                JSONObject person = new JSONObject();
+                tAppointmentPersonnel.setStationId(siteId.toString());
+                person.set("sendType","1");
+                person.set("data" , JSONUtil.toJsonStr(tAppointmentPersonnel));
+                person.set("DELETE" , "DELETE");
+                issuedPeople(person);
+            }
+        }
+    }
+
 
     @Override
     public List<TAppointmentPersonnelVO> getListById(Long id) {
