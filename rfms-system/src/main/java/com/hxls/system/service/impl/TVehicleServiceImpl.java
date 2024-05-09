@@ -196,6 +196,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             }
 
             private void saveTVehicle(List<TVehicleExcelVO> result) {
+                ExcelUtils.parseDict(result);
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
                 tVehicleEntities.forEach(tVehicle -> {
                     tVehicle.setSiteId(siteId);

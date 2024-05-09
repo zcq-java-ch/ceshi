@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
+import com.fhs.core.trans.vo.TransPojo;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,7 +17,7 @@ import java.util.Date;
 * @since 1.0.0 2024年4月25日
 */
 @Data
-public class TVehicleExcelVO implements Serializable {
+public class TVehicleExcelVO implements Serializable, TransPojo {
 	private static final long serialVersionUID = 1L;
 
 	/**

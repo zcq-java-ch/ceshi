@@ -353,7 +353,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         //导入时候获取的地址是相对路径 需要拼接服务器路径
         String domain = properties.getConfig().getDomain();
-        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain + file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
+        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile("http://113.250.190.179:8899/upload/20240506/123456.xlsx"), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
             @Override
             public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
                 saveUser(result);

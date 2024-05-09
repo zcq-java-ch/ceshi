@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -195,6 +196,7 @@ public class ExcelUtils {
         //过滤出字典翻译
         fields = fields.stream().filter(field -> TransType.DICTIONARY.equals(field.getAnnotation(Trans.class).type())).collect(Collectors.toList());
         DictionaryTransService dictionaryTransService = SpringUtil.getBean(DictionaryTransService.class);
+        Map<String, String> dictionaryTransMap = dictionaryTransService.getDictionaryTransMap();
         for (T data : dataList) {
             for (Field field : fields) {
                 Trans trans = field.getAnnotation(Trans.class);
@@ -203,7 +205,7 @@ public class ExcelUtils {
                     Field ref = ReflectUtils.getDeclaredField(clazz, trans.ref());
                     ref.setAccessible(true);
                     // 获取字典反向值
-                    String value = dictionaryTransService.getDictionaryTransMap().get(trans.key() + "_" + ref.get(data));
+                    String value = dictionaryTransMap.get("un_trans:"+trans.key() + "_" + ref.get(data));
                     if (StringUtils.isBlank(value)) {
                         continue;
                     }
