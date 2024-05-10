@@ -257,5 +257,50 @@ public class ResourceByLoginController {
         return Result.ok(new ArrayList<>());
     }
 
+    /**
+      * @author Mryang
+      * @description 权限站点下拉 没有本身组织
+      * @date 11:48 2024/5/10
+      * @param
+      * @return
+      */
+    @GetMapping("siteNoOrg")
+    @Operation(summary = "站点下拉无组织")
+    public Result<List<SysOrgVO>> siteNoOrgList(@RequestParam Integer type) {
 
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+        if (ObjectUtil.isNull(user)) {
+            throw new ServerException(ErrorCode.FORBIDDEN);
+        }
+        List<SysOrgVO> result = new ArrayList<>();
+
+        LambdaQueryWrapper<SysOrgEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysOrgEntity::getProperty, type);
+        //获取是否是管理员
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            List<Long> dataScopeList = user.getDataScopeList();
+            if (CollectionUtils.isNotEmpty(dataScopeList)) {
+                //获取是所属数据权限的人员
+                wrapper.in(SysOrgEntity::getId, dataScopeList);
+                List<SysOrgEntity> list = sysOrgService.list(wrapper.in(SysOrgEntity::getId, dataScopeList));
+                if (CollectionUtils.isNotEmpty(list)) {
+                    result.addAll(SysOrgConvert.INSTANCE.convertList(list));
+                }
+            }else {
+                List<SysOrgEntity> list = sysOrgService.list(wrapper
+                        .eq(SysOrgEntity::getId, user.getOrgId()));
+                if (CollectionUtils.isNotEmpty(list)) {
+                    result.addAll(SysOrgConvert.INSTANCE.convertList(list));
+                }
+            }
+
+            return Result.ok(result);
+        }
+
+        List<SysOrgEntity> list = sysOrgService.list(wrapper);
+        result.addAll(SysOrgConvert.INSTANCE.convertList(list));
+        return Result.ok(result);
+
+    }
 }
