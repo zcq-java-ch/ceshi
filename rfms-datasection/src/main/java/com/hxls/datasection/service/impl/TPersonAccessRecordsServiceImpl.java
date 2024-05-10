@@ -649,9 +649,32 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int numberOfFactoryStation = 0;
         List<TPersonAccessRecordsEntity> objects = new ArrayList<>();
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+        // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+        List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
+                .filter(entity -> {
+                    String devicePersonId = entity.getDevicePersonId();
+                    String personName = entity.getPersonName();
+                    // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                    return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                            (personName != null && !personName.isEmpty());
+                })
+                .collect(Collectors.toList());
+
+        // 按照姓名进行分组，当devicePersonId为空时
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+                .collect(Collectors.groupingBy(
+                        entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                return devicePersonId;
+                            } else {
+                                return entity.getPersonName();
+                            }
+                        }
+                ));
 
         // 打印每个分组并更新inNumer变量
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
