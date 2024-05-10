@@ -132,6 +132,9 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "机构名称")
     private String orgName;
 
+    @Schema(description = "机构编号")
+    private String orgCode;
+
     @Schema(description = "全机构结构")
     private String overallOrgStructure;
 

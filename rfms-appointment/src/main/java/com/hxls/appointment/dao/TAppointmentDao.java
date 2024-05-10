@@ -126,4 +126,9 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
     String selectRecordTime(@Param("secondTime")String secondTime ,@Param("carNumber")String carNumber);
 
+   /**
+    * 模糊查询人员
+    */
+
+   List<Long> selectByName(@Param("name")String name);
 }

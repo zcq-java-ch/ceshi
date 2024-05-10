@@ -149,7 +149,7 @@ public class LeadingEnterpriseController {
             Date inputDate = dateFormat.parse(secondTime);
             Date comparisonDate = dateFormat.parse("2024-04-01 00:00:00"); // 注意这里也包含了时分秒
 
-            return inputDate.after(comparisonDate);
+            return !inputDate.after(comparisonDate);
         } catch (ParseException e) {
             e.printStackTrace();
             // 如果解析失败，你可以选择返回一个默认值或者抛出异常，这取决于你的需求

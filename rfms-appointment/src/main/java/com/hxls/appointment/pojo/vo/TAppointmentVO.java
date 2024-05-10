@@ -47,6 +47,10 @@ public class TAppointmentVO implements Serializable {
 	@Schema(description = "提交人组织")
 	private String submitterOrgName;
 
+
+	@Schema(description = "提交人组织id")
+	private Long orgId;
+
 	@Schema(description = "预约站点id")
 	private Long siteId;
 

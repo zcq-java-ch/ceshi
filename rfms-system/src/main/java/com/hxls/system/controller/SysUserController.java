@@ -125,11 +125,10 @@ public class SysUserController {
             if (byId !=null){
                 String orgName = byId.getName();
                 user.setOrgName(orgName);
+                user.setOrgCode(byId.getCode());
                 String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
                 user.setOverallOrgStructure(OverallOrgStructure);
             }
-
-
         }
 
         //用户管理的站点数据权限

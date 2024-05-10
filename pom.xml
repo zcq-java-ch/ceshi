@@ -23,7 +23,7 @@
 		<module>rfms-system</module>
         <module>rfms-gateway</module>
         <module>rfms-datasection</module>
-        <module>rfms-mqserver</module>
+<!--        <module>rfms-mqserver</module>-->
     </modules>
 
     <properties>

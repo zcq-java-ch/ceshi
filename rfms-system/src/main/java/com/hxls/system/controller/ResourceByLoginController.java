@@ -183,7 +183,6 @@ public class ResourceByLoginController {
                     result.addAll(SysOrgConvert.INSTANCE.convertList(list));
                 }
             }
-
             return Result.ok(result);
         }
 
