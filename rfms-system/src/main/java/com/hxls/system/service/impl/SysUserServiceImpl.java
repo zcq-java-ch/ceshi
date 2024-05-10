@@ -6,6 +6,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -37,6 +38,8 @@ import com.squareup.okhttp.*;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +67,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     private final MainPlatformCache mainPlatformCache;
     private final AppointmentFeign appointmentFeign;
     private final StorageProperties properties;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public PageResult<SysUserVO> page(SysUserQuery query) {
@@ -627,5 +631,79 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             throw new ServerException("请求主数据岗位异常");
         }
     }
+
+    @Override
+    public void synUser() {
+        //获取mainAccessToken
+        String accessToken = mainPlatformCache.getAccessToken();
+        //如果mainAccessToken过期的话，就重新更新mainAccessToken
+        if(!StringUtils.isNotEmpty(accessToken)){
+            cardLogin();
+            //更新accessToken
+            accessToken = mainPlatformCache.getAccessToken();
+        }
+
+        String secondRequestUrl = "https://jcmdm.huashijc.com/MainPlatform/travel/employee/query_page";
+        JSONObject params = new JSONObject();
+        params.set("page",1);
+        params.set("pageSize",1000000);
+        params.set("status",1);
+
+        HttpResponse httpResponse = HttpUtil.createPost(secondRequestUrl)
+                .header("access-token", accessToken)
+                .body(params.toString())
+                .execute();
+
+        // 处理响应
+        if (httpResponse.isOk()) {
+            // 获取响应体
+            String body = httpResponse.body();
+            JSONObject rel1 = new JSONObject(body);
+            JSONObject rel2 = JSONUtil.parseObj(rel1.get("data"));
+            List<MainUserVO> mainUserVOS = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<MainUserVO>>() {}, true);
+            for(MainUserVO mainUserVO:mainUserVOS){
+                //判断员工是在职状态
+                if("001".equals(mainUserVO.getRelationStatusCode())){
+                    SysUserEntity one = baseMapper.selectOne(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getUsername, mainUserVO.getPhone()));
+                    if(one == null){
+                        one = baseMapper.selectOne(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile, mainUserVO.getPhone()));
+                    }
+                    List<SysOrgEntity> orgs = sysOrgService.list(new LambdaQueryWrapper<SysOrgEntity>().eq(SysOrgEntity::getCode, mainUserVO.getSysRefs().get(0).get("deptCode")));
+                    //如果已经存在的用户，更新组织
+                    if (one!=null){
+                        if (CollectionUtils.isNotEmpty(orgs)){
+                            one.setOrgId(orgs.get(0).getId());
+                            one.setOrgName(orgs.get(0).getName());
+                            one.setPostName(mainUserVO.getSysRefs().get(0).get("positionName"));
+                            baseMapper.updateById(one);
+                        }
+                    }else{
+                        SysUserEntity user = new SysUserEntity();
+                        user.setCode(mainUserVO.getCode());
+                        user.setUserType("1");
+                        user.setUsername(mainUserVO.getPhone());
+                        user.setRealName(mainUserVO.getName());
+                        user.setPassword(passwordEncoder.encode("hxls123456"));
+                        user.setMobile(mainUserVO.getPhone());
+                        user.setStatus(1);
+                        user.setSuperAdmin(0);
+
+                        if (CollectionUtils.isNotEmpty(orgs)){
+                            user.setOrgId(orgs.get(0).getId());
+                            user.setOrgName(orgs.get(0).getName());
+                            user.setPostName(mainUserVO.getSysRefs().get(0).get("positionName"));
+                        }else{
+                            user.setOrgName("无组织");
+                        }
+                        baseMapper.insert(user);
+                    }
+                }
+
+            }
+        }else {
+            throw new ServerException("同步主数据人员异常");
+        }
+    }
+
 
 }

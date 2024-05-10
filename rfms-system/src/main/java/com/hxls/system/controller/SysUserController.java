@@ -238,7 +238,7 @@ public class SysUserController {
     public Result<String> resetPassword(@RequestBody List<Long> idList) {
         for (Long id : idList) {
             // 重置密码
-            sysUserService.updatePassword(id, passwordEncoder.encode("hxls1234"));
+            sysUserService.updatePassword(id, passwordEncoder.encode("hxls123456"));
         }
 
         return Result.ok();
@@ -253,7 +253,7 @@ public class SysUserController {
         if (vo.getImageUrl().isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
-        sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls1234"), vo.getOrgId());
+        sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls123456"), vo.getOrgId());
 
         return Result.ok();
     }
@@ -290,6 +290,14 @@ public class SysUserController {
     public Result<String> synOrg() {
         sysUserService.synOrg();
 
+        return Result.ok();
+    }
+
+    @PostMapping("synUser")
+    @Operation(summary = "同步主数据人员")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    public Result<String> synUser() {
+        sysUserService.synUser();
         return Result.ok();
     }
 }

@@ -3,6 +3,9 @@ package com.hxls.system.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author zhaohong
  * @version 1.0
@@ -149,4 +152,7 @@ public class MainUserVO {
 
     @Schema(description = "办公电话")
     private String telephone;
+
+    @Schema(description = "组织信息")
+    private List<Map<String,String>> sysRefs;
 }

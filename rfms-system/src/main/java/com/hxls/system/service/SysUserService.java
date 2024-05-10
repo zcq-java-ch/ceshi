@@ -95,4 +95,12 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * @Date 18:08 2024/3/26
      **/
     void synOrg();
+
+
+    /**
+     * @Author zhaohong
+     * @Description  同步人员
+     * @Date 2024年5月10日11:18:36
+     **/
+    void synUser();
 }
