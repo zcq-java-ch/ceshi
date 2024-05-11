@@ -355,46 +355,51 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void importByExcel(String file, String password,Long orgId) {
-        SysOrgEntity byId = sysOrgService.getById(orgId);
+        try{
+            SysOrgEntity byId = sysOrgService.getById(orgId);
 
-        //导入时候获取的地址是相对路径 需要拼接服务器路径
-        String domain = properties.getConfig().getDomain();
-        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile("http://113.250.190.179:8899/upload/20240506/123456.xlsx"), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
-            @Override
-            public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
-                saveUser(result);
-            }
+            //导入时候获取的地址是相对路径 需要拼接服务器路径
+            String domain = properties.getConfig().getDomain();
+            ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain+file), SysUserGysExcelVO.class, new ExcelFinishCallBack<SysUserGysExcelVO>() {
+                @Override
+                public void doAfterAllAnalysed(List<SysUserGysExcelVO> result) {
+                    saveUser(result);
+                }
 
-            @Override
-            public void doSaveBatch(List<SysUserGysExcelVO> result) {
-                saveUser(result);
-            }
+                @Override
+                public void doSaveBatch(List<SysUserGysExcelVO> result) {
+                    saveUser(result);
+                }
 
-            private void saveUser(List<SysUserGysExcelVO> result) {
-                ExcelUtils.parseDict(result);
-                List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(result);
-                sysUserEntities.forEach(user -> {
-                    // 判断手机号是否存在
-                    SysUserEntity  olduser = baseMapper.getByUsername(user.getMobile());
-                    if (olduser != null) {
-                        throw new ServerException("手机号已经存在");
-                    }
-                    // 判断手机号是否存在
-                    olduser = baseMapper.getByMobile(user.getMobile());
-                    if (olduser != null) {
-                        throw new ServerException("手机号已经存在");
-                    }
-                    user.setUserType("2");
-                    user.setPassword(password);
-                    user.setOrgId(orgId);
-                    user.setUsername(user.getMobile());
-                    user.setOrgName(byId.getName());
-                    user.setStatus(1);
-                    user.setSuperAdmin(0);
-                });
-                saveBatch(sysUserEntities);
-            }
-        });
+                private void saveUser(List<SysUserGysExcelVO> result) {
+                    ExcelUtils.parseDict(result);
+                    List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(result);
+                    sysUserEntities.forEach(user -> {
+                        // 判断手机号是否存在
+                        SysUserEntity  olduser = baseMapper.getByUsername(user.getMobile());
+                        if (olduser != null) {
+                            throw new ServerException("手机号已经存在");
+                        }
+                        // 判断手机号是否存在
+                        olduser = baseMapper.getByMobile(user.getMobile());
+                        if (olduser != null) {
+                            throw new ServerException("手机号已经存在");
+                        }
+                        user.setUserType("2");
+                        user.setPassword(password);
+                        user.setOrgId(orgId);
+                        user.setUsername(user.getMobile());
+                        user.setOrgName(byId.getName());
+                        user.setStatus(1);
+                        user.setSuperAdmin(0);
+                    });
+                    saveBatch(sysUserEntities);
+                }
+            });
+        }catch (Exception e){
+            throw new ServerException("导入模板不正确");
+        }
+
 
     }
 

@@ -191,38 +191,42 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void importByExcel(String file,Long siteId){
-        //导入时候获取的地址是相对路径 需要拼接服务器路径
-        String domain = properties.getConfig().getDomain();
+        try{
+            //导入时候获取的地址是相对路径 需要拼接服务器路径
+            String domain = properties.getConfig().getDomain();
 
-        ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain + file), TVehicleExcelVO.class, new ExcelFinishCallBack<TVehicleExcelVO>() {
-            @Override
-            public void doAfterAllAnalysed(List<TVehicleExcelVO> result) {
-                saveTVehicle(result);
-            }
+            ExcelUtils.readAnalysis(ExcelUtils.convertToMultipartFile(domain + file), TVehicleExcelVO.class, new ExcelFinishCallBack<TVehicleExcelVO>() {
+                @Override
+                public void doAfterAllAnalysed(List<TVehicleExcelVO> result) {
+                    saveTVehicle(result);
+                }
 
-            @Override
-            public void doSaveBatch(List<TVehicleExcelVO> result) {
-                saveTVehicle(result);
-            }
+                @Override
+                public void doSaveBatch(List<TVehicleExcelVO> result) {
+                    saveTVehicle(result);
+                }
 
-            private void saveTVehicle(List<TVehicleExcelVO> result) {
-                ExcelUtils.parseDict(result);
-                List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
-                tVehicleEntities.forEach(tVehicle -> {
-                    tVehicle.setSiteId(siteId);
-                    tVehicle.setStatus(1);
+                private void saveTVehicle(List<TVehicleExcelVO> result) {
+                    ExcelUtils.parseDict(result);
+                    List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
+                    tVehicleEntities.forEach(tVehicle -> {
+                        tVehicle.setSiteId(siteId);
+                        tVehicle.setStatus(1);
 
-                    //下发车辆
-                    JSONObject vehicle = new JSONObject();
-                    vehicle.set("sendType","2");
-                    tVehicle.setStationId(siteId);
-                    vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
-                    appointmentFeign.issuedPeople(vehicle);
+                        //下发车辆
+                        JSONObject vehicle = new JSONObject();
+                        vehicle.set("sendType","2");
+                        tVehicle.setStationId(siteId);
+                        vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
+                        appointmentFeign.issuedPeople(vehicle);
 
-                });
-                saveBatch(tVehicleEntities);
-            }
-        });
+                    });
+                    saveBatch(tVehicleEntities);
+                }
+            });
 
+        }catch (Exception e){
+            throw new ServerException("导入模板不正确");
+        }
     }
 }
