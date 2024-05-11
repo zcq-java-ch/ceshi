@@ -23,4 +23,7 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/queryUserInformationUserId")
     JSONObject queryUserInformationUserId(@RequestParam("deviceUserId") String deviceUserId);
+
+    @PostMapping(value = "api/system/queryUserInformationLicensePlate")
+    JSONObject queryUserInformationLicensePlate(@RequestParam("LicensePlate") String LicensePlate);
 }

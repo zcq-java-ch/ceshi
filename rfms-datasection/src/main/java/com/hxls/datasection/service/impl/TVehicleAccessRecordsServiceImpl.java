@@ -7,13 +7,18 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.UserFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.config.StorageImagesProperties;
+import com.hxls.datasection.dao.TPersonAccessRecordsDao;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
+import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.common.utils.RandomStringUtils;
 import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
@@ -32,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,6 +56,9 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
     public StorageImagesProperties properties;
     private final DeviceFeign deviceFeign;
     private final VehicleFeign vehicleFeign;
+    private final AppointmentFeign appointmentFeign;
+    private final UserFeign userFeign;
+    private final TPersonAccessRecordsDao tPersonAccessRecordsDao;
     private final static String CARTYPEXC = "1";
     private final static String CARTYPEHC = "2";
     private final static String CARTYPEGC = "3";
@@ -475,5 +484,126 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         tVehicleAccessLedgerEntity.setOutTime(outData.getRecordTime());
         tVehicleAccessLedgerEntity.setUpdateTime(new Date());
         tVehicleAccessLedgerDao.insert(tVehicleAccessLedgerEntity);
+    }
+
+    @Override
+    public void retinuegenerateRecords(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+        String plateNumber = tVehicleAccessRecordsEntity.getPlateNumber();
+        Date recordTime = tVehicleAccessRecordsEntity.getRecordTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        // 使用 SimpleDateFormat 的 format 方法将 Date 对象转换为 String 对象
+        String dateString = dateFormat.format(recordTime);
+
+        JSONObject jsonObject = appointmentFeign.queryappointmentFormspecifyLicensePlatesAndEntourage(plateNumber, dateString);
+
+        JSONArray jsonArray = jsonObject.getJSONArray("dataArray");
+
+        if (CollectionUtils.isNotEmpty(jsonArray)){
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                Long aLong = jsonObject1.getLong("userId");
+                Long positionId = jsonObject1.getLong("positonId");
+                String positionName = jsonObject1.getString("positionName");
+                String userName = jsonObject1.getString("userName");
+                String externalPersonnel = jsonObject1.getString("externalPersonnel");
+
+                if (StringUtils.isNotEmpty(userName)){
+                    savePersonRecord2(userName, tVehicleAccessRecordsEntity);
+                }else {
+                    if (ObjectUtils.isEmpty(positionId)){
+                        savePersonRecord2(externalPersonnel, tVehicleAccessRecordsEntity);
+                    }else {
+                        savePersonRecord(aLong, positionId, positionName, tVehicleAccessRecordsEntity);
+                    }
+                }
+            }
+        }else {
+            // 预约单没有数据，则需要去找user表，user表没有去找车辆管理表
+            JSONObject userInformationLicensePlate = userFeign.queryUserInformationLicensePlate(plateNumber);
+            if (ObjectUtils.isNotEmpty(userInformationLicensePlate)){
+                savePersonRecordByUser(userInformationLicensePlate, tVehicleAccessRecordsEntity);
+            }else {
+                JSONObject vehicleInformationByLicensePlateNumber = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
+                Long aLong = vehicleInformationByLicensePlateNumber.getLong("driverId");
+                if (ObjectUtils.isNotEmpty(aLong)){
+                    JSONObject userInformationLicenseUser= userFeign.queryUserInformationUserId(aLong.toString());
+                    savePersonRecordByUser(userInformationLicenseUser, tVehicleAccessRecordsEntity);
+                }
+            }
+        }
+    }
+
+    private void savePersonRecord2(String userName, TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+        log.info("供应商车辆入场申请中的司机 存储记录开始");
+        TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
+        tPersonAccessRecordsEntity.setAccessType(tVehicleAccessRecordsEntity.getAccessType());
+        tPersonAccessRecordsEntity.setHeadUrl(tVehicleAccessRecordsEntity.getCarUrl());
+        tPersonAccessRecordsEntity.setRecordTime(tVehicleAccessRecordsEntity.getRecordTime());
+        tPersonAccessRecordsEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
+        tPersonAccessRecordsEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
+        tPersonAccessRecordsEntity.setRecordsId(RandomStringUtils.generateRandomString(32));
+        tPersonAccessRecordsEntity.setPersonName(userName);
+
+        tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
+        log.info("供应商车辆入场申请中的司机 存储记录结束");
+    }
+
+    private void savePersonRecordByUser(JSONObject userInformationLicensePlate, TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+        log.info("用户车辆，记录用户通行记录开始");
+        TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
+        tPersonAccessRecordsEntity.setAccessType(tVehicleAccessRecordsEntity.getAccessType());
+        tPersonAccessRecordsEntity.setHeadUrl(tVehicleAccessRecordsEntity.getCarUrl());
+        tPersonAccessRecordsEntity.setPersonId(userInformationLicensePlate.getLong("userId"));
+        tPersonAccessRecordsEntity.setRecordTime(tVehicleAccessRecordsEntity.getRecordTime());
+        tPersonAccessRecordsEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
+        tPersonAccessRecordsEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
+        tPersonAccessRecordsEntity.setRecordsId(RandomStringUtils.generateRandomString(32));
+        tPersonAccessRecordsEntity.setPositionId(userInformationLicensePlate.getLong("postId"));
+        tPersonAccessRecordsEntity.setPositionName(userInformationLicensePlate.getString("postName"));
+        tPersonAccessRecordsEntity.setCompanyId(userInformationLicensePlate.getLong("orgId"));
+        tPersonAccessRecordsEntity.setCompanyName(userInformationLicensePlate.getString("orgName"));
+        tPersonAccessRecordsEntity.setSupervisorName(userInformationLicensePlate.getString("supervisor"));
+        tPersonAccessRecordsEntity.setIdCardNumber(userInformationLicensePlate.getString("idCard"));
+        tPersonAccessRecordsEntity.setPhone(userInformationLicensePlate.getString("mobile"));
+
+        tPersonAccessRecordsEntity.setBusis(userInformationLicensePlate.getString("busis"));
+        tPersonAccessRecordsEntity.setPersonName(userInformationLicensePlate.getString("personName"));
+        // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+        tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
+        log.info("用户车辆，记录用户通行记录结束");
+    }
+
+    private void savePersonRecord(Long aLong, Long positionId, String positionName, TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+        log.info("随行人间存储记录开始");
+        TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
+        tPersonAccessRecordsEntity.setAccessType(tVehicleAccessRecordsEntity.getAccessType());
+        tPersonAccessRecordsEntity.setHeadUrl(tVehicleAccessRecordsEntity.getCarUrl());
+        tPersonAccessRecordsEntity.setPersonId(aLong);
+        tPersonAccessRecordsEntity.setRecordTime(tVehicleAccessRecordsEntity.getRecordTime());
+        tPersonAccessRecordsEntity.setSiteId(tVehicleAccessRecordsEntity.getSiteId());
+        tPersonAccessRecordsEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
+        tPersonAccessRecordsEntity.setRecordsId(RandomStringUtils.generateRandomString(32));
+        tPersonAccessRecordsEntity.setPositionId(positionId);
+        tPersonAccessRecordsEntity.setPositionName(positionName);
+
+        // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+        String aString = aLong.toString();
+        if (StringUtils.isNotEmpty(aString)){
+            JSONObject userDetail = userFeign.queryUserInformationUserId(aString);
+            if (ObjectUtils.isNotEmpty(userDetail)) {
+                tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
+                tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
+                tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
+                tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
+                tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
+
+                tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+                tPersonAccessRecordsEntity.setPersonName(userDetail.getString("personName"));
+            }
+        }
+        tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
+        log.info("随行人员存储记录结束");
+
     }
 }

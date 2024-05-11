@@ -36,4 +36,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     JSONArray queryTheDetailsOfSiteCar(Long stationId);
 
     void jingchengMakeTaz(String siteId);
+
+    void retinuegenerateRecords(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity);
 }

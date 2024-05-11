@@ -29,6 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -216,11 +217,18 @@ public class AppointmentApiController {
         return objects;
     }
 
-
-
-
-
-
-
+    /**
+      * @author Mryang
+      * @description 通过车牌，与记录时间，查询符合条件的预约单，将随行人员返回
+      * @date 9:32 2024/5/11
+      * @param
+      * @return
+      */
+    @GetMapping("queryappointmentFormspecifyLicensePlatesAndEntourage")
+    @Operation(summary = "查询指定车牌预约单随行人员")
+    public com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(@RequestParam String plateNumber, @RequestParam String recordTime) {
+        com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryappointmentFormspecifyLicensePlatesAndEntourage(plateNumber, recordTime);
+        return objects;
+    }
 
 }

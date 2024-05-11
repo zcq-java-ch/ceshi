@@ -14,6 +14,7 @@ import com.hxls.framework.mybatis.service.BaseService;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -119,4 +120,6 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
     com.alibaba.fastjson.JSONObject queryStatisticsallPeopleReservation();
 
     com.alibaba.fastjson.JSONObject queryTotalAppointments(Long siteId);
+
+    com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(String plateNumber, String recordTime);
 }
