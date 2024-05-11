@@ -15,4 +15,6 @@ public class params {
 
     private String stationName;
 
+    private String stationCode;
+
 }

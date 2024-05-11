@@ -215,4 +215,12 @@ public class AppointmentApiController {
         com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryTotalAppointments(siteId);
         return objects;
     }
+
+
+
+
+
+
+
+
 }

@@ -16,5 +16,9 @@ public class recordOutInfo {
     private String weightTime;
     private String code;
     private String weightNumber;
+    private String proTime;
+    private String signNum;
+    private String proCode;
+    private String startTime;
 
 }

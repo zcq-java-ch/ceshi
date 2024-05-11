@@ -135,7 +135,7 @@
 
 
     <select id="selectByName" resultType="java.lang.Long">
-        select id from sys_user where real_name like concat('%', #{name}, '%') AND deleted = 0 AND status = 1
+        select t.id from sys_user u join t_appointment t on u.id = t.creator where u.real_name like concat('%', #{name}, '%') AND u.deleted = 0 AND u.status = 1
     </select>
 
 

@@ -71,7 +71,7 @@ public class AppointmentAuditController {
 
     @GetMapping("{id}")
     @Operation(summary = "信息")
-    @PreAuthorize("hasAuthority('audit:appointment:info')")
+    //@PreAuthorize("hasAuthority('audit:appointment:info')")
     public Result<TAppointmentVO> getAll(@PathVariable("id") Long id){
         TAppointmentVO vo = tAppointmentService.getDetailById(id);
         return Result.ok(vo);
@@ -79,7 +79,7 @@ public class AppointmentAuditController {
 
     @GetMapping("/car/{id}")
     @Operation(summary = "车辆详情")
-    @PreAuthorize("hasAuthority('audit:appointmentCar:info')")
+    //@PreAuthorize("hasAuthority('audit:appointmentCar:info')")
     public Result<List<TAppointmentVehicleVO>> getInfo(@PathVariable("id") Long id) {
         List<TAppointmentVehicleVO> result = tAppointmentService.getVehicleListById(id);
         return Result.ok(result);

@@ -66,6 +66,7 @@ public class LeadingEnterpriseController {
     @PreAuthorize("hasAuthority('leading:record:page')")
     public Result<?> selectInByTime(@RequestBody PageParams data) {
         System.out.println("开始查询记录");
+
         try {
             if (ObjectUtil.isNull(token)) {
                 getToken();
@@ -73,6 +74,7 @@ public class LeadingEnterpriseController {
             Map<String, String> map = new HashMap<>();
             map.put("accessToken", token);
             map.put("apiCode", "getWeightInfoCustom");
+            //修改新方法
             map.put("httptype", "POST");
             params params = new params();
             params.setStartTime(data.getStartTime());
@@ -297,12 +299,13 @@ public class LeadingEnterpriseController {
         }
         Map<String, String> map = new HashMap<>();
         map.put("accessToken", token);
-        map.put("apiCode", "queryOutStationTask");
+        map.put("apiCode", "queryLogisticData");
         map.put("httptype", "POST");
         params params = new params();
         params.setStartTime(startTime);
         params.setEndTime(endTime);
         params.setStationName("精城站");
+        params.setStationCode("HJ03");
         map.put("params", JSONUtil.toJsonStr(params));
 
         //获取过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
@@ -312,12 +315,12 @@ public class LeadingEnterpriseController {
         for (recordOutInfo datum : bean.getData()) {
             recordInfo recordInfo = new recordInfo();
             recordInfo.setCarNum(datum.getCarNo());
-            recordInfo.setFirstTime(datum.getWeightTime());
-            recordInfo.setSecondTime(datum.getWeightTime());
+            recordInfo.setFirstTime(datum.getStartTime() == null ? datum.getProTime() : datum.getStartTime());
+            recordInfo.setSecondTime(datum.getProTime());
             recordInfo.setRepertory(datum.getProductName());
-            recordInfo.setFreightVolume(new BigDecimal(datum.getFaceNum()));
+            recordInfo.setFreightVolume(new BigDecimal(datum.getSignNum()));
             recordInfo.setUnit("m³");
-            recordInfo.setCode(datum.getCode());
+            recordInfo.setCode(datum.getProCode());
             result.add(recordInfo);
         }
 
@@ -381,6 +384,15 @@ public class LeadingEnterpriseController {
                 return "未标注";
             }
         }
+
+    }
+
+
+    public static void main(String[] args) {
+
+
+
+
 
     }
 

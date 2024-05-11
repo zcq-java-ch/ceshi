@@ -241,6 +241,28 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public void save(TAppointmentVO vo) {
         //主表转换
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
+        //检查预约单是否有未完成得预约信息
+        List<TAppointmentEntity> tAppointmentEntityList = list(new LambdaQueryWrapper<TAppointmentEntity>().eq(TAppointmentEntity::getSiteId , vo.getSiteId()).le(TAppointmentEntity::getStartTime ,vo.getStartTime()).ge(TAppointmentEntity::getEndTime ,vo.getEndTime()));
+
+//        if (CollectionUtils.isNotEmpty(tAppointmentEntityList)){
+//            List<Long> list = tAppointmentEntityList.stream().map(TAppointmentEntity::getId).collect(Collectors.toList());
+//            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId , list));
+//            List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
+//            List<String> names =new ArrayList<>();
+//            vo.getPersonnelList().forEach(item ->{
+//                Long userId = item.getUserId();
+//                if (userIds.contains(userId)){
+//                    names.add(item.getExternalPersonnel());
+//                }
+//            });
+//            if (CollectionUtils.isNotEmpty()){
+
+//            String join = StrUtil.join(",", names);
+//            // 如果连接后的字符串长度大于 0
+//            throw new ServerException( join +"在预约时间段内有未完成的预约单");
+//        }
+
+
         //默认启用
         entity.setStatus(Constant.ENABLE);
         //插入主预约信息单
@@ -279,7 +301,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
 
             if (vo.getReviewStatus().equals(Constant.PASS)) {
-                //直接下发人脸  TODO
 
                 TAppointmentEntity byId = getById(id);
                 List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(
@@ -305,6 +326,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("faceUrl", domain + personnel.getHeadUrl());
                                 entries.set("masterIp", masterIp);
                                 entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
+                                entries.set("password", jsonObjects.get(0).get("password"));
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
 
                                 //查看人员表中是否带有车辆信息
@@ -536,27 +558,37 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     Long appointmentId = tAppointmentPersonnel.getAppointmentId();
                     List<TAppointmentPersonnel> appointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, appointmentId));
                     if (CollectionUtils.isNotEmpty(appointmentPersonnels)){
-                        if (appointmentPersonnels.get(0).getExternalPersonnel().equals(query.getSubmitterName())){
+                        if (appointmentPersonnels.get(0).getExternalPersonnel().contains(query.getSubmitterName())){
                             ids.add(appointmentId);
                         }
                     }
                 }
+                List<Long> idList = new ArrayList<>();
+
                 if (CollectionUtils.isNotEmpty(ids)){
                     List<TAppointmentEntity> allAppointmentList = listByIds(ids);
                     //排除掉 人员派驻
                     List<Long> result = allAppointmentList.stream().filter(item -> !item.getAppointmentType().equals("1")).map(TAppointmentEntity::getId).collect(Collectors.toList());
                     if (CollectionUtils.isNotEmpty(result)){
-                        wrapper.in(TAppointmentEntity::getId, result);
+                        idList.addAll(result);
                     }
                 }
+                //人员派驻查询提交人的方式不同
+                List<Long> longs = appointmentDao.selectByName(query.getSubmitterName());
 
-            }
-            //人员派驻查询提交人的方式不同
-            List<Long> longs = appointmentDao.selectByName(query.getSubmitterName());
+                if (CollectionUtils.isNotEmpty(longs)){
+                    idList.addAll(longs);
+                }
+                wrapper.in(CollectionUtils.isNotEmpty(idList),TAppointmentEntity::getId , idList);
 
-            if (CollectionUtils.isNotEmpty(longs)){
-                wrapper.in(TAppointmentEntity::getCreator , longs);
+                if (CollectionUtils.isEmpty(idList)){
+                    wrapper.eq(TAppointmentEntity::getId , Constant.EMPTY);
+                }
+
+            }else {
+                wrapper.eq(TAppointmentEntity::getId , Constant.EMPTY);
             }
+
         }
         return wrapper;
 
@@ -600,6 +632,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             entries.set("faceUrl", domain + personnel.getHeadUrl());
                             entries.set("masterIp", masterIp);
                             entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
+                            entries.set("password", jsonObjects.get(0).get("password"));
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
 
                             //查看人员表中是否带有车辆信息
