@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 
 @FeignClient(name = ServerNames.APPOINTMENT_SERVER_NAME)
 public interface AppointmentFeign {
@@ -77,4 +79,7 @@ public interface AppointmentFeign {
     JSONObject queryStatisticsallPeopleReservation();
     @GetMapping("api/appointment/queryTotalAppointments")
     public com.alibaba.fastjson.JSONObject queryTotalAppointments(@RequestParam Long siteId);
+
+    @GetMapping("api/appointment/queryappointmentFormspecifyLicensePlatesAndEntourage")
+    public com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(@RequestParam String plateNumber, @RequestParam String recordTime);
 }

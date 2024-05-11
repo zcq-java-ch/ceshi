@@ -5,7 +5,9 @@ import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.vo.PageResult;
 import com.hxls.api.vo.TAppointmentVO;
+import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.DataDashboardsService;
+import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.framework.common.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class DataDashboardsController {
     private final DataDashboardsService dataDashboardsService;
     private final AppointmentFeign appointmentFeign;
+    private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
 
     /**
       * @author: Mryang
@@ -139,5 +142,12 @@ public class DataDashboardsController {
     public Result<JSONObject> guardSum(@RequestParam Long id) {
         JSONObject entries = appointmentFeign.appointmentSum(id , 1L);
         return Result.ok(entries);
+    }
+
+    @PostMapping("/test")
+    @Operation(summary = "测试随行人员生成数据")
+    public Result<JSONObject> 测试随性人员生成记录(@RequestBody TVehicleAccessRecordsEntity entity) {
+        tVehicleAccessRecordsService.retinuegenerateRecords(entity);
+        return Result.ok();
     }
 }

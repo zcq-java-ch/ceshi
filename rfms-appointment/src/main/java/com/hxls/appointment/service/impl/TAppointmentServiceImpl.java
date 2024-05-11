@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -1040,4 +1041,67 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
         return jsonObject;
     }
+
+    @Override
+    public com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(String plateNumber, String recordTime) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        // 开始时间小于等于 recordTime
+        objectLambdaQueryWrapper.le(TAppointmentEntity::getStartTime, recordTime);
+        // 结束时间大于等于 recordTime
+        objectLambdaQueryWrapper.ge(TAppointmentEntity::getEndTime, recordTime);
+        List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+
+        List<Long> list1 = tAppointmentEntities.stream()
+                .map(TAppointmentEntity::getId)
+                .toList();
+
+        LambdaQueryWrapper<TAppointmentVehicle> appointmentVehicleLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        appointmentVehicleLambdaQueryWrapper.eq(TAppointmentVehicle::getStatus, 1);
+        appointmentVehicleLambdaQueryWrapper.eq(TAppointmentVehicle::getDeleted, 0);
+        appointmentVehicleLambdaQueryWrapper.eq(TAppointmentVehicle::getPlateNumber, plateNumber);
+        appointmentVehicleLambdaQueryWrapper.in(TAppointmentVehicle::getAppointmentId, list1);
+        List<TAppointmentVehicle> tAppointmentVehicles = tAppointmentVehicleService.list(appointmentVehicleLambdaQueryWrapper);
+        com.alibaba.fastjson.JSONArray objects = new com.alibaba.fastjson.JSONArray();
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentVehicles)){
+            List<Long> appointmentIdList = tAppointmentVehicles.stream()
+                    .map(TAppointmentVehicle::getAppointmentId)
+                    .toList();
+            LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+            personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, appointmentIdList);
+            List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+                for (int i = 0; i < tAppointmentPersonnelList2.size(); i++) {
+                    TAppointmentPersonnel tAppointmentPersonnel = tAppointmentPersonnelList2.get(i);
+
+                    com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+                    jsonObject.put("userId", tAppointmentPersonnel.getUserId());
+                    jsonObject.put("positionId", tAppointmentPersonnel.getPositionId());
+                    jsonObject.put("positionName", tAppointmentPersonnel.getPositionName());
+                    jsonObject.put("externalPersonnel", tAppointmentPersonnel.getExternalPersonnel());
+                    jsonObject.put("userName", null);
+                    objects.add(jsonObject);
+                }
+            }else {
+                // 如果person里面为空，说明是供应商车辆入场申请，也要生成记录，只不过只有一个名字而已
+                TAppointmentVehicle tAppointmentVehicle = tAppointmentVehicles.get(0);
+                com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+                jsonObject.put("userId", null);
+                jsonObject.put("positionId", null);
+                jsonObject.put("positionName", null);
+                jsonObject.put("externalPersonnel", null);
+                jsonObject.put("userName", tAppointmentVehicle.getPassenger());
+                objects.add(jsonObject);
+
+            }
+        }
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("dataArray", objects);
+        return jsonObject;
+    }
+
+
 }
