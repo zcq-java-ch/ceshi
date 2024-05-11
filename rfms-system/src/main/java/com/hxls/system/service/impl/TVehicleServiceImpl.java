@@ -226,7 +226,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             });
 
         }catch (Exception e){
-            throw new ServerException("导入模板不正确");
+            throw new ServerException("导入数据不正确");
         }
     }
 }
