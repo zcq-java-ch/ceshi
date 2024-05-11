@@ -223,7 +223,7 @@ public class ResourceByLoginController {
     @Operation(summary = "全量组织下拉")
     public Result<List<SysOrgVO>> orgAll() {
         //配置查询权限
-        List<SysOrgEntity> list = sysOrgService.list();
+        List<SysOrgEntity> list = sysOrgService.list( new LambdaQueryWrapper<SysOrgEntity>().eq(SysOrgEntity::getStatus , Constant.ENABLE));
         return Result.ok(TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(list)));
     }
 
