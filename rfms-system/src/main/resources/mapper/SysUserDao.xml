@@ -59,6 +59,9 @@
 		<if test="username != null and username.trim() != ''">
 			and t1.username like concat('%', #{username}, '%')
 		</if>
+		<if test="realName != null and realName.trim() != ''">
+			and t1.real_name like concat('%', #{realName}, '%')
+		</if>
 		<if test="mobile != null and mobile.trim() != ''">
 			and t1.mobile like concat('%', #{mobile}, '%')
 		</if>

@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.api.feign.appointment.AppointmentFeign;
@@ -17,6 +18,8 @@ import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.TVehicleDao;
+import com.hxls.system.entity.SysDictDataEntity;
+import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.service.TVehicleService;
@@ -61,6 +64,14 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     @Override
     public void save(TVehicleVO vo) {
+        //判断车牌号有没有，车牌号只能被创建一次
+        long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
+                .eq("license_plate", vo.getLicensePlate())
+                .eq("deleted", 0));
+        if (valusCount > 0) {
+            throw new ServerException("当前车牌号已存在，不能重复添加");
+        }
+
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
         baseMapper.insert(entity);
@@ -77,6 +88,12 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     @Override
     public void update(TVehicleVO vo) {
+        // 判断车牌号是否存在
+        TVehicleEntity byLicensePlate = baseMapper.getByLicensePlate(vo.getLicensePlate());
+        if (byLicensePlate != null && !byLicensePlate.getId().equals(vo.getId())) {
+            throw new ServerException("当前车牌号已存在，不能重复添加");
+        }
+
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
         //修改之前要判断是否更换了厂站
@@ -210,6 +227,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     ExcelUtils.parseDict(result);
                     List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(result);
                     tVehicleEntities.forEach(tVehicle -> {
+                        //判断车牌号有没有，车牌号只能被创建一次
+                        long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
+                                .eq("license_plate", tVehicle.getLicensePlate())
+                                .eq("deleted", 0));
+                        if (valusCount > 0) {
+                            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                        }
                         tVehicle.setSiteId(siteId);
                         tVehicle.setStatus(1);
 
@@ -226,7 +250,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             });
 
         }catch (Exception e){
-            throw new ServerException("导入模板不正确");
+            throw new ServerException("导入数据不正确");
         }
     }
 }

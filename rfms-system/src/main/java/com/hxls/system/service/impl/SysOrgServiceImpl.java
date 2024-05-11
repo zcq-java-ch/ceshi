@@ -216,12 +216,14 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             entity.setId(vo.getId());
             if (vo.getStatus() != null) {
                 entity.setStatus(vo.getStatus());
+                // 更新实体
+                baseMapper.updateById(entity);
             }
             if (vo.getDeleted() != null) {
-                entity.setDeleted(vo.getDeleted());
+                // 更新实体
+                baseMapper.deleteById(entity);
             }
-            // 更新实体
-            this.updateById(entity);
+
         }
     }
 }
