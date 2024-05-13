@@ -38,12 +38,12 @@ public class LeadingEnterpriseController {
     private static String token;
 
     @Resource
-    private  RedisCache redisCache;
+    private RedisCache redisCache;
     /**
      * 自定义sql方法的mapper
      */
     @Resource
-    private  TAppointmentDao appointmentDao;
+    private TAppointmentDao appointmentDao;
 
 
     private static void getToken() {
@@ -81,7 +81,7 @@ public class LeadingEnterpriseController {
             params.setEndTime(data.getEndTime());
             params.setReceiveStation(data.getReceiveStation());
             map.put("params", JSONUtil.toJsonStr(params));
-            if (redisCache.get(data.getStartTime()+data.getEndTime()) != null){
+            if (redisCache.get(data.getStartTime() + data.getEndTime()) != null) {
                 return CacheData(data);
             }
 
@@ -103,12 +103,12 @@ public class LeadingEnterpriseController {
 
             //todo 还需要通过车牌号找到车辆基础信息
             List<String> carNumberList = bean.getData().stream().map(recordInfo::getCarNum).toList();
-            if (CollectionUtil.isNotEmpty(carNumberList)){
-                getBasicInformation(recordInfos, carNumberList , data);
+            if (CollectionUtil.isNotEmpty(carNumberList)) {
+                getBasicInformation(recordInfos, carNumberList, data);
             }
 
-            if (StrUtil.isNotEmpty(data.getCdName())){
-                recordInfos.removeIf(item-> item.getCdName()==null || !item.getCdName().equals(data.getCdName()));
+            if (StrUtil.isNotEmpty(data.getCdName())) {
+                recordInfos.removeIf(item -> item.getCdName() == null || !item.getCdName().equals(data.getCdName()));
             }
 
 
@@ -121,11 +121,19 @@ public class LeadingEnterpriseController {
 
             //如果有过车数据，罐车就替换最近的过车数据
             for (recordInfo item : recordInfos1) {
-                if(item.getUnit().equals("m³") && checkTime(item.getSecondTime()) && item.getFirstTime().equals(item.getSecondTime()) ){
-                    String selectRecordTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum());
-                    if (StrUtil.isNotEmpty(selectRecordTime)){
-                        item.setFirstTime(selectRecordTime);
+                if (item.getUnit().equals("m³") && checkTime(item.getFirstTime())) {
+
+                    //用浇注时间
+                    //小于浇注时间的前一个进场时间
+                    String firstTime = appointmentDao.selectFirstTime(item.getFirstTime(), item.getCarNum());
+                    //大于浇注时间的
+                    String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
+
+                    // String firstTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum(),"1");
+                    if (StrUtil.isNotEmpty(firstTime)) {
+                        item.setFirstTime(firstTime);
                     }
+                    item.setSecondTime(secondTime == null ? "" : secondTime);
                 }
             }
 
@@ -142,6 +150,7 @@ public class LeadingEnterpriseController {
 
     /**
      * 比较时间是否是在设备安装时间之前
+     *
      * @param secondTime
      * @return
      */
@@ -151,7 +160,7 @@ public class LeadingEnterpriseController {
             Date inputDate = dateFormat.parse(secondTime);
             Date comparisonDate = dateFormat.parse("2024-04-01 00:00:00"); // 注意这里也包含了时分秒
 
-            return !inputDate.after(comparisonDate);
+            return inputDate.after(comparisonDate);
         } catch (ParseException e) {
             e.printStackTrace();
             // 如果解析失败，你可以选择返回一个默认值或者抛出异常，这取决于你的需求
@@ -159,7 +168,7 @@ public class LeadingEnterpriseController {
         }
     }
 
-    private boolean getDate(){
+    private boolean getDate() {
         // 获取当前日期
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -180,8 +189,8 @@ public class LeadingEnterpriseController {
 
         String string = redisCache.get(data.getStartTime() + data.getEndTime()).toString();
         List<recordInfo> recordInfos = JSONUtil.toList(string, recordInfo.class);
-        if (StrUtil.isNotEmpty(data.getCdName())){
-            recordInfos.removeIf(item-> item.getCdName() ==null || !item.getCdName().equals(data.getCdName()));
+        if (StrUtil.isNotEmpty(data.getCdName())) {
+            recordInfos.removeIf(item -> item.getCdName() == null || !item.getCdName().equals(data.getCdName()));
         }
 
         int startIndex = (data.getPage() - 1) * data.getPageSize();
@@ -189,7 +198,8 @@ public class LeadingEnterpriseController {
         int endIndex = Math.min(startIndex + data.getPageSize(), recordInfos.size());
 
         //List<recordInfo> recordInfos1 = recordInfos;
-        List<recordInfo>  recordInfos1 = recordInfos.subList(startIndex, endIndex);
+        List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
+
 
         //创建时间等于出场时间加1s
         recordInfos1.forEach(item -> {
@@ -197,6 +207,26 @@ public class LeadingEnterpriseController {
             String s = addOneSecond(secondTime);
             item.setCreatTime(s);
         });
+
+        //如果有过车数据，罐车就替换最近的过车数据
+        for (recordInfo item : recordInfos1) {
+            if (item.getUnit().equals("m³") && checkTime(item.getFirstTime())) {
+
+                //用浇注时间
+                //小于浇注时间的前一个进场时间
+                String firstTime = appointmentDao.selectFirstTime(item.getFirstTime(), item.getCarNum());
+                //大于浇注时间的
+                String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
+
+                // String firstTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum(),"1");
+                if (StrUtil.isNotEmpty(firstTime)) {
+                    item.setFirstTime(firstTime);
+                }
+                item.setSecondTime(secondTime == null ? "" : secondTime);
+            }
+        }
+
+
         pageInfo.setRecords(recordInfos1);
         pageInfo.setTotal(recordInfos.size());
         pageInfo.setCurrent(data.getPage());
@@ -211,16 +241,16 @@ public class LeadingEnterpriseController {
         JSONObject entries = JSONUtil.parseObj(post);
         List<TVehicleVO> data = entries.getBeanList("data", TVehicleVO.class);
 
-        Map<String , TVehicleVO> map = new HashMap<>();
-        data.forEach(item -> map.put(item.getLicensePlate() , item));
+        Map<String, TVehicleVO> map = new HashMap<>();
+        data.forEach(item -> map.put(item.getLicensePlate(), item));
 
-        recordInfos.forEach(item ->{
+        recordInfos.forEach(item -> {
             TVehicleVO tVehicleVO = map.get(item.getCarNum());
             item.setDrivingLicense("");
             item.setVIN("");
             item.setEngineNumber("");
             item.setEmissionStandard("");
-            if (ObjectUtil.isNotNull(tVehicleVO)){
+            if (ObjectUtil.isNotNull(tVehicleVO)) {
                 item.setDrivingLicense(tVehicleVO.getLicenseImage());
                 item.setVIN(tVehicleVO.getVinNumber());
                 item.setEngineNumber(tVehicleVO.getEngineNumber());
@@ -230,8 +260,8 @@ public class LeadingEnterpriseController {
                 //判断是否超重
                 BigDecimal freightVolume = item.getFreightVolume();
                 BigDecimal bigDecimal = new BigDecimal(tVehicleVO.getMaxCapacity());
-                if (bigDecimal.compareTo(freightVolume) < 0 ) {
-                    if (item.getUnit().equals("t")){
+                if (bigDecimal.compareTo(freightVolume) < 0) {
+                    if (item.getUnit().equals("t")) {
                         bigDecimal = generateRandomDecimal(bigDecimal);
                     }
                     item.setFreightVolume(bigDecimal);
@@ -253,17 +283,16 @@ public class LeadingEnterpriseController {
         });
 
         //隔离车辆的数据
-        if (getDate()){
-            recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765")  || item.getCarNum().contains("WZ"));
+        if (getDate()) {
+            recordInfos.removeIf(item -> item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765") || item.getCarNum().contains("WZ"));
         }
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
-        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 300);
+        redisCache.set(data1.getStartTime() + data1.getEndTime(), JSONUtil.toJsonStr(objects), 300);
 
     }
 
     /**
-     *
      * @param bigDecimal
      * @return
      */
@@ -322,7 +351,7 @@ public class LeadingEnterpriseController {
         for (recordOutInfo datum : bean.getData()) {
             recordInfo recordInfo = new recordInfo();
             recordInfo.setCarNum(datum.getCarNo());
-            if (checDate(datum.getProTime() , startTime)){
+            if (checDate(datum.getProTime(), startTime)) {
                 continue;
             }
             recordInfo.setFirstTime(datum.getProTime());
@@ -339,6 +368,7 @@ public class LeadingEnterpriseController {
 
     /**
      * 比对时间
+     *
      * @param proTime
      * @param startTime
      * @return
@@ -369,39 +399,53 @@ public class LeadingEnterpriseController {
     }
 
 
-
     @PostMapping("export")
-    public void export(@RequestBody PageParams data){
+    public void export(@RequestBody PageParams data) {
 
-        if (redisCache.get(data.getStartTime() + data.getEndTime()) ==null) {
+        if (redisCache.get(data.getStartTime() + data.getEndTime()) == null) {
             throw new ServerException("请先点击搜索,已便获取最新数据");
         }
 
         String string = redisCache.get(data.getStartTime() + data.getEndTime()).toString();
         List<recordInfo> recordInfos = JSONUtil.toList(string, recordInfo.class);
 
-        if (StrUtil.isNotEmpty(data.getCdName())){
-            recordInfos.removeIf(item-> item.getCdName() ==null || !item.getCdName().equals(data.getCdName()));
+        if (StrUtil.isNotEmpty(data.getCdName())) {
+            recordInfos.removeIf(item -> item.getCdName() == null || !item.getCdName().equals(data.getCdName()));
         }
 
         for (recordInfo recordInfo : recordInfos) {
             //emissionStandard
-            recordInfo.setEmissionStandard( convertData(recordInfo.getEmissionStandard()));
+            recordInfo.setEmissionStandard(convertData(recordInfo.getEmissionStandard()));
 
             if (recordInfo.getUnit().equals("t")) {
                 recordInfo.setFreightVolume(recordInfo.getFreightVolume().setScale(2, RoundingMode.HALF_UP));
-            }else {
+            } else {
                 recordInfo.setFreightVolume(recordInfo.getFreightVolume().setScale(0, RoundingMode.HALF_UP));
+            }
+
+            //如果有过车数据，罐车就替换最近的过车数据
+
+            if (recordInfo.getUnit().equals("m³") && checkTime(recordInfo.getFirstTime())) {
+                //用浇注时间
+                //小于浇注时间的前一个进场时间
+                String firstTime = appointmentDao.selectFirstTime(recordInfo.getFirstTime(), recordInfo.getCarNum());
+                //大于浇注时间的
+                String secondTime = appointmentDao.selectSecondTime(recordInfo.getFirstTime(), recordInfo.getCarNum());
+
+                if (StrUtil.isNotEmpty(firstTime)) {
+                    recordInfo.setFirstTime(firstTime);
+                }
+                recordInfo.setSecondTime(secondTime == null ? "" : secondTime);
             }
         }
 
-       // ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfoList);
-        ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfos);
+        // ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfoList);
+        ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()), null, recordInfos);
 
     }
 
     private String convertData(String emissionStandard) {
-        switch (emissionStandard){
+        switch (emissionStandard) {
             case "1" -> {
                 return "国Ⅰ";
             }

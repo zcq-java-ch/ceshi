@@ -129,8 +129,12 @@
     </select>
 
 
-    <select id="selectRecordTime" resultType="java.lang.String">
-        SELECT record_time FROM t_vehicle_access_records WHERE access_type =1 AND plate_number = #{carNumber} AND record_time &lt; #{secondTime}  ORDER BY record_time LIMIT 1;
+    <select id="selectFirstTime" resultType="java.lang.String">
+        SELECT record_time FROM t_vehicle_access_records WHERE access_type = 1 AND plate_number = #{carNumber} AND record_time &lt; #{secondTime}  ORDER BY record_time desc LIMIT 1;
+    </select>
+
+    <select id="selectSecondTime" resultType="java.lang.String">
+        SELECT record_time FROM t_vehicle_access_records WHERE access_type = 2 AND plate_number = #{carNumber} AND record_time &gt; #{secondTime}  ORDER BY record_time  LIMIT 1;
     </select>
 
 

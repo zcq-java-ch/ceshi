@@ -124,7 +124,13 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     * 通过时间去查询最近的入场
     * @param secondTime
     */
-    String selectRecordTime(@Param("secondTime")String secondTime ,@Param("carNumber")String carNumber);
+    String selectFirstTime(@Param("secondTime")String secondTime ,@Param("carNumber")String carNumber);
+
+   /**
+    * 通过时间去查询最近的出场
+    * @param secondTime
+    */
+   String selectSecondTime(@Param("secondTime")String secondTime ,@Param("carNumber")String carNumber);
 
    /**
     * 模糊查询人员
