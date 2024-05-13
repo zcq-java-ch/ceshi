@@ -99,7 +99,7 @@ public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAcc
         wrapper.eq("status",1);
         wrapper.eq("deleted",0);
         wrapper.eq(ObjectUtil.isNotEmpty(query.getSiteId()),"site_id",query.getSiteId());
-        wrapper.eq(StringUtils.isNotBlank(query.getPlateNumber()), "plate_number",query.getPlateNumber());
+        wrapper.like(StringUtils.isNotBlank(query.getPlateNumber()), "plate_number",query.getPlateNumber());
         wrapper.eq(StringUtils.isNotBlank(query.getVehicleModel()), "vehicle_model",query.getVehicleModel());
         wrapper.like(StringUtils.isNotBlank(query.getFleetName()), "fleet_name",query.getFleetName());
         // 检查数组是否为空，如果不为空再调用 between 方法
