@@ -101,9 +101,12 @@ public class TAppointmentVO implements Serializable {
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date createTime;
 
-
 	@Schema(description = "更新者")
 	private Long updater;
+
+
+	@Schema(description = "更新者")
+	private String updaterName;
 
 
 	@Schema(description = "更新时间")

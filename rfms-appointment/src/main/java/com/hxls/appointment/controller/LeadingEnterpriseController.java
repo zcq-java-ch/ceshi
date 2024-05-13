@@ -121,7 +121,7 @@ public class LeadingEnterpriseController {
 
             //如果有过车数据，罐车就替换最近的过车数据
             for (recordInfo item : recordInfos1) {
-                if(item.getUnit().equals("m³") && checkTime(item.getSecondTime())){
+                if(item.getUnit().equals("m³") && checkTime(item.getSecondTime()) && item.getFirstTime().equals(item.getSecondTime()) ){
                     String selectRecordTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum());
                     if (StrUtil.isNotEmpty(selectRecordTime)){
                         item.setFirstTime(selectRecordTime);
@@ -231,6 +231,9 @@ public class LeadingEnterpriseController {
                 BigDecimal freightVolume = item.getFreightVolume();
                 BigDecimal bigDecimal = new BigDecimal(tVehicleVO.getMaxCapacity());
                 if (bigDecimal.compareTo(freightVolume) < 0 ) {
+                    if (item.getUnit().equals("t")){
+                        bigDecimal = generateRandomDecimal(bigDecimal);
+                    }
                     item.setFreightVolume(bigDecimal);
                 }
             }
@@ -251,26 +254,30 @@ public class LeadingEnterpriseController {
 
         //隔离车辆的数据
         if (getDate()){
-            recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765"));
+            recordInfos.removeIf(item->item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765")  || item.getCarNum().contains("WZ"));
         }
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
-        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 1800);
+        redisCache.set( data1.getStartTime() + data1.getEndTime() , JSONUtil.toJsonStr(objects) , 300);
 
     }
 
     /**
      *
-     * @param subtract
      * @param bigDecimal
      * @return
      */
-    private BigDecimal generateRandomDecimal(BigDecimal subtract, BigDecimal bigDecimal) {
+    private BigDecimal generateRandomDecimal(BigDecimal bigDecimal) {
+        // 生成一个随机数，范围为 [0, 1)
         Random random = new Random();
-        // 生成一个 [0, 1) 之间的随机数
         double randomValue = random.nextDouble();
-        // 计算随机小数在指定范围内的值
-        return subtract.add(bigDecimal.subtract(subtract).multiply(new BigDecimal(randomValue)));
+
+        // 生成两位小数的 BigDecimal 对象
+        BigDecimal randomDecimal = new BigDecimal(randomValue).setScale(2, RoundingMode.DOWN);
+
+        // 计算结果
+        BigDecimal result = bigDecimal.subtract(randomDecimal);
+        return result.setScale(2, RoundingMode.DOWN);
     }
 
     public static String addOneSecond(String dateString) {
@@ -315,8 +322,11 @@ public class LeadingEnterpriseController {
         for (recordOutInfo datum : bean.getData()) {
             recordInfo recordInfo = new recordInfo();
             recordInfo.setCarNum(datum.getCarNo());
-            recordInfo.setFirstTime(datum.getStartTime() == null ? datum.getProTime() : datum.getStartTime());
-            recordInfo.setSecondTime(datum.getProTime());
+            if (checDate(datum.getProTime() , startTime)){
+                continue;
+            }
+            recordInfo.setFirstTime(datum.getProTime());
+            recordInfo.setSecondTime(datum.getStartTime() == null ? datum.getProTime() : datum.getStartTime());
             recordInfo.setRepertory(datum.getProductName());
             recordInfo.setFreightVolume(new BigDecimal(datum.getSignNum()));
             recordInfo.setUnit("m³");
@@ -325,6 +335,25 @@ public class LeadingEnterpriseController {
         }
 
         return result;
+    }
+
+    /**
+     * 比对时间
+     * @param proTime
+     * @param startTime
+     * @return
+     */
+    private boolean checDate(String proTime, String startTime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date proDate = sdf.parse(proTime);
+            Date startDate = sdf.parse(startTime);
+            return proDate.before(startDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            // 解析日期字符串出错，你可以根据实际情况处理异常
+            return false;
+        }
     }
 
 
@@ -342,9 +371,20 @@ public class LeadingEnterpriseController {
 
 
     @PostMapping("export")
-    public void export(@RequestBody responseBodyList data ){
+    public void export(@RequestBody PageParams data){
 
-        for (recordInfo recordInfo : data.getRecordInfoList()) {
+        if (redisCache.get(data.getStartTime() + data.getEndTime()) ==null) {
+            throw new ServerException("请先点击搜索,已便获取最新数据");
+        }
+
+        String string = redisCache.get(data.getStartTime() + data.getEndTime()).toString();
+        List<recordInfo> recordInfos = JSONUtil.toList(string, recordInfo.class);
+
+        if (StrUtil.isNotEmpty(data.getCdName())){
+            recordInfos.removeIf(item-> item.getCdName() ==null || !item.getCdName().equals(data.getCdName()));
+        }
+
+        for (recordInfo recordInfo : recordInfos) {
             //emissionStandard
             recordInfo.setEmissionStandard( convertData(recordInfo.getEmissionStandard()));
 
@@ -356,7 +396,7 @@ public class LeadingEnterpriseController {
         }
 
        // ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfoList);
-        ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()),null,data.getRecordInfoList());
+        ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfos);
 
     }
 
@@ -386,15 +426,5 @@ public class LeadingEnterpriseController {
         }
 
     }
-
-
-    public static void main(String[] args) {
-
-
-
-
-
-    }
-
 
 }

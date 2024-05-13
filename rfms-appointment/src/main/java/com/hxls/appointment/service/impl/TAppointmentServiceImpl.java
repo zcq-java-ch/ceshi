@@ -47,6 +47,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import com.hxls.framework.common.query.Query;
 
 
@@ -91,9 +92,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
 
-        LambdaQueryWrapper<TAppointmentEntity> wrapper =query.getCreator() == null? getWrapper(query) : getWrapperAll(query);
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = query.getCreator() == null ? getWrapper(query) : getWrapperAll(query);
 
-        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query),wrapper );
+        IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         //这里需要做一个处理，回显提交人
         //需要翻译回显
@@ -139,14 +140,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
-        if (query.getIsFinish() != null ){
-           if (query.getIsFinish()){
-               wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
-           } else {
-               wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
-           }
+        if (query.getIsFinish() != null) {
+            if (query.getIsFinish()) {
+                wrapper.eq(TAppointmentEntity::getReviewStatus, 0);
+            } else {
+                wrapper.in(TAppointmentEntity::getReviewStatus, List.of(1, -1));
+            }
         }
-        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()), TAppointmentEntity::getSiteId, query.getSiteIds());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
@@ -154,16 +155,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
         wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
         wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
-        wrapper.ge(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[0] : null );
+        wrapper.ge(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[0] : null);
         wrapper.le(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[1] : null);
 
         wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
         wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
-        if (query.getIsPerson() ) {
-          //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
-            wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
+        if (query.getIsPerson()) {
+            //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
+            wrapper.ne(TAppointmentEntity::getSupplierSubclass, 1);
         }
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
@@ -177,13 +178,13 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 for (TAppointmentPersonnel tAppointmentPersonnel : tAppointmentPersonnels) {
                     Long appointmentId = tAppointmentPersonnel.getAppointmentId();
                     List<TAppointmentPersonnel> appointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, appointmentId));
-                    if (CollectionUtils.isNotEmpty(appointmentPersonnels)){
-                        if (appointmentPersonnels.get(0).getExternalPersonnel().equals(query.getSubmitterName())){
+                    if (CollectionUtils.isNotEmpty(appointmentPersonnels)) {
+                        if (appointmentPersonnels.get(0).getExternalPersonnel().equals(query.getSubmitterName())) {
                             ids.add(appointmentId);
                         }
                     }
                 }
-                wrapper.in(CollectionUtils.isNotEmpty(ids) , TAppointmentEntity::getId, ids);
+                wrapper.in(CollectionUtils.isNotEmpty(ids), TAppointmentEntity::getId, ids);
             }
         }
         return wrapper;
@@ -193,34 +194,34 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         List<String> list = Stream.of("3", "4", "5").toList();
         LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapper(query);
 
-        wrapper.or().eq(TAppointmentEntity::getCreator , query.getCreator())
+        wrapper.or().eq(TAppointmentEntity::getCreator, query.getCreator())
                 .in(query.getOther(), TAppointmentEntity::getAppointmentType, list)
 
-        .eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType())
-        .eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName())
-        .eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter())
-        .eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId())
-        .like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName())
-        .ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime())
-        .le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime())
-        .between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null)
-        .between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null)
-        .eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult())
-        .eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus())
-        .eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass())
-        .eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId())
-        .eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
+                .eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType())
+                .eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName())
+                .eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter())
+                .eq(query.getSiteId() != null, TAppointmentEntity::getSiteId, query.getSiteId())
+                .like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName())
+                .ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime())
+                .le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime())
+                .between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null)
+                .between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null)
+                .eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult())
+                .eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus())
+                .eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass())
+                .eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId())
+                .eq(StringUtils.isNotEmpty(query.getOpenId()), TAppointmentEntity::getOpenId, query.getOpenId());
 
-        if (query.getIsFinish() != null ){
-            if (query.getIsFinish()){
-                wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
+        if (query.getIsFinish() != null) {
+            if (query.getIsFinish()) {
+                wrapper.eq(TAppointmentEntity::getReviewStatus, 0);
             } else {
-                wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
+                wrapper.in(TAppointmentEntity::getReviewStatus, List.of(1, -1));
             }
         }
         if (query.getIsPerson() && StringUtils.isEmpty(query.getReviewStatus())) {
             //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
-            wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
+            wrapper.ne(TAppointmentEntity::getSupplierSubclass, 1);
         }
         if (StringUtils.isNotEmpty(query.getSubmitterName())) {
             List<TAppointmentPersonnel> tAppointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().like(TAppointmentPersonnel::getExternalPersonnel, query.getSubmitterName()));
@@ -243,26 +244,25 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //主表转换
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
         //检查预约单是否有未完成得预约信息
-        List<TAppointmentEntity> tAppointmentEntityList = list(new LambdaQueryWrapper<TAppointmentEntity>().eq(TAppointmentEntity::getSiteId , vo.getSiteId()).le(TAppointmentEntity::getStartTime ,vo.getStartTime()).ge(TAppointmentEntity::getEndTime ,vo.getEndTime()));
+        List<TAppointmentEntity> tAppointmentEntityList = list(new LambdaQueryWrapper<TAppointmentEntity>().eq(TAppointmentEntity::getSiteId, vo.getSiteId()).le(TAppointmentEntity::getStartTime, vo.getStartTime()).ge(TAppointmentEntity::getEndTime, vo.getEndTime()));
 
-//        if (CollectionUtils.isNotEmpty(tAppointmentEntityList)){
-//            List<Long> list = tAppointmentEntityList.stream().map(TAppointmentEntity::getId).collect(Collectors.toList());
-//            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId , list));
-//            List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
-//            List<String> names =new ArrayList<>();
-//            vo.getPersonnelList().forEach(item ->{
-//                Long userId = item.getUserId();
-//                if (userIds.contains(userId)){
-//                    names.add(item.getExternalPersonnel());
-//                }
-//            });
-//            if (CollectionUtils.isNotEmpty()){
-
-//            String join = StrUtil.join(",", names);
-//            // 如果连接后的字符串长度大于 0
-//            throw new ServerException( join +"在预约时间段内有未完成的预约单");
-//        }
-
+        if (CollectionUtils.isNotEmpty(tAppointmentEntityList)) {
+            List<Long> list = tAppointmentEntityList.stream().map(TAppointmentEntity::getId).collect(Collectors.toList());
+            List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, list));
+            List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
+            List<String> names = new ArrayList<>();
+            vo.getPersonnelList().forEach(item -> {
+                Long userId = item.getUserId();
+                if (userIds.contains(userId)) {
+                    names.add(item.getExternalPersonnel());
+                }
+            });
+            if (CollectionUtils.isNotEmpty(names)) {
+                String join = StrUtil.join(",", names);
+                // 如果连接后的字符串长度大于 0
+                throw new ServerException(join + "在预约时间段内有未完成的预约单");
+            }
+        }
 
         //默认启用
         entity.setStatus(Constant.ENABLE);
@@ -298,7 +298,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             }
 
             //发送消息
-            userFeign.sendSystemMessage(entity.getAppointmentType() , entity.getSiteId());
+            userFeign.sendSystemMessage(entity.getAppointmentType(), entity.getSiteId());
 
 
             if (vo.getReviewStatus().equals(Constant.PASS)) {
@@ -308,14 +308,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         TAppointmentVehicle::getAppointmentId, id
                 ));
                 List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
-                        .eq(TAppointmentPersonnel::getAppointmentId , id));
+                        .eq(TAppointmentPersonnel::getAppointmentId, id));
                 if (CollectionUtils.isNotEmpty(personnelList)) {
                     String domain = properties.getConfig().getDomain();
                     String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                     List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                     for (String device : strings) {
-                        List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,byId.getSiteId());
-                        List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1" ,byId.getSiteId());
+                        List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device, byId.getSiteId());
+                        List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1", byId.getSiteId());
                         for (String masterIp : masterIpById) {
                             for (TAppointmentPersonnel personnel : personnelList) {
                                 JSONObject entries = new JSONObject();
@@ -332,7 +332,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
                                 //查看人员表中是否带有车辆信息
                                 String plateNumber = personnel.getPlateNumber();
-                                if (StrUtil.isNotEmpty(plateNumber)){
+                                if (StrUtil.isNotEmpty(plateNumber)) {
                                     TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
                                     tAppointmentVehicle.setPlateNumber(plateNumber);
                                     list.add(tAppointmentVehicle);
@@ -362,7 +362,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                     String deliveryDate = tAppointmentVehicle.getDeliveryDate();
                                     entries.set("startTime", deliveryDate.split(",")[0]);
                                     entries.set("deadline", deliveryDate.split(",")[1]);
-                                }else {
+                                } else {
                                     entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
                                     entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                                 }
@@ -375,14 +375,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                             }
                             //如果是科飞达智设备,就不需要循环
-                            if (jsonObject.getString("type").equals(Constant.KFDZ)){
+                            if (jsonObject.getString("type").equals(Constant.KFDZ)) {
                                 return;
                             }
                         }
                     }
                 }
-
-
             }
 
         }
@@ -468,7 +466,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     public PageResult<TAppointmentVO> pageByAuthority(TAppointmentQuery query) {
 
-        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapperByAuth( query );
+        LambdaQueryWrapper<TAppointmentEntity> wrapper = getWrapperByAuth(query);
         IPage<TAppointmentEntity> page = baseMapper.selectPage(getPage(query), wrapper);
         List<TAppointmentVO> tAppointmentVOS = TAppointmentConvert.INSTANCE.convertList(page.getRecords());
         for (TAppointmentVO tAppointmentVO : tAppointmentVOS) {
@@ -509,6 +507,17 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     tAppointmentVO.setSubmitterOrgName(postName);
                 }
             }
+
+            //修改者名字
+            if (tAppointmentVO.getUpdater() != null) {
+                com.alibaba.fastjson.JSONObject jsonObject = appointmentDao.selectRealNameById(tAppointmentVO.getUpdater());
+                if (jsonObject != null) {
+                    String realName = jsonObject.getString("real_name");
+                    tAppointmentVO.setUpdaterName(realName);
+                }
+            }
+
+
         }
         return new PageResult<>(tAppointmentVOS, page.getTotal());
 
@@ -519,14 +528,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> wrapper = Wrappers.lambdaQuery();
         List<String> list = Stream.of("3", "4", "5").toList();
         wrapper.in(query.getOther(), TAppointmentEntity::getAppointmentType, list);
-        if (query.getIsFinish() != null ){
-            if (query.getIsFinish()){
-                wrapper.eq(TAppointmentEntity::getReviewStatus , 0);
+        if (query.getIsFinish() != null) {
+            if (query.getIsFinish()) {
+                wrapper.eq(TAppointmentEntity::getReviewStatus, 0);
             } else {
-                wrapper.in(TAppointmentEntity::getReviewStatus ,List.of(1,-1));
+                wrapper.in(TAppointmentEntity::getReviewStatus, List.of(1, -1));
             }
         }
-        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()),TAppointmentEntity::getSiteId, query.getSiteIds());
+        wrapper.in(CollectionUtils.isNotEmpty(query.getSiteIds()), TAppointmentEntity::getSiteId, query.getSiteIds());
         wrapper.eq(StringUtils.isNotEmpty(query.getAppointmentType()), TAppointmentEntity::getAppointmentType, query.getAppointmentType());
         wrapper.eq(StringUtils.isNotEmpty(query.getSupplierName()), TAppointmentEntity::getSupplierName, query.getSupplierName());
         wrapper.eq(query.getSubmitter() != null, TAppointmentEntity::getSubmitter, query.getSubmitter());
@@ -534,16 +543,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.like(StringUtils.isNotEmpty(query.getSiteName()), TAppointmentEntity::getSiteName, query.getSiteName());
         wrapper.ge(StringUtils.isNotEmpty(query.getStartTime()), TAppointmentEntity::getStartTime, query.getStartTime());
         wrapper.le(StringUtils.isNotEmpty(query.getEndTime()), TAppointmentEntity::getEndTime, query.getEndTime());
-        wrapper.ge(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[0] : null );
+        wrapper.ge(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[0] : null);
         wrapper.le(ArrayUtils.isNotEmpty(query.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(query.getAppointmentTime()) ? query.getAppointmentTime()[1] : null);
 
         wrapper.between(ArrayUtils.isNotEmpty(query.getReviewTime()), TAppointmentEntity::getReviewTime, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[0] : null, ArrayUtils.isNotEmpty(query.getReviewTime()) ? query.getReviewTime()[1] : null);
         wrapper.between(ArrayUtils.isNotEmpty(query.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(query.getCreatTime()) ? query.getCreatTime()[1] : null);
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewResult()), TAppointmentEntity::getReviewResult, query.getReviewResult());
         wrapper.eq(StringUtils.isNotEmpty(query.getReviewStatus()), TAppointmentEntity::getReviewStatus, query.getReviewStatus());
-        if (query.getIsPerson() ) {
+        if (query.getIsPerson()) {
             //  wrapper.isNull(TAppointmentEntity::getSupplierSubclass).or().eq(TAppointmentEntity::getSupplierSubclass, 0);
-            wrapper.ne(TAppointmentEntity::getSupplierSubclass , 1);
+            wrapper.ne(TAppointmentEntity::getSupplierSubclass, 1);
         }
         wrapper.eq(query.getSupplierSubclass() != null, TAppointmentEntity::getSupplierSubclass, query.getSupplierSubclass());
         wrapper.eq(query.getId() != null, TAppointmentEntity::getCreator, query.getId());
@@ -558,41 +567,40 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 for (TAppointmentPersonnel tAppointmentPersonnel : tAppointmentPersonnels) {
                     Long appointmentId = tAppointmentPersonnel.getAppointmentId();
                     List<TAppointmentPersonnel> appointmentPersonnels = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, appointmentId));
-                    if (CollectionUtils.isNotEmpty(appointmentPersonnels)){
-                        if (appointmentPersonnels.get(0).getExternalPersonnel().contains(query.getSubmitterName())){
+                    if (CollectionUtils.isNotEmpty(appointmentPersonnels)) {
+                        if (appointmentPersonnels.get(0).getExternalPersonnel().contains(query.getSubmitterName())) {
                             ids.add(appointmentId);
                         }
                     }
                 }
                 List<Long> idList = new ArrayList<>();
 
-                if (CollectionUtils.isNotEmpty(ids)){
+                if (CollectionUtils.isNotEmpty(ids)) {
                     List<TAppointmentEntity> allAppointmentList = listByIds(ids);
                     //排除掉 人员派驻
                     List<Long> result = allAppointmentList.stream().filter(item -> !item.getAppointmentType().equals("1")).map(TAppointmentEntity::getId).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(result)){
+                    if (CollectionUtils.isNotEmpty(result)) {
                         idList.addAll(result);
                     }
                 }
                 //人员派驻查询提交人的方式不同
                 List<Long> longs = appointmentDao.selectByName(query.getSubmitterName());
 
-                if (CollectionUtils.isNotEmpty(longs)){
+                if (CollectionUtils.isNotEmpty(longs)) {
                     idList.addAll(longs);
                 }
-                wrapper.in(CollectionUtils.isNotEmpty(idList),TAppointmentEntity::getId , idList);
+                wrapper.in(CollectionUtils.isNotEmpty(idList), TAppointmentEntity::getId, idList);
 
-                if (CollectionUtils.isEmpty(idList)){
-                    wrapper.eq(TAppointmentEntity::getId , Constant.EMPTY);
+                if (CollectionUtils.isEmpty(idList)) {
+                    wrapper.eq(TAppointmentEntity::getId, Constant.EMPTY);
                 }
 
-            }else {
-                wrapper.eq(TAppointmentEntity::getId , Constant.EMPTY);
+            } else {
+                wrapper.eq(TAppointmentEntity::getId, Constant.EMPTY);
             }
 
         }
         return wrapper;
-
 
 
     }
@@ -612,16 +620,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     TAppointmentVehicle::getAppointmentId, id
             ));
             List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
-                    .eq(TAppointmentPersonnel::getAppointmentId , id));
+                    .eq(TAppointmentPersonnel::getAppointmentId, id));
             //审核通过之后,如果有修改，需要先删除之前的
-            deleteInfo(list , personnelList , byId.getSiteId());
+            deleteInfo(list, personnelList, byId.getSiteId());
             if (CollectionUtils.isNotEmpty(personnelList)) {
                 String domain = properties.getConfig().getDomain();
                 String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                 List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                 for (String device : strings) {
-                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device ,byId.getSiteId());
-                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1" ,byId.getSiteId());
+                    List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDeviceList(device, byId.getSiteId());
+                    List<String> masterIpById = appointmentDao.selectMasterIpById(device, "1", byId.getSiteId());
                     for (String masterIp : masterIpById) {
                         for (TAppointmentPersonnel personnel : personnelList) {
                             JSONObject entries = new JSONObject();
@@ -638,7 +646,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
                             //查看人员表中是否带有车辆信息
                             String plateNumber = personnel.getPlateNumber();
-                            if (StrUtil.isNotEmpty(plateNumber)){
+                            if (StrUtil.isNotEmpty(plateNumber)) {
                                 TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
                                 tAppointmentVehicle.setPlateNumber(plateNumber);
                                 list.add(tAppointmentVehicle);
@@ -668,7 +676,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 String deliveryDate = tAppointmentVehicle.getDeliveryDate();
                                 entries.set("startTime", deliveryDate.split(",")[0]);
                                 entries.set("deadline", deliveryDate.split(",")[1]);
-                            }else {
+                            } else {
                                 entries.set("startTime", DateUtils.format(byId.getStartTime(), DateUtils.DATE_TIME_PATTERN));
                                 entries.set("deadline", DateUtils.format(byId.getEndTime(), DateUtils.DATE_TIME_PATTERN));
                             }
@@ -681,7 +689,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                         }
                         //如果是科飞达智设备,就不需要循环
-                        if (jsonObject.getString("type").equals(Constant.KFDZ)){
+                        if (jsonObject.getString("type").equals(Constant.KFDZ)) {
                             return;
                         }
                     }
@@ -693,24 +701,24 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     private void deleteInfo(List<TAppointmentVehicle> list, List<TAppointmentPersonnel> personnelList, Long siteId) {
         log.info("审核的时候优先删除");
-        if (CollectionUtils.isNotEmpty(list)){
+        if (CollectionUtils.isNotEmpty(list)) {
             for (TAppointmentVehicle tAppointmentVehicle : list) {
                 JSONObject person = new JSONObject();
                 tAppointmentVehicle.setStationId(siteId.toString());
-                person.set("sendType","2");
-                person.set("data" , JSONUtil.toJsonStr(tAppointmentVehicle));
-                person.set("DELETE" , "DELETE");
+                person.set("sendType", "2");
+                person.set("data", JSONUtil.toJsonStr(tAppointmentVehicle));
+                person.set("DELETE", "DELETE");
                 issuedPeople(person);
             }
         }
 
-        if (CollectionUtils.isNotEmpty(personnelList)){
+        if (CollectionUtils.isNotEmpty(personnelList)) {
             for (TAppointmentPersonnel tAppointmentPersonnel : personnelList) {
                 JSONObject person = new JSONObject();
                 tAppointmentPersonnel.setStationId(siteId.toString());
-                person.set("sendType","1");
-                person.set("data" , JSONUtil.toJsonStr(tAppointmentPersonnel));
-                person.set("DELETE" , "DELETE");
+                person.set("sendType", "1");
+                person.set("data", JSONUtil.toJsonStr(tAppointmentPersonnel));
+                person.set("DELETE", "DELETE");
                 issuedPeople(person);
             }
         }
@@ -738,9 +746,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(StringUtils.isNotEmpty(data.getAppointmentType()), TAppointmentEntity::getAppointmentType, data.getAppointmentType());
         wrapper.eq(data.getSiteId() != null, TAppointmentEntity::getSiteId, data.getSiteId());
         wrapper.eq(TAppointmentEntity::getStatus, Constant.ENABLE);
-        wrapper.in(CollectionUtils.isNotEmpty(data.getAppointmentTypeList()) ,TAppointmentEntity::getAppointmentType , data.getAppointmentTypeList() );
+        wrapper.in(CollectionUtils.isNotEmpty(data.getAppointmentTypeList()), TAppointmentEntity::getAppointmentType, data.getAppointmentTypeList());
         wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
-        wrapper.ge(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[0] : null );
+        wrapper.ge(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[0] : null);
         wrapper.le(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[1] : null);
 
         Page<TAppointmentEntity> page = new Page<>(data.getPage(), data.getLimit());
@@ -830,7 +838,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
     @Override
     public void issuedPeople(JSONObject data) {
-        log.info("下发的消息：{}",data);
+        log.info("下发的消息：{}", data);
         String sendType = data.getStr("sendType");
         String domain = properties.getConfig().getDomain();
         switch (sendType) {
@@ -847,7 +855,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String code = entries.getStr("id");
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
-                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId) , sendType);
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
                 //主机分组
                 Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
                 //遍历
@@ -862,12 +870,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("peopleCode", code);
                         sendData.set("faceUrl", faceUrl);
                         sendData.set("masterIp", key);
-                        sendData.set("faceUrl", domain+faceUrl);
+                        sendData.set("faceUrl", domain + faceUrl);
                         sendData.set("masterIp", key);
                         sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
-                        sendData.set("password" , jsonObjects.get(0).getString("password"));
-                        sendData.set("DELETE" , data.getStr("DELETE"));
-                        log.info("发送的消息："+sendData);
+                        sendData.set("password", jsonObjects.get(0).getString("password"));
+                        sendData.set("DELETE", data.getStr("DELETE"));
+                        log.info("发送的消息：" + sendData);
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
                     }
                 }
@@ -882,7 +890,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 String licensePlate = entries.getStr("licensePlate");
 
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
-                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId) , sendType);
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
                 //主机分组
                 Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
                 //遍历
@@ -894,16 +902,16 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         sendData.set("startTime", "2024-04-01 00:00:00");
                         sendData.set("deadline", "2034-04-01 00:00:00");
                         sendData.set("carNumber", licensePlate);
-                        sendData.set("status", data.getStr("DELETE")==null ? "add" : "delete" );
+                        sendData.set("status", data.getStr("DELETE") == null ? "add" : "delete");
                         sendData.set("masterIp", jsonObject.get("master"));
-                        sendData.set("databaseName",jsonObject.get("master_sn"));
-                        sendData.set("username",jsonObject.get("master_account"));
-                        sendData.set("password",jsonObject.get("master_password"));
-                        sendData.set("DELETE" , data.getStr("DELETE"));
-                        log.info("发送的消息："+sendData);
+                        sendData.set("databaseName", jsonObject.get("master_sn"));
+                        sendData.set("username", jsonObject.get("master_account"));
+                        sendData.set("password", jsonObject.get("master_password"));
+                        sendData.set("DELETE", data.getStr("DELETE"));
+                        log.info("发送的消息：" + sendData);
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
                         //如果是科飞达智设备,就不需要循环
-                        if (jsonObject.getString("type").equals(Constant.KFDZ)){
+                        if (jsonObject.getString("type").equals(Constant.KFDZ)) {
                             return;
                         }
                     }
@@ -942,7 +950,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             objectLambdaQueryWrapper.eq(TAppointmentPersonnel::getAppointmentId, id);
             List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(objectLambdaQueryWrapper);
             StringBuilder thePersonWhoMadeTheReservation = new StringBuilder();
-            if (ObjectUtil.isNotEmpty(one)){
+            if (ObjectUtil.isNotEmpty(one)) {
                 thePersonWhoMadeTheReservation.append(one.getExternalPersonnel());
             }
             jsonObject.putOnce("thePersonWhoMadeTheReservation", thePersonWhoMadeTheReservation);
@@ -964,7 +972,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         try {
             List<TAppointmentVehicleExcelVO> readAllSync = EasyExcel.read(file.getInputStream()).head(TAppointmentVehicleExcelVO.class).doReadAllSync();
 
-            if (CollectionUtils.isEmpty(readAllSync)){
+            if (CollectionUtils.isEmpty(readAllSync)) {
                 return list;
             }
             //车型
@@ -982,15 +990,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             jsonObject -> jsonObject.getString("dict_label"), // 使用"dict_label"作为key
                             jsonObject -> jsonObject.getString("dict_value") // 使用"dict_value"作为value
                     ));
-            readAllSync.forEach( item->{
+            readAllSync.forEach(item -> {
                 TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
-                tAppointmentVehicle.setDeliveryDate(item.getStartTime()+","+item.getEndTime());
+                tAppointmentVehicle.setDeliveryDate(item.getStartTime() + "," + item.getEndTime());
                 tAppointmentVehicle.setPlateNumber(item.getPlateNumber());
                 tAppointmentVehicle.setVehicleModel(map1.get(item.getVehicleModel()));
                 tAppointmentVehicle.setEmissionStandard(map2.get(item.getEmissionStandard()));
                 tAppointmentVehicle.setPassenger(item.getPassenger());
                 list.add(tAppointmentVehicle);
-            } );
+            });
             return list;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -1031,7 +1039,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         personnelLambdaQueryWrapper.in(TAppointmentPersonnel::getAppointmentId, list);
         List<TAppointmentPersonnel> tAppointmentPersonnelList = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper);
         int numberOfResidents = 0;
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList)){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList)) {
             numberOfResidents = tAppointmentPersonnelList.size();
         }
 
@@ -1039,7 +1047,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, list1);
         List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
         int numberOfExternalAppointments = 0;
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)) {
             numberOfExternalAppointments = tAppointmentPersonnelList2.size();
         }
         com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
@@ -1067,7 +1075,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, list1);
         List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
         int numberOfExternalAppointments = 0;
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)) {
             numberOfExternalAppointments = tAppointmentPersonnelList2.size();
         }
         com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
@@ -1100,7 +1108,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         appointmentVehicleLambdaQueryWrapper.in(TAppointmentVehicle::getAppointmentId, list1);
         List<TAppointmentVehicle> tAppointmentVehicles = tAppointmentVehicleService.list(appointmentVehicleLambdaQueryWrapper);
         com.alibaba.fastjson.JSONArray objects = new com.alibaba.fastjson.JSONArray();
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentVehicles)){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentVehicles)) {
 
             // 提取 passenger 字段并拼接在一起
             String concatenatedPassengers = tAppointmentVehicles.stream()
@@ -1115,7 +1123,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, appointmentIdList);
             personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getExternalPersonnel, passengerArray);
             List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
-            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)) {
                 for (int i = 0; i < tAppointmentPersonnelList2.size(); i++) {
                     TAppointmentPersonnel tAppointmentPersonnel = tAppointmentPersonnelList2.get(i);
 
@@ -1126,7 +1134,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     jsonObject.put("userName", tAppointmentPersonnel.getExternalPersonnel());
                     objects.add(jsonObject);
                 }
-            }else {
+            } else {
                 // 如果person里面为空，说明是供应商车辆入场申请，也要生成记录，只不过只有一个名字而已
                 TAppointmentVehicle tAppointmentVehicle = tAppointmentVehicles.get(0);
                 com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
@@ -1142,7 +1150,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         jsonObject.put("dataArray", objects);
         return jsonObject;
     }
-
 
 
 }
