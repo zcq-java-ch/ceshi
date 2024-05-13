@@ -271,9 +271,33 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getPersonId, allnbNumids);
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
             // 按照姓名id进行分组
-            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
-                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
+//                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+            // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+            List<TPersonAccessRecordsEntity> filteredList = tPersonAccessRecordsEntities.stream()
+                    .filter(entity -> {
+                        String devicePersonId = entity.getDevicePersonId();
+                        String personName = entity.getPersonName();
+                        // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                        return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                                (personName != null && !personName.isEmpty());
+                    })
+                    .collect(Collectors.toList());
+
+            // 按照姓名进行分组，当devicePersonId为空时
+            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = filteredList.stream()
+                    .collect(Collectors.groupingBy(
+                            entity -> {
+                                String devicePersonId = entity.getDevicePersonId();
+                                if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                    return devicePersonId;
+                                } else {
+                                    return entity.getPersonName();
+                                }
+                            }
+                    ));
+
             // 打印每个分组并更新inNumer变量
             for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId.entrySet()) {
                 String devicePersonId = entry.getKey();
@@ -302,10 +326,34 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         int inAllNumer = 0;
 
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
-                .stream()
-                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
+//                .stream()
+//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+        // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+        List<TPersonAccessRecordsEntity> filteredList = tPersonAccessRecordsEntities2.stream()
+                .filter(entity -> {
+                    String devicePersonId = entity.getDevicePersonId();
+                    String personName = entity.getPersonName();
+                    // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                    return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                            (personName != null && !personName.isEmpty());
+                })
+                .collect(Collectors.toList());
+
+        // 按照姓名进行分组，当devicePersonId为空时
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = filteredList.stream()
+                .collect(Collectors.groupingBy(
+                        entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                return devicePersonId;
+                            } else {
+                                return entity.getPersonName();
+                            }
+                        }
+                ));
+
 
         // 打印每个分组并更新inNumer变量
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
@@ -337,9 +385,33 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
 
             // 按照姓名id进行分组
-            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+//                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+            // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+            List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
+                    .filter(entity -> {
+                        String devicePersonId = entity.getDevicePersonId();
+                        String personName = entity.getPersonName();
+                        // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                        return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                                (personName != null && !personName.isEmpty());
+                    })
+                    .collect(Collectors.toList());
+
+            // 按照姓名进行分组，当devicePersonId为空时
+            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+                    .collect(Collectors.groupingBy(
+                            entity -> {
+                                String devicePersonId = entity.getDevicePersonId();
+                                if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                    return devicePersonId;
+                                } else {
+                                    return entity.getPersonName();
+                                }
+                            }
+                    ));
 
             // 打印每个分组并更新inNumer变量
             for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
@@ -373,9 +445,32 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities4 = baseMapper.selectList(objectLambdaQueryWrapper4);
 
             // 按照姓名id进行分组
-            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = tPersonAccessRecordsEntities4.stream()
-                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = tPersonAccessRecordsEntities4.stream()
+//                    .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                    .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+            // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+            List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities4.stream()
+                    .filter(entity -> {
+                        String devicePersonId = entity.getDevicePersonId();
+                        String personName = entity.getPersonName();
+                        // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                        return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                                (personName != null && !personName.isEmpty());
+                    })
+                    .collect(Collectors.toList());
+
+            // 按照姓名进行分组，当devicePersonId为空时
+            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId4 = filteredList1.stream()
+                    .collect(Collectors.groupingBy(
+                            entity -> {
+                                String devicePersonId = entity.getDevicePersonId();
+                                if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                    return devicePersonId;
+                                } else {
+                                    return entity.getPersonName();
+                                }
+                            }
+                    ));
 
             // 打印每个分组并更新inNumer变量
             for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId4.entrySet()) {
@@ -433,10 +528,35 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         JSONArray objects = new JSONArray();
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
-                .stream()
-                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
+//                .stream()
+//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+        List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities2.stream()
+                .filter(entity -> {
+                    String devicePersonId = entity.getDevicePersonId();
+                    String personName = entity.getPersonName();
+                    // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                    return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                            (personName != null && !personName.isEmpty());
+                })
+                .collect(Collectors.toList());
+
+        // 按照姓名进行分组，当devicePersonId为空时
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = filteredList1.stream()
+                .collect(Collectors.groupingBy(
+                        entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                return devicePersonId;
+                            } else {
+                                return entity.getPersonName();
+                            }
+                        }
+                ));
+
 
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
             String devicePersonId = entry.getKey();
@@ -475,9 +595,34 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         int numberOfFactoryStation = 0;
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+        List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
+                .filter(entity -> {
+                    String devicePersonId = entity.getDevicePersonId();
+                    String personName = entity.getPersonName();
+                    // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                    return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                            (personName != null && !personName.isEmpty());
+                })
+                .collect(Collectors.toList());
+
+        // 按照姓名进行分组，当devicePersonId为空时
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+                .collect(Collectors.groupingBy(
+                        entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                return devicePersonId;
+                            } else {
+                                return entity.getPersonName();
+                            }
+                        }
+                ));
+
 
         List<TPersonAccessRecordsEntity> personAccessRecordsEntityArrayList = new ArrayList<>();
         // 打印每个分组并更新inNumer变量
@@ -616,9 +761,33 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         int numberOfFactoryStation = 0;
         // 按照姓名id进行分组
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
-                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
+//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
+//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+
+        // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+        List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
+                .filter(entity -> {
+                    String devicePersonId = entity.getDevicePersonId();
+                    String personName = entity.getPersonName();
+                    // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                    return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                            (personName != null && !personName.isEmpty());
+                })
+                .collect(Collectors.toList());
+
+        // 按照姓名进行分组，当devicePersonId为空时
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+                .collect(Collectors.groupingBy(
+                        entity -> {
+                            String devicePersonId = entity.getDevicePersonId();
+                            if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                return devicePersonId;
+                            } else {
+                                return entity.getPersonName();
+                            }
+                        }
+                ));
 
         // 打印每个分组并更新inNumer变量
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {

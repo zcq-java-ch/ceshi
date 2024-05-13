@@ -1082,6 +1082,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1);
         // 开始时间小于等于 recordTime
         objectLambdaQueryWrapper.le(TAppointmentEntity::getStartTime, recordTime);
         // 结束时间大于等于 recordTime
@@ -1100,11 +1101,19 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         List<TAppointmentVehicle> tAppointmentVehicles = tAppointmentVehicleService.list(appointmentVehicleLambdaQueryWrapper);
         com.alibaba.fastjson.JSONArray objects = new com.alibaba.fastjson.JSONArray();
         if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentVehicles)){
+
+            // 提取 passenger 字段并拼接在一起
+            String concatenatedPassengers = tAppointmentVehicles.stream()
+                    .map(TAppointmentVehicle::getPassenger) // 获取 passenger 字段
+                    .collect(Collectors.joining(",")); // 使用逗号拼接
+            String[] passengerArray = concatenatedPassengers.split(",");
+
             List<Long> appointmentIdList = tAppointmentVehicles.stream()
                     .map(TAppointmentVehicle::getAppointmentId)
                     .toList();
             LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
             personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, appointmentIdList);
+            personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getExternalPersonnel, passengerArray);
             List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
             if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
                 for (int i = 0; i < tAppointmentPersonnelList2.size(); i++) {
@@ -1114,8 +1123,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     jsonObject.put("userId", tAppointmentPersonnel.getUserId());
                     jsonObject.put("positionId", tAppointmentPersonnel.getPositionId());
                     jsonObject.put("positionName", tAppointmentPersonnel.getPositionName());
-                    jsonObject.put("externalPersonnel", tAppointmentPersonnel.getExternalPersonnel());
-                    jsonObject.put("userName", null);
+                    jsonObject.put("userName", tAppointmentPersonnel.getExternalPersonnel());
                     objects.add(jsonObject);
                 }
             }else {
@@ -1125,7 +1133,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 jsonObject.put("userId", null);
                 jsonObject.put("positionId", null);
                 jsonObject.put("positionName", null);
-                jsonObject.put("externalPersonnel", null);
                 jsonObject.put("userName", tAppointmentVehicle.getPassenger());
                 objects.add(jsonObject);
 
@@ -1135,6 +1142,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         jsonObject.put("dataArray", objects);
         return jsonObject;
     }
+
 
 
 }

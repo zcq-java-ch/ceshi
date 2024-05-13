@@ -503,19 +503,16 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             for (int i = 0; i < jsonArray.size(); i++) {
                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
                 Long aLong = jsonObject1.getLong("userId");
-                Long positionId = jsonObject1.getLong("positonId");
+                Long positionId = jsonObject1.getLong("positionId");
                 String positionName = jsonObject1.getString("positionName");
                 String userName = jsonObject1.getString("userName");
-                String externalPersonnel = jsonObject1.getString("externalPersonnel");
 
-                if (StringUtils.isNotEmpty(userName)){
-                    savePersonRecord2(userName, tVehicleAccessRecordsEntity);
+                String aString = aLong.toString();
+                JSONObject userDetail = userFeign.queryUserInformationUserId(aString);
+                if (ObjectUtils.isNotEmpty(userDetail)){
+                    savePersonRecord(aLong, positionId, positionName, tVehicleAccessRecordsEntity);
                 }else {
-                    if (ObjectUtils.isEmpty(positionId)){
-                        savePersonRecord2(externalPersonnel, tVehicleAccessRecordsEntity);
-                    }else {
-                        savePersonRecord(aLong, positionId, positionName, tVehicleAccessRecordsEntity);
-                    }
+                    savePersonRecord2(userName, positionId, positionName, tVehicleAccessRecordsEntity);
                 }
             }
         }else {
@@ -534,7 +531,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         }
     }
 
-    private void savePersonRecord2(String userName, TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
+    private void savePersonRecord2(String userName, Long positionId, String positionName, TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity) {
         log.info("供应商车辆入场申请中的司机 存储记录开始");
         TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
         tPersonAccessRecordsEntity.setAccessType(tVehicleAccessRecordsEntity.getAccessType());
@@ -544,6 +541,8 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         tPersonAccessRecordsEntity.setSiteName(tVehicleAccessRecordsEntity.getSiteName());
         tPersonAccessRecordsEntity.setRecordsId(RandomStringUtils.generateRandomString(32));
         tPersonAccessRecordsEntity.setPersonName(userName);
+        tPersonAccessRecordsEntity.setPositionId(positionId);
+        tPersonAccessRecordsEntity.setPositionName(positionName);
 
         tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
         log.info("供应商车辆入场申请中的司机 存储记录结束");
