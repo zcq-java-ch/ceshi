@@ -36,4 +36,12 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 
 
 	void updateStatus(List<SysOrgVO> list);
+
+	/**
+	 * 不关注状态的查询
+	 * @param string
+	 * @return
+	 */
+	SysOrgEntity getByCodeNoStatus(String string);
+
 }

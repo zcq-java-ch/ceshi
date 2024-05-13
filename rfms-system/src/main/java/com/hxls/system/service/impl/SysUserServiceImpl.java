@@ -1,6 +1,8 @@
 package com.hxls.system.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.TypeReference;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
@@ -25,6 +27,7 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.cache.MainPlatformCache;
+import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.entity.SysOrgEntity;
@@ -630,7 +633,27 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 sysOrgEntity.setStatus(1);
                 sysOrgEntity.setProperty(Integer.parseInt(organization.getProperty()+""));
                 sysOrgEntity.setVirtualFlag(0);
-                sysOrgService.save(sysOrgEntity);
+
+                //如果存在，则需要修改组织
+                SysOrgEntity byCode = sysOrgService.getByCodeNoStatus(organization.getCode());
+                if (ObjectUtil.isNotNull(byCode)){
+                    sysOrgEntity.setId(byCode.getId());
+                    sysOrgEntity.setStatus(byCode.getStatus());
+                    sysOrgEntity.setDeleted(byCode.getDeleted());
+                    SysOrgEntity entity = SysOrgConvert.INSTANCE.convert(sysOrgEntity);
+                    sysOrgService.updateById(entity);
+
+                    //修改成功后需要更换人员表中的名称
+                    List<SysUserEntity> sysUserEntities = list(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getOrgId, entity.getId()));
+                    if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysUserEntities)) {
+                        for (SysUserEntity item : sysUserEntities) {
+                            item.setOrgName(entity.getName());
+                            updateById(item);
+                        }
+                    }
+                }else {
+                    sysOrgService.save(sysOrgEntity);
+                }
             }
         } else {
             throw new ServerException("请求主数据岗位异常");

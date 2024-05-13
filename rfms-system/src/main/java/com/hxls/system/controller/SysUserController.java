@@ -116,7 +116,6 @@ public class SysUserController {
             if (byId !=null){
                 user.setStationName(byId.getName());
             }
-
         }
 
         //查询组织名字  -- 修改为全路径
@@ -288,7 +287,6 @@ public class SysUserController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
     public Result<String> synOrg() {
         sysUserService.synOrg();
-
         return Result.ok();
     }
 
@@ -299,4 +297,7 @@ public class SysUserController {
         sysUserService.synUser();
         return Result.ok();
     }
+
+
+
 }

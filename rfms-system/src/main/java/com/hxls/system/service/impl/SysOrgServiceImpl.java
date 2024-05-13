@@ -226,4 +226,16 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
         }
     }
+
+    @Override
+    public SysOrgEntity getByCodeNoStatus(String code) {
+        LambdaQueryWrapper<SysOrgEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysOrgEntity::getCode, code);
+        List<SysOrgEntity> sysOrgEntities = baseMapper.selectList(wrapper);
+        if (CollectionUtils.isNotEmpty(sysOrgEntities)) {
+            return sysOrgEntities.get(0);
+        } else {
+            return null;
+        }
+    }
 }

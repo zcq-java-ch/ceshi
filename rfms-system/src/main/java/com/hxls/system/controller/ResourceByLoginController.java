@@ -249,7 +249,7 @@ public class ResourceByLoginController {
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
-        List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getSiteId,user.getOrgId()));
+        List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getSiteId,928));
         if (CollectionUtils.isNotEmpty(list)){
             return Result.ok(new ArrayList<>(list.stream().map(TVehicleEntity::getFleetName).filter(Objects::nonNull).distinct().toList()));
         }
