@@ -165,7 +165,7 @@ public class TPersonAccessRecordsController extends BaseController {
             }else if ("6".equals(busis)){
                 tPersonAccessRecordsVO.setBusisLabel("工程");
             }else {
-                tPersonAccessRecordsVO.setBusisLabel("错误");
+                tPersonAccessRecordsVO.setBusisLabel("/");
             }
 
             String createType = tPersonAccessRecordsVO.getCreateType();
@@ -218,7 +218,7 @@ public class TPersonAccessRecordsController extends BaseController {
             }else if ("6".equals(busis)){
                 tPersonAccessRecordsVO.setBusisLabel("工程");
             }else {
-                tPersonAccessRecordsVO.setBusisLabel("错误");
+                tPersonAccessRecordsVO.setBusisLabel("/");
             }
 
             String createType = tPersonAccessRecordsVO.getCreateType();

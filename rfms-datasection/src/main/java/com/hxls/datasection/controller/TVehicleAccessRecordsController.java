@@ -164,7 +164,7 @@ public class TVehicleAccessRecordsController extends BaseController {
                 }else if ("3".equals(vehicleModel)){
                     tVehicleAccessRecordsVO.setVehicleModelLab("罐车");
                 }else {
-                    tVehicleAccessRecordsVO.setVehicleModelLab("错误");
+                    tVehicleAccessRecordsVO.setVehicleModelLab("/");
                 }
 
                 String emissionStandard = tVehicleAccessRecordsVO.getEmissionStandard();
@@ -181,7 +181,7 @@ public class TVehicleAccessRecordsController extends BaseController {
                 }else if ("6".equals(emissionStandard)){
                     tVehicleAccessRecordsVO.setEmissionStandardLab("国Ⅵ");
                 }else {
-                    tVehicleAccessRecordsVO.setEmissionStandardLab("错误");
+                    tVehicleAccessRecordsVO.setEmissionStandardLab("/");
                 }
             }
         }
