@@ -543,6 +543,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         tPersonAccessRecordsEntity.setPersonName(userName);
         tPersonAccessRecordsEntity.setPositionId(positionId);
         tPersonAccessRecordsEntity.setPositionName(positionName);
+        tPersonAccessRecordsEntity.setCreateType("4");
 
         tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
         log.info("供应商车辆入场申请中的司机 存储记录结束");
@@ -601,6 +602,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                 tPersonAccessRecordsEntity.setPersonName(userDetail.getString("personName"));
             }
         }
+        tPersonAccessRecordsEntity.setCreateType("4");
         tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
         log.info("随行人员存储记录结束");
 

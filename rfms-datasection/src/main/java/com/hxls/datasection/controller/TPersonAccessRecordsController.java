@@ -169,11 +169,18 @@ public class TPersonAccessRecordsController extends BaseController {
             }
 
             String createType = tPersonAccessRecordsVO.getCreateType();
-            if ("0".equals(createType)){
-                tPersonAccessRecordsVO.setCreateTypeLabel("自动");
+            if ("1".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("自动记录");
+            }else if ("2".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("出入补录");
+            }else if ("3".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("出入扫码");
+            }else if ("4".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("随行人员");
             }else {
-                tPersonAccessRecordsVO.setCreateTypeLabel("手动");
+                tPersonAccessRecordsVO.setCreateTypeLabel("/");
             }
+
         }
 
 //        transService.transBatch(list);
@@ -222,10 +229,16 @@ public class TPersonAccessRecordsController extends BaseController {
             }
 
             String createType = tPersonAccessRecordsVO.getCreateType();
-            if ("0".equals(createType)){
-                tPersonAccessRecordsVO.setCreateTypeLabel("自动");
+            if ("1".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("自动记录");
+            }else if ("2".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("出入补录");
+            }else if ("3".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("出入扫码");
+            }else if ("4".equals(createType)){
+                tPersonAccessRecordsVO.setCreateTypeLabel("随行人员");
             }else {
-                tPersonAccessRecordsVO.setCreateTypeLabel("手动");
+                tPersonAccessRecordsVO.setCreateTypeLabel("/");
             }
         }
 
