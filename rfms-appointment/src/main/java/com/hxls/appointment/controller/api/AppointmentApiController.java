@@ -23,11 +23,13 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -140,7 +142,12 @@ public class AppointmentApiController {
         tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
         tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
         tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getSiteId, siteId);
-        tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1); // 审核通过
+        // 预约类型人员派驻
+        tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getAppointmentType, "1");
+        // 审核通过
+        tAppointmentEntityLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, "1");
+        tAppointmentEntityLambdaQueryWrapper.le(TAppointmentEntity::getStartTime, LocalDateTime.now());
+        tAppointmentEntityLambdaQueryWrapper.ge(TAppointmentEntity::getEndTime, LocalDateTime.now());
         List<TAppointmentEntity> tAppointmentEntities = tAppointmentService.list(tAppointmentEntityLambdaQueryWrapper);
         List<Long> wpPersonnel = new ArrayList<>();
         List<TAppointmentPersonnel> AllpersonnelList = new ArrayList<>();
