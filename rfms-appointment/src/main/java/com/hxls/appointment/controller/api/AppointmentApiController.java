@@ -157,7 +157,7 @@ public class AppointmentApiController {
                 TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
                 List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getAppointmentId, tAppointmentEntity.getId()));
                 pzNum += personnelList.size();
-                List<Long> collect = personnelList.stream().map(TAppointmentPersonnel::getId).collect(Collectors.toList());
+                List<Long> collect = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
                 wpPersonnel.addAll(collect);
 
                 AllpersonnelList.addAll(personnelList);

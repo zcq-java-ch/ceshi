@@ -569,6 +569,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
         tPersonAccessRecordsEntity.setBusis(userInformationLicensePlate.getString("busis"));
         tPersonAccessRecordsEntity.setPersonName(userInformationLicensePlate.getString("personName"));
+        tPersonAccessRecordsEntity.setCreateType("4");
         // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
         tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
         log.info("用户车辆，记录用户通行记录结束");
