@@ -396,7 +396,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getSiteId, siteId);
-        objectLambdaQueryWrapper.isNotNull(TVehicleAccessRecordsEntity::getDriverId);
+//        objectLambdaQueryWrapper.isNotNull(TVehicleAccessRecordsEntity::getDriverId);
         List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
         Map<String, List<TVehicleAccessRecordsEntity>> groupedByManufacturerId = tVehicleAccessRecordsEntities.stream()
                 .filter(tVehicleAccessRecordsEntity -> ObjectUtils.isNotEmpty(tVehicleAccessRecordsEntity.getPlateNumber()))
