@@ -6,6 +6,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @FeignClient(name = ServerNames.SYSTEM_SERVER_NAME, contextId = "user")
 public interface UserFeign {
 
@@ -26,4 +28,7 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/queryUserInformationLicensePlate")
     JSONObject queryUserInformationLicensePlate(@RequestParam("LicensePlate") String LicensePlate);
+
+    @PostMapping(value = "api/system/queryNbUserIdByUserIdS")
+    JSONObject queryNbUserIdByUserIdS(@RequestParam("collect") List<Long> collect);
 }

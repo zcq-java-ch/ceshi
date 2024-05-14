@@ -615,4 +615,28 @@ public class SystemServerApi {
         }
         return entries;
     }
+
+    /**
+      * @author Mryang
+      * @description 通过传入的userIds 查询这些userid是不是内部用户id,如果是，则返回
+      * @date 17:19 2024/5/14
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/queryNbUserIdByUserIdS")
+    public JSONObject queryNbUserIdByUserIdS(@RequestParam("collect") List<Long> collect) {
+        LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.in(SysUserEntity::getId, collect);
+        List<SysUserEntity> userlist = sysUserService.list(objectLambdaQueryWrapper);
+
+        List<Long> userIds = userlist.stream()
+                    .filter(user -> "1".equals(user.getUserType())) // 根据 userType 进行过滤
+                    .map(SysUserEntity::getId) // 提取满足条件的用户的 id
+                    .collect(Collectors.toList()); // 将 id 收集到列表中
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userIds", userIds);
+        return jsonObject;
+    }
 }
