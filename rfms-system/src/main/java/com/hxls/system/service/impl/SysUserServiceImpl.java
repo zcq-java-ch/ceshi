@@ -691,7 +691,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             List<MainUserVO> mainUserVOS = JSONUtil.toBean(rel2.get("data").toString(), new TypeReference<List<MainUserVO>>() {}, true);
             for(MainUserVO mainUserVO:mainUserVOS){
                 //判断员工是在职状态
-                if("001".equals(mainUserVO.getRelationStatusCode())){
+                if("001".equals(mainUserVO.getRelationStatusCode()) || "002".equals(mainUserVO.getRelationStatusCode())){
                     SysUserEntity one = baseMapper.selectOne(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getUsername, mainUserVO.getPhone()));
                     if(one == null){
                         one = baseMapper.selectOne(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile, mainUserVO.getPhone()));

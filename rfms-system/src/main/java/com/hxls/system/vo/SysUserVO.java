@@ -38,6 +38,9 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "用户类型: 数据字典（内部/客户/供应商）")
     private String userType;
 
+    @Schema(description = "是否留宿,0表示不留宿，1表示留宿")
+    private Integer isStay;
+
     @Schema(description = "所属站点（组织类型为站点的组织id）")
     private Long stationId;
 
