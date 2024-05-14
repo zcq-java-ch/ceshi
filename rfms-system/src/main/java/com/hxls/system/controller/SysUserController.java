@@ -282,6 +282,19 @@ public class SysUserController {
         return Result.ok();
     }
 
+    @PostMapping("updateStationId")
+    @Operation(summary = "批量修改所属站点")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('sys:user:updateStationId')")
+    public Result<String> updateStationIdList(@RequestBody List<SysUserVO> list) {
+        sysUserService.updateStationIdList(list);
+        return Result.ok();
+    }
+
+
+
+
+
     @PostMapping("synOrg")
     @Operation(summary = "同步组织结构")
     @OperateLog(type = OperateTypeEnum.UPDATE)

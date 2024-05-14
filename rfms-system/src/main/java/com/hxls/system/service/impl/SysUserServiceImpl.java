@@ -733,5 +733,63 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
     }
 
+    /**
+     * 批量修改所属站点
+     * @param list
+     */
+    @Override
+    public void updateStationIdList(List<SysUserVO> list) {
+
+        for (SysUserVO vo : list) {
+            SysUserEntity entity = new SysUserEntity();
+            //设置id和站点所属
+            entity.setId(vo.getId());
+            entity.setStationId(vo.getStationId());
+            //查询人员详情
+            SysUserEntity byId = getById(vo.getId());
+            //是否需要删除之前的所属站点信息
+            if (byId.getStationId() != null &&  !byId.getStationId().equals(Constant.EMPTY) && !byId.getStationId().equals(entity.getStationId())){
+                System.out.println("开始删除之前的");
+                JSONObject person = new JSONObject();
+                person.set("sendType","1");
+                person.set("data" , JSONUtil.toJsonStr(byId));
+                person.set("DELETE" , "DELETE");
+                appointmentFeign.issuedPeople(person);
+                if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType","2");
+                    vehicle.set("data" , JSONUtil.toJsonStr(byId));
+                    vehicle.set("DELETE" , "DELETE");
+                    appointmentFeign.issuedPeople(vehicle);
+                }
+            }
+
+
+            // 更新实体
+            this.updateById(entity);
+            //更新成功后 - 下发设备指令
+            if (entity.getStationId() !=null && !entity.getStationId().equals(Constant.EMPTY)) {
+                JSONObject person = new JSONObject();
+                person.set("sendType","1");
+                person.set("data" , JSONUtil.toJsonStr(entity));
+                appointmentFeign.issuedPeople(person);
+
+                if (StringUtils.isNotEmpty(entity.getLicensePlate())){
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType","2");
+                    vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                    appointmentFeign.issuedPeople(vehicle);
+                }
+            }
+        }
+    }
+
+
+
+
+    private void sendInfoToAgent(JSONObject data){
+        appointmentFeign.issuedPeople(data);
+    }
+
 
 }

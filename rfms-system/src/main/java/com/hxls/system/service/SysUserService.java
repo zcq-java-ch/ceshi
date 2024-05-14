@@ -103,4 +103,10 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * @Date 2024年5月10日11:18:36
      **/
     void synUser();
+
+    /**
+     * 批量修改所属站点
+     * @param list
+     */
+    void updateStationIdList(List<SysUserVO> list);
 }
