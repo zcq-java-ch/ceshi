@@ -121,19 +121,19 @@ public class LeadingEnterpriseController {
 
             //如果有过车数据，罐车就替换最近的过车数据
             for (recordInfo item : recordInfos1) {
-                if (item.getUnit().equals("m³") && checkTime(item.getFirstTime())) {
+                if (item.getUnit().equals("m³") && checkTime(item.getSecondTime())) {
 
                     //用浇注时间
                     //小于浇注时间的前一个进场时间
-                    String firstTime = appointmentDao.selectFirstTime(item.getFirstTime(), item.getCarNum());
-                    //大于浇注时间的
-                    String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
+                    String firstTime = appointmentDao.selectFirstTime(item.getSecondTime(), item.getCarNum());
+//                    //大于浇注时间的
+//                    String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
 
                     // String firstTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum(),"1");
                     if (StrUtil.isNotEmpty(firstTime)) {
                         item.setFirstTime(firstTime);
                     }
-                    item.setSecondTime(secondTime == null ? "" : secondTime);
+//                    item.setSecondTime(secondTime == null ? "" : secondTime);
                 }
             }
 
@@ -197,7 +197,6 @@ public class LeadingEnterpriseController {
         PageInfo pageInfo = new PageInfo();
         int endIndex = Math.min(startIndex + data.getPageSize(), recordInfos.size());
 
-        //List<recordInfo> recordInfos1 = recordInfos;
         List<recordInfo> recordInfos1 = recordInfos.subList(startIndex, endIndex);
 
 
@@ -210,19 +209,17 @@ public class LeadingEnterpriseController {
 
         //如果有过车数据，罐车就替换最近的过车数据
         for (recordInfo item : recordInfos1) {
-            if (item.getUnit().equals("m³") && checkTime(item.getFirstTime())) {
-
+            if (item.getUnit().equals("m³") && checkTime(item.getSecondTime())) {
                 //用浇注时间
                 //小于浇注时间的前一个进场时间
-                String firstTime = appointmentDao.selectFirstTime(item.getFirstTime(), item.getCarNum());
+                String firstTime = appointmentDao.selectFirstTime(item.getSecondTime(), item.getCarNum());
                 //大于浇注时间的
-                String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
-
+//                String secondTime = appointmentDao.selectSecondTime(item.getFirstTime(), item.getCarNum());
                 // String firstTime = appointmentDao.selectRecordTime(item.getSecondTime(), item.getCarNum(),"1");
                 if (StrUtil.isNotEmpty(firstTime)) {
                     item.setFirstTime(firstTime);
                 }
-                item.setSecondTime(secondTime == null ? "" : secondTime);
+//                item.setSecondTime(secondTime == null ? "" : secondTime);
             }
         }
 
@@ -351,11 +348,19 @@ public class LeadingEnterpriseController {
         for (recordOutInfo datum : bean.getData()) {
             recordInfo recordInfo = new recordInfo();
             recordInfo.setCarNum(datum.getCarNo());
-            if (checDate(datum.getProTime(), startTime)) {
+            if (checkDate(datum.getProTime(), startTime)   || checkDate(endTime , datum.getProTime() )) {
                 continue;
             }
+            //手动默认厂时间
             recordInfo.setFirstTime(datum.getProTime());
-            recordInfo.setSecondTime(datum.getStartTime() == null ? datum.getProTime() : datum.getStartTime());
+            if (!checkTime(datum.getProTime())) {
+                //系统默认随机生成一个几小时之前的时间字符串
+              String randomTime =   getRandomPastTime(datum.getProTime());
+              if (StrUtil.isNotEmpty(randomTime)){
+                  recordInfo.setFirstTime(randomTime);
+              }
+            }
+            recordInfo.setSecondTime( datum.getProTime() );
             recordInfo.setRepertory(datum.getProductName());
             recordInfo.setFreightVolume(new BigDecimal(datum.getSignNum()));
             recordInfo.setUnit("m³");
@@ -366,6 +371,34 @@ public class LeadingEnterpriseController {
         return result;
     }
 
+    private String getRandomPastTime(String proTime) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date date = sdf.parse(proTime);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            // 随机生成2到3小时的时间差
+            Random random = new Random();
+            int randomHours = random.nextInt(2) + 2;
+            int randomMinutes = random.nextInt(60);
+            int randomSeconds = random.nextInt(60);
+
+            // 将时间往前推
+            calendar.add(Calendar.HOUR_OF_DAY, -randomHours);
+            calendar.add(Calendar.MINUTE, -randomMinutes);
+            calendar.add(Calendar.SECOND, -randomSeconds);
+
+            // 转换为字符串
+            return sdf.format(calendar.getTime());
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * 比对时间
      *
@@ -373,7 +406,7 @@ public class LeadingEnterpriseController {
      * @param startTime
      * @return
      */
-    private boolean checDate(String proTime, String startTime) {
+    private boolean checkDate(String proTime, String startTime) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             Date proDate = sdf.parse(proTime);
@@ -425,17 +458,17 @@ public class LeadingEnterpriseController {
 
             //如果有过车数据，罐车就替换最近的过车数据
 
-            if (recordInfo.getUnit().equals("m³") && checkTime(recordInfo.getFirstTime())) {
+            if (recordInfo.getUnit().equals("m³") && checkTime(recordInfo.getSecondTime())) {
                 //用浇注时间
                 //小于浇注时间的前一个进场时间
-                String firstTime = appointmentDao.selectFirstTime(recordInfo.getFirstTime(), recordInfo.getCarNum());
-                //大于浇注时间的
-                String secondTime = appointmentDao.selectSecondTime(recordInfo.getFirstTime(), recordInfo.getCarNum());
+                String firstTime = appointmentDao.selectFirstTime(recordInfo.getSecondTime(), recordInfo.getCarNum());
+//                //大于浇注时间的
+//                String secondTime = appointmentDao.selectSecondTime(recordInfo.getFirstTime(), recordInfo.getCarNum());
 
                 if (StrUtil.isNotEmpty(firstTime)) {
                     recordInfo.setFirstTime(firstTime);
                 }
-                recordInfo.setSecondTime(secondTime == null ? "" : secondTime);
+//                recordInfo.setSecondTime(secondTime == null ? "" : secondTime);
             }
         }
 

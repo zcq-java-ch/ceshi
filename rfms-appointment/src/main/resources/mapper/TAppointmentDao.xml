@@ -137,10 +137,8 @@
         SELECT record_time FROM t_vehicle_access_records WHERE access_type = 2 AND plate_number = #{carNumber} AND record_time &gt; #{secondTime}  ORDER BY record_time  LIMIT 1;
     </select>
 
-
     <select id="selectByName" resultType="java.lang.Long">
         select t.id from sys_user u join t_appointment t on u.id = t.creator where u.real_name like concat('%', #{name}, '%') AND u.deleted = 0 AND u.status = 1
     </select>
-
 
 </mapper>
