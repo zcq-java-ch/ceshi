@@ -110,9 +110,7 @@ public class ResourceController {
         if (ObjectUtil.isNull(byMobile)){
             throw new ServerException("没有此员工");
         }
-        tVehicleService.setByLicensePlates(licensePlate ,byMobile.getId() , Constant.ENABLE );
         tVehicleService.setLicensePlates(byMobile,licensePlate);
-
         return Result.ok();
     }
 

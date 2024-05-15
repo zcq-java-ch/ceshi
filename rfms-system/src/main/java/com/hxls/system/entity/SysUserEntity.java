@@ -34,10 +34,10 @@ public class SysUserEntity extends BaseEntity {
     private Long stationId;
 
 
-//    /**
-//     * 是否留宿
-//     **/
-//    private Integer isStay;
+    /**
+     * 是否留宿
+     **/
+    private Integer isStay;
 
     /**
      * 业务
