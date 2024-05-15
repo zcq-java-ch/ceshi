@@ -4,8 +4,8 @@ import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -58,4 +58,11 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
      * @param file     excel文件
      */
     void importByExcel(String file,Long siteId) throws IOException;
+
+    /**
+     * icps修改车辆人员
+     * @param byMobile
+     * @param licensePlate
+     */
+    void setLicensePlates(SysUserVO byMobile, String licensePlate);
 }

@@ -18,20 +18,17 @@ import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.TVehicleDao;
-import com.hxls.system.entity.SysDictDataEntity;
-import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.service.TVehicleService;
+import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -252,5 +249,20 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         }catch (Exception e){
             throw new ServerException("导入数据不正确");
         }
+    }
+
+    @Override
+    public void setLicensePlates(SysUserVO byMobile, String licensePlate) {
+
+        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate ,licensePlate ));
+        if (ObjectUtil.isNull(one)){
+            throw new ServerException(ErrorCode.NOT_FOUND.getMsg());
+        }
+        //修改默认司机
+        one.setDriverId(byMobile.getId());
+        one.setDriverName(byMobile.getRealName());
+        one.setDriverMobile(byMobile.getMobile());
+
+        updateById(one);
     }
 }
