@@ -281,7 +281,7 @@ public class LeadingEnterpriseController {
 
         //隔离车辆的数据
         if (getDate()) {
-            recordInfos.removeIf(item -> item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765") || item.getCarNum().contains("WZ"));
+            recordInfos.removeIf(item -> item.getCarNum().equals("川B79482") || item.getCarNum().equals("川B85765") || item.getCarNum().contains("WZ") || item.getCarNum().equals("川B745XR"));
         }
 
         List<recordInfo> objects = new ArrayList<>(recordInfos);
