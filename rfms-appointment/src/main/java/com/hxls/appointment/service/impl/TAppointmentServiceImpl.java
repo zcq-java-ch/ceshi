@@ -245,22 +245,23 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
         //检查预约单是否有未完成得预约信息
         List<TAppointmentEntity> tAppointmentEntityList = list(new LambdaQueryWrapper<TAppointmentEntity>().eq(TAppointmentEntity::getSiteId, vo.getSiteId()).le(TAppointmentEntity::getStartTime, vo.getStartTime()).ge(TAppointmentEntity::getEndTime, vo.getEndTime()));
-
         if (CollectionUtils.isNotEmpty(tAppointmentEntityList)) {
             List<Long> list = tAppointmentEntityList.stream().map(TAppointmentEntity::getId).collect(Collectors.toList());
             List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>().in(TAppointmentPersonnel::getAppointmentId, list));
-            List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
-            List<String> names = new ArrayList<>();
-            vo.getPersonnelList().forEach(item -> {
-                Long userId = item.getUserId();
-                if (userIds.contains(userId)) {
-                    names.add(item.getExternalPersonnel());
+            if (CollectionUtils.isNotEmpty(personnelList)) {
+                List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
+                List<String> names = new ArrayList<>();
+                vo.getPersonnelList().forEach(item -> {
+                    Long userId = item.getUserId();
+                    if (userIds.contains(userId)) {
+                        names.add(item.getExternalPersonnel());
+                    }
+                });
+                if (CollectionUtils.isNotEmpty(names)) {
+                    String join = StrUtil.join(",", names);
+                    // 如果连接后的字符串长度大于 0
+                    throw new ServerException(join + "在预约时间段内有未完成的预约单");
                 }
-            });
-            if (CollectionUtils.isNotEmpty(names)) {
-                String join = StrUtil.join(",", names);
-                // 如果连接后的字符串长度大于 0
-                throw new ServerException(join + "在预约时间段内有未完成的预约单");
             }
         }
 
