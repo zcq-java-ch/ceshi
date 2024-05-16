@@ -168,7 +168,9 @@ public class SynMessageDataContorller {
                  * 3. 没有对应申请，则查找有没有对应的user，有则生成对应人员的出入记录
                  * 4. 没有则查找车辆管理表，有则生成对应司机的出入记录
                  * */
-                tVehicleAccessRecordsService.retinuegenerateRecords(tVehicleAccessRecordsEntity);
+                if (StringUtils.isNotEmpty(tVehicleAccessRecordsEntity.getPlateNumber())){
+                    tVehicleAccessRecordsService.retinuegenerateRecords(tVehicleAccessRecordsEntity);
+                }
             }
         }
     }
