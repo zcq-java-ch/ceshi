@@ -127,7 +127,24 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(List<Long> idList) {
+        List<TVehicleEntity> tVehicleEntities = listByIds(idList);
+
+        for (TVehicleEntity entity : tVehicleEntities) {
+
+            //删除原厂站的信息
+            JSONObject vehicle = new JSONObject();
+            vehicle.set("sendType","2");
+            entity.setStationId(entity.getSiteId());
+            vehicle.set("data" , JSONUtil.toJsonStr(entity));
+            vehicle.set("DELETE","DELETE");
+            appointmentFeign.issuedPeople(vehicle);
+        }
+
+
         removeByIds(idList);
+
+
+
     }
 
     /**

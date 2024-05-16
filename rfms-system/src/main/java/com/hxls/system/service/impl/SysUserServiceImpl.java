@@ -314,6 +314,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     public void delete(List<Long> idList) {
+
+        List<SysUserEntity> sysUserEntities = listByIds(idList);
+        for (SysUserEntity byId : sysUserEntities) {
+            JSONObject person = new JSONObject();
+            person.set("sendType","1");
+            person.set("data" , JSONUtil.toJsonStr(byId));
+            person.set("DELETE" , "DELETE");
+            appointmentFeign.issuedPeople(person);
+        }
+
+
         // 删除用户
         removeByIds(idList);
 
