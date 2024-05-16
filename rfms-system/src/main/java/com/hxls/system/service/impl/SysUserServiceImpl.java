@@ -709,9 +709,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         one = baseMapper.selectOne(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile, mainUserVO.getPhone()));
                     }
                     List<SysOrgEntity> orgs = sysOrgService.list(new LambdaQueryWrapper<SysOrgEntity>().eq(SysOrgEntity::getCode, mainUserVO.getSysRefs().get(0).get("deptCode")));
-                    //如果已经存在的用户，更新组织
+                    //如果已经存在的用户，更新组织及员工编码
                     if (one!=null){
                         if (CollectionUtils.isNotEmpty(orgs)){
+                            one.setCode(mainUserVO.getCode());
                             one.setOrgId(orgs.get(0).getId());
                             one.setOrgName(orgs.get(0).getName());
                             one.setPostName(mainUserVO.getSysRefs().get(0).get("positionName"));
