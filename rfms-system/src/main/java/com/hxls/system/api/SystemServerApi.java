@@ -639,4 +639,32 @@ public class SystemServerApi {
         jsonObject.put("userIds", userIds);
         return jsonObject;
     }
+
+    /**
+      * @author Mryang
+      * @description 查询改用户id或用户名字，在该站点中是否是留宿人员，如果是 返回ture 否则返回false
+      * @date 9:14 2024/5/16
+      * @param
+      * @return
+      */
+    @PostMapping(value = "queryIsStayByUser")
+    public boolean queryIsStayByUser(@RequestParam("personId") Long personId,@RequestParam("siteId") Long siteId){
+        LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getId, personId);
+        List<SysUserEntity> list = sysUserService.list(sysUserEntityLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(list)){
+            SysUserEntity sysUserEntity = list.get(0);
+            Integer isStay = sysUserEntity.getIsStay();
+            if (isStay == 1){
+                return true;
+            }else {
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
 }

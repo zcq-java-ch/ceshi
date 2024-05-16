@@ -31,4 +31,7 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/queryNbUserIdByUserIdS")
     JSONObject queryNbUserIdByUserIdS(@RequestParam("collect") List<Long> collect);
+
+    @PostMapping(value = "api/system/queryIsStayByUser")
+    boolean queryIsStayByUser(@RequestParam("personId") Long personId,@RequestParam("siteId") Long siteId);
 }

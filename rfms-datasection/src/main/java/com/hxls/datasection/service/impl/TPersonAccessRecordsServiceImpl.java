@@ -154,62 +154,43 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                     .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getSiteId));
             // 打印每个分组
             groupedByManufacturerId.forEach((siteId, recordsList) -> {
-                System.out.println("Site ID: " + siteId);
-                System.out.println("Records:");
-                recordsList.forEach(System.out::println);
-                System.out.println("---------------------------------");
 
                 // 按照 姓名 进行分组
 //                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = recordsList.stream()
 //                        .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
 //                        .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
-
-                // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+                // 首先过滤掉 userId 为空的数据
                 List<TPersonAccessRecordsEntity> filteredList = recordsList.stream()
-                        .filter(entity -> {
-                            String devicePersonId = entity.getDevicePersonId();
-                            String personName = entity.getPersonName();
-                            // 保留 devicePersonId 和 personName 至少有一个不为空的实体
-                            return (devicePersonId != null && !devicePersonId.isEmpty()) ||
-                                    (personName != null && !personName.isEmpty());
-                        })
+                        .filter(entity -> entity.getPersonId() != null)
                         .collect(Collectors.toList());
 
-                // 按照姓名进行分组，当devicePersonId为空时
-                Map<String, List<TPersonAccessRecordsEntity>> groupedByPersonId = filteredList.stream()
-                        .collect(Collectors.groupingBy(
-                                entity -> {
-                                    String devicePersonId = entity.getDevicePersonId();
-                                    if (devicePersonId != null && !devicePersonId.isEmpty()) {
-                                        return devicePersonId;
-                                    } else {
-                                        return entity.getPersonName();
-                                    }
-                                }
-                        ));
+                // 按照 userId 进行分组
+                Map<Long, List<TPersonAccessRecordsEntity>> groupedByPersonId = filteredList.stream()
+                        .collect(Collectors.groupingBy(entity -> entity.getPersonId()));
 
 
                 // 打印每个分组
                 groupedByPersonId.forEach((personId, records2List) -> {
-                    System.out.println("Device Person ID: " + personId);
-                    System.out.println("Records:");
-                    records2List.forEach(System.out::println);
-                    System.out.println("---------------------------------");
 
-                    // 按照 进出类型 进行分组
-                    Map<String, List<TPersonAccessRecordsEntity>> groupedByAccessType = records2List.stream()
-                            .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getAccessType()))
-                            .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getAccessType));
-                    int size = groupedByAccessType.size();
-                    if (size == 1){
-                        groupedByAccessType.forEach((accessType, records3List) -> {
-                            TPersonAccessRecordsEntity tPersonAccessRecordsEntity = records3List.get(0);
-                            TPersonAccessRecordsVO convert = TPersonAccessRecordsConvert.INSTANCE.convert(tPersonAccessRecordsEntity);
-                            convert.setDirectionType("1".equals(convert.getAccessType()) ? "未出场" : "未入场");
-                            convert.setTodayDetails(records3List);
-                            personAccessRecordsEntityArrayList.add(convert);
-                        });
+                    // 判断这个人在当前站点是不是【住宿】如果是注册，则忽略records2List  如果不是住宿人员，则需要统计未出场，未入场
+                    boolean isStay = userFeign.queryIsStayByUser(personId, siteId);
+
+                    if (!isStay){
+                        // 按照 进出类型 进行分组
+                        Map<String, List<TPersonAccessRecordsEntity>> groupedByAccessType = records2List.stream()
+                                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getAccessType()))
+                                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getAccessType));
+                        int size = groupedByAccessType.size();
+                        if (size == 1){
+                            groupedByAccessType.forEach((accessType, records3List) -> {
+                                TPersonAccessRecordsEntity tPersonAccessRecordsEntity = records3List.get(0);
+                                TPersonAccessRecordsVO convert = TPersonAccessRecordsConvert.INSTANCE.convert(tPersonAccessRecordsEntity);
+                                convert.setDirectionType("1".equals(convert.getAccessType()) ? "未出场" : "未入场");
+                                convert.setTodayDetails(records3List);
+                                personAccessRecordsEntityArrayList.add(convert);
+                            });
+                        }
                     }
                 });
             });
