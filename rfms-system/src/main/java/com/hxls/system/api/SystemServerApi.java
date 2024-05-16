@@ -348,7 +348,7 @@ public class SystemServerApi {
 
     /**
      * @author: Mryang
-     * @Description: 用于查询 通用车辆管理表中，指定站点的车辆总数
+     * @Description: 用于查询 通用车辆管理表中，指定站点的车辆管理的车辆数量以及用户中该站点有车的数量
      * @Date: 2024/4/21 22:53
      * @param siteId
      * @return: JSONObject
@@ -362,10 +362,14 @@ public class SystemServerApi {
         List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
         if (CollectionUtil.isNotEmpty(tVehicleEntities)){
-            // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
             entries.put("siteCarNumberTotal", tVehicleEntities.size());
 
         }
+//        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getSiteId, siteId);
+//        sysUserService.list()
         return entries;
     }
 

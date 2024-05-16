@@ -126,6 +126,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         params.put("status", query.getStatus());
         params.put("realName", query.getRealName());
         params.put("orgName", query.getOrgName());
+        params.put("stationId", query.getStationId());
 
 
         if(query.getOrgId() != null){

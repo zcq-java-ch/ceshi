@@ -48,4 +48,6 @@ public class SysUserQuery extends Query {
     @Schema(description = "用户类型")
     private Integer status;
 
+    @Schema(description = "所属站点（组织类型为站点的组织id）")
+    private Long stationId;
 }

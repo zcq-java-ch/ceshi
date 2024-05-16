@@ -46,6 +46,9 @@
 		<if test="status != null">
 			and t1.status = #{status}
 		</if>
+		<if test="stationId != null">
+			and t1.station_id = #{stationId}
+		</if>
 	</select>
 
 	<select id="getById" resultType="com.hxls.system.entity.SysUserEntity">
