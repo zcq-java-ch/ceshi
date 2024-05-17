@@ -311,11 +311,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
         //判断是否需要修改其他站点的下发
-        if (!byId.getStationIds().equals(vo.getStationIds())){
-            //下发其他站点
-            sendOtherStation(entity);
+        if(StringUtils.isNotEmpty(byId.getStationIds())) {
+            if (!byId.getStationIds().equals(vo.getStationIds())) {
+                //下发其他站点
+                sendOtherStation(entity);
+            }
         }
-
 
         // 更新用户角色关系
         sysUserRoleService.saveOrUpdate(entity.getId(), vo.getRoleIdList());
