@@ -62,11 +62,12 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         Long nbzc = jsonObject2.getLong("nbzc");
         Long wbzp = jsonObject2.getLong("wbzp");
 
-        JSONObject entries = jsonObject1.getJSONObject("jobs");
+//        JSONObject entries = jsonObject1.getJSONObject("jobs");
 
         // 查询站点工种统计
         JSONObject jsonObject5 = tPersonAccessRecordsService.queryTheStatisticsOfTheTypeOfWorkBySiteId(stationId);
         JSONObject postAll = jsonObject5.getJSONObject("postAll");
+        JSONObject busisAll = jsonObject5.getJSONObject("busisAll");
         // 查询外部预约总数
         JSONObject jsonObject4 = appointmentFeign.queryTotalAppointments(stationId);
         Integer wbyyzs = jsonObject4.getInteger("numberOfExternalAppointments");
@@ -79,7 +80,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         // 在册厂外
         jsonObject.put("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn);
         // 预拌人数 预制人数 等业务与人数
-        jsonObject.put("numberOfPeopleReadyToMix", entries);
+        jsonObject.put("numberOfPeopleReadyToMix", busisAll);
         // 实时总人数
         jsonObject.put("realTimeTotalNumberOfPeople", realTimeTotalNumberOfPeople);
         // 公司人员

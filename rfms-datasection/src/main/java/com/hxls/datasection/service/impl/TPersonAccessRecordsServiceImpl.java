@@ -812,10 +812,6 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
 
         int numberOfFactoryStation = 0;
         List<TPersonAccessRecordsEntity> objects = new ArrayList<>();
-        // 按照姓名id进行分组
-//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotBlank(tPersonAccessRecordsEntity.getDevicePersonId()))
-//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
         // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
         List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
                 .filter(entity -> {
@@ -861,8 +857,17 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         // 按positionName进行分组并计算每个组中的人数
         Map<String, Long> groupCountMap = filteredList.stream()
                 .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getPositionName, Collectors.counting()));
+
+        // 过滤掉busis为空的实体
+        List<TPersonAccessRecordsEntity> filteredBusisList = objects.stream()
+                .filter(entity -> entity.getBusis() != null && !entity.getBusis().isEmpty())
+                .collect(Collectors.toList());
+        // 按busis进行分组并计算每个组中的人数
+        Map<String, Long> busisGroupCountMap = filteredBusisList.stream()
+                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getBusis, Collectors.counting()));
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("postAll", groupCountMap);
+        jsonObject.put("busisAll", busisGroupCountMap);
         return jsonObject;
     }
 }
