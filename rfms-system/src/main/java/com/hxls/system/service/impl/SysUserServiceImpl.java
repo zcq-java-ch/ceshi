@@ -257,12 +257,15 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
         //判断是否需要修改其他站点的下发
-        if (!byId.getStationIds().equals(vo.getStationIds())){
-            for (String stationId : byId.getStationIds().split(",")) {
-                byId.setStationId(Long.getLong(stationId));
-                deleteInfoToAgent(byId ,byId);
+        if(StringUtils.isNotEmpty(byId.getStationIds())){
+            if (!byId.getStationIds().equals(vo.getStationIds())){
+                for (String stationId : byId.getStationIds().split(",")) {
+                    byId.setStationId(Long.getLong(stationId));
+                    deleteInfoToAgent(byId ,byId);
+                }
             }
         }
+
 
 
         // 判断用户名是否存在
