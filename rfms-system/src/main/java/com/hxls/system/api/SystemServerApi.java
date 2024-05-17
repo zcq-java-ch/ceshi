@@ -361,15 +361,17 @@ public class SystemServerApi {
         tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getSiteId, siteId);
         List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tVehicleEntities)){
-            entries.put("siteCarNumberTotal", tVehicleEntities.size());
+        Integer totalCar = 0;
+        totalCar += tVehicleEntities.size();
+        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
+        userEntityLambdaQueryWrapper.isNotNull(SysUserEntity::getLicensePlate);
+        List<SysUserEntity> list = sysUserService.list(userEntityLambdaQueryWrapper);
+        totalCar += list.size();
+        entries.put("siteCarNumberTotal", totalCar);
 
-        }
-//        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getSiteId, siteId);
-//        sysUserService.list()
         return entries;
     }
 
