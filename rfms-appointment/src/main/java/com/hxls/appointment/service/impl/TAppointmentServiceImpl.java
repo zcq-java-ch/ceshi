@@ -251,12 +251,14 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             if (CollectionUtils.isNotEmpty(personnelList)) {
                 List<Long> userIds = personnelList.stream().map(TAppointmentPersonnel::getUserId).collect(Collectors.toList());
                 List<String> names = new ArrayList<>();
-                vo.getPersonnelList().forEach(item -> {
-                    Long userId = item.getUserId();
-                    if (userIds.contains(userId)) {
-                        names.add(item.getExternalPersonnel());
-                    }
-                });
+                if (CollectionUtils.isNotEmpty(vo.getPersonnelList())) {
+                    vo.getPersonnelList().forEach(item -> {
+                        Long userId = item.getUserId();
+                        if (userIds.contains(userId)) {
+                            names.add(item.getExternalPersonnel());
+                        }
+                    });
+                }
                 if (CollectionUtils.isNotEmpty(names)) {
                     String join = StrUtil.join(",", names);
                     // 如果连接后的字符串长度大于 0
