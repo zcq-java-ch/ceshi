@@ -9,6 +9,7 @@ import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.util.BaseImageUtils;
+import com.hxls.datasection.vo.TPersonAccessRecordsExportVO;
 import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -201,9 +202,11 @@ public class TPersonAccessRecordsController extends BaseController {
     public void exportTpersonAccessRecords(@ParameterObject @Valid TPersonAccessRecordsQuery query, @ModelAttribute("baseUser")  UserDetail baseUser){
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.pageUnidirectionalTpersonAccessRecords(query,baseUser);
         List<TPersonAccessRecordsVO> list = page.getList();
+        List<TPersonAccessRecordsExportVO> tPersonAccessRecordsExportVOS = TPersonAccessRecordsConvert.INSTANCE.convertExportList(list);
+
         // 处理字典
-        for (int i = 0; i < list.size(); i++) {
-            TPersonAccessRecordsVO tPersonAccessRecordsVO = list.get(i);
+        for (int i = 0; i < tPersonAccessRecordsExportVOS.size(); i++) {
+            TPersonAccessRecordsExportVO tPersonAccessRecordsVO = tPersonAccessRecordsExportVOS.get(i);
             String accessType = tPersonAccessRecordsVO.getAccessType();
             if ("1".equals(accessType)){
                 tPersonAccessRecordsVO.setAccessTypeLabel("进场");
@@ -244,7 +247,7 @@ public class TPersonAccessRecordsController extends BaseController {
 
 //        transService.transBatch(list);
         // 写到浏览器打开
-        ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "人员通行记录" + DateUtils.format(new Date()), null, list);
+        ExcelUtils.excelExport(TPersonAccessRecordsExportVO.class, "人员通行记录" + DateUtils.format(new Date()), null, tPersonAccessRecordsExportVOS);
     }
 
 }

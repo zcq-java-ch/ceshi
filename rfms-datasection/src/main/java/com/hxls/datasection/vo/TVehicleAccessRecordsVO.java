@@ -34,7 +34,7 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "对应站点id")
 	private Long siteId;
 
-	@ExcelProperty("对应站点名字")
+	@ExcelProperty("厂站")
 	@Schema(description = "对应站点名字")
 	private String siteName;
 
@@ -42,7 +42,8 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "对应厂商id")
 	private Long manufacturerId;
 
-	@ExcelProperty("对应厂商名字")
+	@ExcelIgnore
+//	@ExcelProperty("对应厂商名字")
 	@Schema(description = "对应厂商名字")
 	private String manufacturerName;
 
@@ -58,7 +59,7 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "出入通道ID")
 	private Long channelId;
 
-	@ExcelProperty("出入通道名字")
+	@ExcelProperty("区域")
 	@Schema(description = "出入通道名字")
 	private String channelName;
 
@@ -70,7 +71,7 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@Schema(description = "设备名字")
 	private String deviceName;
 
-	@ExcelProperty(value = "记录时间", converter = DateConverter.class)
+	@ExcelProperty(value = "进出时间", converter = DateConverter.class)
 	@Schema(description = "记录时间")
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date recordTime;

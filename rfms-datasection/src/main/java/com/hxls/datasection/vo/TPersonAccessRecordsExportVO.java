@@ -37,7 +37,7 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "对应站点id")
 	private Long siteId;
 
-	@ExcelProperty("对应站点名字")
+	@ExcelProperty("厂站")
 	@Schema(description = "对应站点名字")
 	private String siteName;
 
@@ -45,7 +45,8 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "对应厂商id")
 	private Long manufacturerId;
 
-	@ExcelProperty("对应厂商名字")
+	@ExcelIgnore
+//	@ExcelProperty("对应厂商名字")
 	@Schema(description = "对应厂商名字")
 	private String manufacturerName;
 
@@ -54,14 +55,15 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "出入类型  1：进场   2：出场")
 	private String accessType;
 
-	@ExcelProperty(value = "出入类型")
+	@ExcelProperty(value = "单项类型")
 	private String accessTypeLabel;
 
 	@ExcelIgnore
 	@Schema(description = "出入通道区域ID")
 	private Long channelId;
 
-	@ExcelProperty("出入通道区域名字")
+	@ExcelIgnore
+//	@ExcelProperty("出入通道区域名字")
 	@Schema(description = "出入通道区域名字")
 	private String channelName;
 
@@ -69,11 +71,13 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "设备ID")
 	private Long deviceId;
 
-	@ExcelProperty("设备名字")
+	@ExcelIgnore
+//	@ExcelProperty("设备名字")
 	@Schema(description = "设备名字")
 	private String deviceName;
 
-	@ExcelProperty(value = "记录时间", converter = DateConverter.class)
+	@ExcelIgnore
+//	@ExcelProperty(value = "进出时间", converter = DateConverter.class)
 	@Schema(description = "记录时间")
 	@JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
 	private Date recordTime;
@@ -86,7 +90,7 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "设备方用户唯一标识")
 	private String devicePersonId;
 
-	@ExcelProperty("名字")
+	@ExcelProperty("姓名")
 	@Schema(description = "名字")
 	private String personName;
 
@@ -102,7 +106,7 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "带班负责人id")
 	private Long supervisorId;
 
-	@ExcelProperty("带班负责人名字")
+	@ExcelProperty("带班负责人")
 	@Schema(description = "带班负责人名字")
 	private String supervisorName;
 
@@ -122,7 +126,7 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "岗位id")
 	private Long positionId;
 
-	@ExcelProperty("岗位名字")
+	@ExcelProperty("岗位")
 	@Schema(description = "岗位名字")
 	private String positionName;
 
@@ -169,7 +173,8 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "用户业务类型")
 	private String busis;
 
-	@ExcelProperty(value = "用户业务类型")
+	@ExcelIgnore
+//	@ExcelProperty(value = "用户业务类型")
 	private String busisLabel;
 
 	@ExcelIgnore

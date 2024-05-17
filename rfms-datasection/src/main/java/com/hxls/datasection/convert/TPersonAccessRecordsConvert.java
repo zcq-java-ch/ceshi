@@ -1,6 +1,7 @@
 package com.hxls.datasection.convert;
 
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
+import com.hxls.datasection.vo.TPersonAccessRecordsExportVO;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -22,5 +23,7 @@ public interface TPersonAccessRecordsConvert {
     TPersonAccessRecordsVO convert(TPersonAccessRecordsEntity entity);
 
     List<TPersonAccessRecordsVO> convertList(List<TPersonAccessRecordsEntity> list);
+
+    List<TPersonAccessRecordsExportVO> convertExportList(List<TPersonAccessRecordsVO> list);
 
 }

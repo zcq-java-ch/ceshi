@@ -39,7 +39,7 @@ public class TPersonAccessRecordsVO implements Serializable, TransPojo {
 	@Schema(description = "对应站点id")
 	private Long siteId;
 
-	@ExcelProperty("对应站点名字")
+	@ExcelProperty("厂站")
 	@Schema(description = "对应站点名字")
 	private String siteName;
 
