@@ -4,6 +4,7 @@ import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.Result;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
@@ -38,67 +39,68 @@ import java.util.*;
 @RestController
 @RequestMapping("/excel")
 @CrossOrigin
+@Slf4j
 public class ExcelController {
-    @Autowired
+//    @Autowired
 //    private TransferServiceImpl transferService;
 
-    private static Map<PicturePosition, String> pictureMap;
+//    private static Map<PicturePosition, String> pictureMap = new HashMap<>();
 
-    @RequestMapping("/upload")
-    public Object upload(@RequestParam("file") MultipartFile file) {
-        //初始化图片容器
-        pictureMap = new HashMap<>();
-        String fileFormat = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-        Workbook workbook;
-        try {
-            if (ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
-                workbook = new HSSFWorkbook(file.getInputStream());
-            } else if (ExcelFormatEnum.XLSX.getValue().equals(fileFormat)) {
-                workbook = new XSSFWorkbook(file.getInputStream());
-            } else {
-                throw new ServerException("xxx");
-            }
-            //读取excel所有图片
-            if (ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
-                getPicturesXLS(workbook);
-            } else {
-                getPicturesXLSX(workbook);
-            }
-
-            List<Transfer> transferList = new ArrayList<>();
-
-            Sheet sheet = workbook.getSheetAt(0);
-            int rows = sheet.getLastRowNum();
-            for (int i = 1; i <= rows; i++) {
-                Row row = sheet.getRow(i);
-                // 一个对象 自定义
-                Transfer transfer = new Transfer();
-                // 商品图样
-                if (row.getCell(0) != null){
-                    transfer.setImgs(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 0))));
-                }
-                // 名称
-                if (row.getCell(1) != null){
-                    transfer.setName(this.getCellValue(row.getCell(1)));
-                }
-                transferList.add(transfer);
-            }
-
-            for (Transfer data : transferList) {
-                // 拿到数据自己操作，该新增还是干嘛
-//                transferService.save(data);
-            }
-            return Result.ok();
-        } catch (IOException e) {
-//            throw new MyException(ExceptionEnum.FILE_ERROR);
-            throw new ServerException("xxx");
-        }
-    }
+//    @RequestMapping("/upload")
+//    public Object upload(@RequestParam("file") MultipartFile file) {
+//        //初始化图片容器
+//        pictureMap = new HashMap<>();
+//        String fileFormat = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+//        Workbook workbook;
+//        try {
+//            if (ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+//                workbook = new HSSFWorkbook(file.getInputStream());
+//            } else if (ExcelFormatEnum.XLSX.getValue().equals(fileFormat)) {
+//                workbook = new XSSFWorkbook(file.getInputStream());
+//            } else {
+//                throw new ServerException("xxx");
+//            }
+//            //读取excel所有图片
+//            if (ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+//                getPicturesXLS(workbook);
+//            } else {
+//                getPicturesXLSX(workbook);
+//            }
+//
+//            List<Transfer> transferList = new ArrayList<>();
+//
+//            Sheet sheet = workbook.getSheetAt(0);
+//            int rows = sheet.getLastRowNum();
+//            for (int i = 1; i <= rows; i++) {
+//                Row row = sheet.getRow(i);
+//                // 一个对象 自定义
+//                Transfer transfer = new Transfer();
+//                // 商品图样
+//                if (row.getCell(0) != null){
+//                    transfer.setImgs(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 0))));
+//                }
+//                // 名称
+//                if (row.getCell(1) != null){
+//                    transfer.setName(this.getCellValue(row.getCell(1)));
+//                }
+//                transferList.add(transfer);
+//            }
+//
+//            for (Transfer data : transferList) {
+//                // 拿到数据自己操作，该新增还是干嘛
+////                transferService.save(data);
+//            }
+//            return Result.ok();
+//        } catch (IOException e) {
+////            throw new MyException(ExceptionEnum.FILE_ERROR);
+//            throw new ServerException("xxx");
+//        }
+//    }
 
     @RequestMapping("/readExcelByUrl")
     public Object readExcelByUrl(@RequestParam("url") String excelUrl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // 初始化图片容器
-        HashMap<PicturePosition, byte[]> pictureMap = new HashMap<>();
+        HashMap<PicturePosition, String> pictureMap = new HashMap<>();
 
 
         disableSslVerification();
@@ -117,13 +119,11 @@ public class ExcelController {
                     throw new ServerException("Unsupported file format.");
                 }
 
-                // 读取Excel所有图片，此处逻辑省略，保持原有getPicturesXLS或getPicturesXLSX调用
-
                 //读取excel所有图片
                 if (ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
-                    getPicturesXLS(workbook);
+                    getPicturesXLS(workbook, pictureMap);
                 } else {
-                    getPicturesXLSX(workbook);
+                    getPicturesXLSX(workbook, pictureMap);
                 }
 
                 List<Transfer> transferList = new ArrayList<>();
@@ -147,6 +147,8 @@ public class ExcelController {
                 // ...
                 for (Transfer data : transferList) {
                     // 拿到数据自己操作，该新增还是干嘛
+                    log.info("数据结果图片：{}",data.getImgs());
+                    log.info("数据结果值：{}",data.getName());
 //                transferService.save(data);
                 }
 
@@ -255,7 +257,7 @@ public class ExcelController {
      *
      * @param workbook
      */
-    private static void getPicturesXLS(Workbook workbook) {
+    private static void getPicturesXLS(Workbook workbook, HashMap<PicturePosition, String> pictureMap) {
         List<HSSFPictureData> pictures = (List<HSSFPictureData>) workbook.getAllPictures();
         HSSFSheet sheet = (HSSFSheet) workbook.getSheetAt(0);
         if (pictures.size() != 0) {
@@ -277,7 +279,7 @@ public class ExcelController {
      *
      * @param workbook
      */
-    private static void getPicturesXLSX(Workbook workbook) {
+    private static void getPicturesXLSX(Workbook workbook, HashMap<PicturePosition, String> pictureMap) {
         XSSFSheet xssfSheet = (XSSFSheet) workbook.getSheetAt(0);
         for (POIXMLDocumentPart dr : xssfSheet.getRelations()) {
             if (dr instanceof XSSFDrawing) {
