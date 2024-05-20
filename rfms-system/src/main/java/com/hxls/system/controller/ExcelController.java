@@ -1,8 +1,10 @@
-package com.hxls.datasection.controller;
+package com.hxls.system.controller;
 
-import com.hxls.datasection.util.BaseImageUtils;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.system.vo.SysUserGysExcelVO;
+import com.hxls.system.config.BaseImageUtils;
+import com.qcloud.cos.transfer.Transfer;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
@@ -10,30 +12,20 @@ import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -126,54 +118,53 @@ public class ExcelController {
                     getPicturesXLSX(workbook, pictureMap);
                 }
 
-                List<Transfer> transferList = new ArrayList<>();
+                List<SysUserGysExcelVO> transferList = new ArrayList<>();
 
 
                 Sheet sheet = workbook.getSheetAt(0);
                 int rows = sheet.getLastRowNum();
                 for (int i = 1; i <= rows; i++) {
                     Row row = sheet.getRow(i);
-                    Transfer transfer = new Transfer();
+                    SysUserGysExcelVO sysUserGysExcelVO = new SysUserGysExcelVO();
                     if (row.getCell(0) != null) {
-                        transfer.setImgs(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 0))));
+                        sysUserGysExcelVO.setSupervisor(this.getCellValue(row.getCell(0)));
                     }
                     if (row.getCell(1) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setRealName(this.getCellValue(row.getCell(1)));
                     }
                     if (row.getCell(2) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setIdCard(this.getCellValue(row.getCell(2)));
                     }
                     if (row.getCell(3) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setMobile(this.getCellValue(row.getCell(3)));
                     }
                     if (row.getCell(4) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setPostName(this.getCellValue(row.getCell(4)));
                     }
                     if (row.getCell(5) != null) {
-                        transfer.setImgs(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 0))));
+                        sysUserGysExcelVO.setAvatar(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 5))));
                     }
                     if (row.getCell(6) != null) {
-                        transfer.setImgs(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 0))));
+                        sysUserGysExcelVO.setImageUrl(String.valueOf(pictureMap.get(PicturePosition.newInstance(i, 6))));
                     }
                     if (row.getCell(7) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setLicensePlate(this.getCellValue(row.getCell(7)));
                     }
                     if (row.getCell(8) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setCarTypeName(this.getCellValue(row.getCell(8)));
                     }
                     if (row.getCell(9) != null) {
-                        transfer.setName(this.getCellValue(row.getCell(1)));
+                        sysUserGysExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(9)));
                     }
 
-                    transferList.add(transfer);
+                    transferList.add(sysUserGysExcelVO);
                 }
 
                 // 执行数据处理逻辑
                 // ...
-                for (Transfer data : transferList) {
+                for (SysUserGysExcelVO data : transferList) {
                     // 拿到数据自己操作，该新增还是干嘛
-                    log.info("数据结果图片：{}",data.getImgs());
-                    log.info("数据结果值：{}",data.getName());
+                    log.info("数据结果图片：{}",data.toString());
 //                transferService.save(data);
                 }
 
