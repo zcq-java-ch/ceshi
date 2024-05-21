@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("sys/resource/auth")
@@ -123,26 +124,6 @@ public class ResourceByLoginController {
     @GetMapping("area")
     @Operation(summary = "区域下拉")
     public Result<List<SysSiteAreaVO>> areaList(@RequestParam Long siteId) {
-
-//        //配置查询权限
-//        UserDetail user = SecurityUser.getUser();
-//        if (ObjectUtil.isNull(user)) {
-//            throw new ServerException(ErrorCode.FORBIDDEN);
-//        }
-        //
-//        LambdaQueryWrapper<SysSiteAreaEntity> wrapper = new LambdaQueryWrapper<>();
-//        //获取是否是管理员
-//        if ( !user.getSuperAdmin().equals(Constant.SUPER_ADMIN) ) {
-//            List<Long> dataScopeList = user.getDataScopeList();
-//            if (CollectionUtils.isNotEmpty(dataScopeList)){
-//                //获取是所属数据权限的人员
-//                List<SysSiteAreaEntity> list = sysSiteAreaService.list(wrapper.in(SysSiteAreaEntity::getSiteId, dataScopeList));
-//                if (CollectionUtils.isNotEmpty(list)){
-//                    result.addAll( SysSiteAreaConvert.INSTANCE.convertList(list));
-//                }
-//            }
-//            return Result.ok(result);
-//        }
         LambdaQueryWrapper<SysSiteAreaEntity> wrapper = new LambdaQueryWrapper<>();
         List<SysSiteAreaEntity> list = sysSiteAreaService.list(wrapper.eq(SysSiteAreaEntity::getSiteId, siteId));
         List<SysSiteAreaVO> result = new ArrayList<>(SysSiteAreaConvert.INSTANCE.convertList(list));
@@ -224,7 +205,28 @@ public class ResourceByLoginController {
     public Result<List<SysOrgVO>> orgAll() {
         //配置查询权限
         List<SysOrgEntity> list = sysOrgService.list( new LambdaQueryWrapper<SysOrgEntity>().eq(SysOrgEntity::getStatus , Constant.ENABLE));
-        return Result.ok(TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(list)));
+        //List<SysOrgEntity> orgEntityList = list.stream().filter(item -> item.getPname().equals("四川华西集团有限公司")).collect(Collectors.toList());
+        List<SysOrgEntity> orgEntityList  = new ArrayList<>();
+        //写一个递归  最上级是不是   四川华西集团有限公司
+        for (SysOrgEntity sysOrgEntity : list) {
+            if (checkingData(sysOrgEntity ,list ) ){
+                orgEntityList.add(sysOrgEntity);
+            }
+        }
+        return Result.ok(TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(orgEntityList)));
+    }
+
+    private Boolean checkingData(SysOrgEntity sysOrgEntity, List<SysOrgEntity> list) {
+
+        if (  sysOrgEntity.getPcode() != null && sysOrgEntity.getPcode().equals("HG")){
+            return true;
+        }
+        for (SysOrgEntity item : list) {
+            if (item.getCode().equals(sysOrgEntity.getPcode())) {
+                return checkingData(item, list);
+            }
+        }
+        return false;
     }
 
     @GetMapping("personAll")

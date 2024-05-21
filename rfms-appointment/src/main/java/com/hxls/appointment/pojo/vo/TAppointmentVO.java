@@ -24,6 +24,7 @@ public class TAppointmentVO implements Serializable {
 
 	@Schema(description = "id")
 	private Long id;
+	private List<Long> ids;
 
 	@Schema(description = "预约类型（数据字典）")
 	private String appointmentType;
