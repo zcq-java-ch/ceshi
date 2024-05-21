@@ -106,6 +106,9 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         IPage<SysUserEntity> page = getPage(query);
         params.put(Constant.PAGE, page);
 
+        // 数据权限
+        params.put(Constant.DATA_SCOPE, getDataScope("t1", null));
+
         // 数据列表
         List<SysUserEntity> list = baseMapper.getList(params);
 

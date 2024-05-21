@@ -124,26 +124,6 @@ public class ResourceByLoginController {
     @GetMapping("area")
     @Operation(summary = "区域下拉")
     public Result<List<SysSiteAreaVO>> areaList(@RequestParam Long siteId) {
-
-//        //配置查询权限
-//        UserDetail user = SecurityUser.getUser();
-//        if (ObjectUtil.isNull(user)) {
-//            throw new ServerException(ErrorCode.FORBIDDEN);
-//        }
-        //
-//        LambdaQueryWrapper<SysSiteAreaEntity> wrapper = new LambdaQueryWrapper<>();
-//        //获取是否是管理员
-//        if ( !user.getSuperAdmin().equals(Constant.SUPER_ADMIN) ) {
-//            List<Long> dataScopeList = user.getDataScopeList();
-//            if (CollectionUtils.isNotEmpty(dataScopeList)){
-//                //获取是所属数据权限的人员
-//                List<SysSiteAreaEntity> list = sysSiteAreaService.list(wrapper.in(SysSiteAreaEntity::getSiteId, dataScopeList));
-//                if (CollectionUtils.isNotEmpty(list)){
-//                    result.addAll( SysSiteAreaConvert.INSTANCE.convertList(list));
-//                }
-//            }
-//            return Result.ok(result);
-//        }
         LambdaQueryWrapper<SysSiteAreaEntity> wrapper = new LambdaQueryWrapper<>();
         List<SysSiteAreaEntity> list = sysSiteAreaService.list(wrapper.eq(SysSiteAreaEntity::getSiteId, siteId));
         List<SysSiteAreaVO> result = new ArrayList<>(SysSiteAreaConvert.INSTANCE.convertList(list));
