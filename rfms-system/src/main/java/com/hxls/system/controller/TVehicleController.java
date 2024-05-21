@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -169,5 +171,17 @@ public class TVehicleController {
         return Result.ok();
     }
 
+    @PostMapping("importWithPictures")
+    @Operation(summary = "导入通用车辆带图片")
+    @OperateLog(type = OperateTypeEnum.IMPORT)
+    @PreAuthorize("hasAuthority('system:vehicle:import')")
+    public Result<String> importExcelWithPictures(@RequestBody TVehicleVO vo) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        if (vo.getImageUrl().isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        tVehicleService.importByExcelWithPictures(vo.getImageUrl(),vo.getSiteId());
+
+        return Result.ok();
+    }
 
 }

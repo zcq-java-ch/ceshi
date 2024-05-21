@@ -16,20 +16,43 @@ import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.storage.properties.StorageProperties;
+import com.hxls.system.config.BaseImageUtils;
+import com.hxls.system.controller.ExcelController;
+import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.TVehicleDao;
+import com.hxls.system.entity.SysOrgEntity;
+import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
 import com.hxls.system.service.TVehicleService;
+import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
+import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import javax.net.ssl.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * 通用车辆管理表
@@ -281,5 +304,283 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         one.setDriverMobile(byMobile.getMobile());
 
         updateById(one);
+    }
+
+    @Override
+    public void importByExcelWithPictures(String excelUrl, Long siteId) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+        String allUrl = domain+excelUrl;
+
+        // 初始化图片容器
+        HashMap<ExcelController.PicturePosition, String> pictureMap = new HashMap<>();
+
+        disableSslVerification();
+        // 下载Excel文件到本地临时文件
+        File tempFile = downloadFile(allUrl);
+
+        try (InputStream inputStream = new FileInputStream(tempFile)) {
+            Workbook workbook;
+            String fileFormat = allUrl.substring(allUrl.lastIndexOf('.') + 1);
+            try {
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new HSSFWorkbook(inputStream);
+                } else if (ExcelController.ExcelFormatEnum.XLSX.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new XSSFWorkbook(inputStream);
+                } else {
+                    throw new ServerException("Unsupported file format.");
+                }
+
+                //读取excel所有图片
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+                    getPicturesXLS(workbook, pictureMap);
+                } else {
+                    getPicturesXLSX(workbook, pictureMap);
+                }
+
+                List<TVehicleExcelVO> transferList = new ArrayList<>();
+
+
+                Sheet sheet = workbook.getSheetAt(0);
+                int rows = sheet.getLastRowNum();
+                for (int i = 1; i <= rows; i++) {
+                    Row row = sheet.getRow(i);
+                    TVehicleExcelVO tVehicleExcelVO = new TVehicleExcelVO();
+                    if (row.getCell(0) != null) {
+                        tVehicleExcelVO.setLicensePlate(this.getCellValue(row.getCell(0)));
+                    }
+                    if (row.getCell(1) != null) {
+                        tVehicleExcelVO.setCarType(this.getCellValue(row.getCell(1)));
+                    }
+                    if (row.getCell(2) != null) {
+                        tVehicleExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(2)));
+                    }
+                    if (row.getCell(3) != null) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        String cellValue = this.getCellValue(row.getCell(3));
+                        try {
+                            tVehicleExcelVO.setRegistrationDate(dateFormat.parse(cellValue));
+                        } catch (ParseException e) {
+//                            throw new RuntimeException(e);
+                            tVehicleExcelVO.setRegistrationDate(new Date());
+                        }
+                    }
+                    if (row.getCell(4) != null) {
+                        tVehicleExcelVO.setVinNumber(this.getCellValue(row.getCell(4)));
+                    }
+                    if (row.getCell(5) != null) {
+                        tVehicleExcelVO.setEngineNumber(this.getCellValue(row.getCell(5)));
+                    }
+                    if (row.getCell(6) != null) {
+                        tVehicleExcelVO.setFleetName(this.getCellValue(row.getCell(6)));
+                    }
+                    if (row.getCell(7) != null) {
+                        tVehicleExcelVO.setMaxCapacity(this.getCellValue(row.getCell(7)));
+                    }
+                    if (row.getCell(8) != null) {
+                        tVehicleExcelVO.setLicenseImage(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 8))));
+                    }
+                    if (row.getCell(9) != null) {
+                        tVehicleExcelVO.setImageUrl(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 9))));
+                    }
+
+                    transferList.add(tVehicleExcelVO);
+                }
+
+                // 执行数据处理逻辑
+                ExcelUtils.parseDict(transferList);
+                List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(transferList);
+                tVehicleEntities.forEach(tVehicle -> {
+                    //判断车牌号有没有，车牌号只能被创建一次
+                    long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
+                            .eq("license_plate", tVehicle.getLicensePlate())
+                            .eq("deleted", 0));
+                    if (valusCount > 0) {
+                        throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                    }
+                    tVehicle.setSiteId(siteId);
+                    tVehicle.setStatus(1);
+
+                    //下发车辆
+//                    JSONObject vehicle = new JSONObject();
+//                    vehicle.set("sendType","2");
+//                    tVehicle.setStationId(siteId);
+//                    vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
+//                    appointmentFeign.issuedPeople(vehicle);
+
+                });
+
+                saveBatch(tVehicleEntities);
+//                return Result.ok();
+            } finally {
+                // 清理临时文件
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+        } catch (IOException e) {
+            throw new ServerException("Error reading Excel from URL.");
+        }
+    }
+
+
+    // 在下载文件方法之前添加此代码
+    public static void disableSslVerification() throws NoSuchAlgorithmException, KeyManagementException {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }};
+
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        HostnameVerifier allHostsValid = (hostname, session) -> true;
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+    }
+
+    private File downloadFile(String fileUrl) throws IOException {
+        URL url = new URL(fileUrl);
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+        int responseCode = httpConn.getResponseCode();
+
+        // Always check HTTP response code first
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            String disposition = httpConn.getHeaderField("Content-Disposition");
+            String fileName = "";
+            if (disposition != null) {
+                // extracts file name from header field
+                int index = disposition.indexOf("filename=");
+                if (index > 0) {
+                    fileName = disposition.substring(index + 10, disposition.length() - 1);
+                }
+            } else {
+                // extracts file name from URL
+                fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1, fileUrl.length());
+            }
+
+            InputStream inputStream = httpConn.getInputStream();
+            File tempFile = File.createTempFile(fileName, ".tmp");
+            try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+            return tempFile;
+        } else {
+            throw new IOException("No file to download. Server replied HTTP code: " + responseCode);
+        }
+    }
+
+    /**
+     * 获取Excel2003的图片
+     *
+     * @param workbook
+     */
+    private static void getPicturesXLS(Workbook workbook, HashMap<ExcelController.PicturePosition, String> pictureMap) {
+        List<HSSFPictureData> pictures = (List<HSSFPictureData>) workbook.getAllPictures();
+        HSSFSheet sheet = (HSSFSheet) workbook.getSheetAt(0);
+        if (pictures.size() != 0) {
+            for (HSSFShape shape : sheet.getDrawingPatriarch().getChildren()) {
+                HSSFClientAnchor anchor = (HSSFClientAnchor) shape.getAnchor();
+                if (shape instanceof HSSFPicture) {
+                    HSSFPicture pic = (HSSFPicture) shape;
+                    int pictureIndex = pic.getPictureIndex() - 1;
+                    HSSFPictureData picData = pictures.get(pictureIndex);
+                    ExcelController.PicturePosition picturePosition = ExcelController.PicturePosition.newInstance(anchor.getRow1(), anchor.getCol1());
+                    pictureMap.put(picturePosition, printImg(picData));
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取Excel2007的图片
+     *
+     * @param workbook
+     */
+    private static void getPicturesXLSX(Workbook workbook, HashMap<ExcelController.PicturePosition, String> pictureMap) {
+        XSSFSheet xssfSheet = (XSSFSheet) workbook.getSheetAt(0);
+        for (POIXMLDocumentPart dr : xssfSheet.getRelations()) {
+            if (dr instanceof XSSFDrawing) {
+                XSSFDrawing drawing = (XSSFDrawing) dr;
+                List<XSSFShape> shapes = drawing.getShapes();
+                for (XSSFShape shape : shapes) {
+                    XSSFPicture pic = (XSSFPicture) shape;
+                    try {
+                        XSSFClientAnchor anchor = pic.getPreferredSize();
+                        if(anchor != null){
+                            CTMarker ctMarker = anchor.getFrom();
+                            ExcelController.PicturePosition picturePosition = ExcelController.PicturePosition.newInstance(ctMarker.getRow(), ctMarker.getCol());
+                            pictureMap.put(picturePosition, printImg(pic.getPictureData()));
+                        }
+                    }catch (Exception e){
+                        System.out.println(e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存图片并返回存储地址
+     *
+     * @param pic
+     * @return
+     */
+    public static String printImg(PictureData pic) {
+        try {
+            String filePath = UUID.randomUUID().toString() + "." + pic.suggestFileExtension();
+            byte[] data = pic.getData();
+            // 将二进制数据转换为 Base64 格式
+            String base64String = Base64.getEncoder().encodeToString(data);
+            String faceUrl = "";
+            faceUrl = BaseImageUtils.base64ToUrl(base64String, "VEHICLE/IMAGES", "autoimport");
+            return faceUrl;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
+    /**
+     * cell数据格式转换
+     * @param cell
+     * @return
+     */
+    private static String getCellValue(Cell cell){
+        switch (cell.getCellType()) {
+            case NUMERIC: // 数字
+                //如果为时间格式的内容
+                if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                    //注：format格式 yyyy-MM-dd hh:mm:ss 中小时为12小时制，若要24小时制，则把小h变为H即可，yyyy-MM-dd HH:mm:ss
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    return sdf.format(HSSFDateUtil.getJavaDate(cell.
+                            getNumericCellValue()));
+                } else {
+                    return new DecimalFormat("0").format(cell.getNumericCellValue());
+                }
+            case STRING: // 字符串
+                return cell.getStringCellValue();
+            case BOOLEAN: // Boolean
+                return cell.getBooleanCellValue() + "";
+            case FORMULA: // 公式
+                return cell.getCellFormula() + "";
+            case BLANK: // 空值
+                return "";
+            case ERROR: // 故障
+                return null;
+            default:
+                return null;
+        }
     }
 }

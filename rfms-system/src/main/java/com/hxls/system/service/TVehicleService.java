@@ -8,6 +8,8 @@ import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleVO;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -65,4 +67,13 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
      * @param licensePlate
      */
     void setLicensePlates(SysUserVO byMobile, String licensePlate);
+
+    /**
+      * @author Mryang
+      * @description 导出通用车辆数据带图片
+      * @date 15:11 2024/5/21
+      * @param
+      * @return
+      */
+    void importByExcelWithPictures(String imageUrl, Long siteId) throws NoSuchAlgorithmException, KeyManagementException, IOException;
 }
