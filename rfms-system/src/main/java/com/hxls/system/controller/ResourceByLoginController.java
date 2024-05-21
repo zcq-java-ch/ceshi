@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("sys/resource/auth")
@@ -224,7 +225,28 @@ public class ResourceByLoginController {
     public Result<List<SysOrgVO>> orgAll() {
         //配置查询权限
         List<SysOrgEntity> list = sysOrgService.list( new LambdaQueryWrapper<SysOrgEntity>().eq(SysOrgEntity::getStatus , Constant.ENABLE));
-        return Result.ok(TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(list)));
+        //List<SysOrgEntity> orgEntityList = list.stream().filter(item -> item.getPname().equals("四川华西集团有限公司")).collect(Collectors.toList());
+        List<SysOrgEntity> orgEntityList  = new ArrayList<>();
+        //写一个递归  最上级是不是   四川华西集团有限公司
+        for (SysOrgEntity sysOrgEntity : list) {
+            if (checkingData(sysOrgEntity ,list ) ){
+                orgEntityList.add(sysOrgEntity);
+            }
+        }
+        return Result.ok(TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(orgEntityList)));
+    }
+
+    private Boolean checkingData(SysOrgEntity sysOrgEntity, List<SysOrgEntity> list) {
+
+        if (  sysOrgEntity.getPcode() != null && sysOrgEntity.getPcode().equals("HG")){
+            return true;
+        }
+        for (SysOrgEntity item : list) {
+            if (item.getCode().equals(sysOrgEntity.getPcode())) {
+                return checkingData(item, list);
+            }
+        }
+        return false;
     }
 
     @GetMapping("personAll")
