@@ -21,12 +21,15 @@ import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
+import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.cache.TokenStoreCache;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.cache.MainPlatformCache;
+import com.hxls.system.config.BaseImageUtils;
+import com.hxls.system.controller.ExcelController;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.dao.SysUserDao;
@@ -38,17 +41,29 @@ import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
+import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.net.ssl.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 用户管理
@@ -848,12 +863,319 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
     }
 
-
-
-
     private void sendInfoToAgent(JSONObject data){
         appointmentFeign.issuedPeople(data);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void importByExcelWithPictures(String excelUrl, String hxls123456, Long orgId) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+        SysOrgEntity byId = sysOrgService.getById(orgId);
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+        String allUrl = domain+excelUrl;
 
+        // 初始化图片容器
+        HashMap<ExcelController.PicturePosition, String> pictureMap = new HashMap<>();
+
+
+        disableSslVerification();
+        // 下载Excel文件到本地临时文件
+        File tempFile = downloadFile(allUrl);
+
+        try (InputStream inputStream = new FileInputStream(tempFile)) {
+            Workbook workbook;
+            String fileFormat = allUrl.substring(allUrl.lastIndexOf('.') + 1);
+            try {
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new HSSFWorkbook(inputStream);
+                } else if (ExcelController.ExcelFormatEnum.XLSX.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new XSSFWorkbook(inputStream);
+                } else {
+                    throw new ServerException("Unsupported file format.");
+                }
+
+                //读取excel所有图片
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+                    getPicturesXLS(workbook, pictureMap);
+                } else {
+                    getPicturesXLSX(workbook, pictureMap);
+                }
+
+                List<SysUserGysExcelVO> transferList = new ArrayList<>();
+
+
+                Sheet sheet = workbook.getSheetAt(0);
+                int rows = sheet.getLastRowNum();
+                for (int i = 1; i <= rows; i++) {
+                    Row row = sheet.getRow(i);
+                    SysUserGysExcelVO sysUserGysExcelVO = new SysUserGysExcelVO();
+                    if (row.getCell(0) != null) {
+                        sysUserGysExcelVO.setSupervisor(this.getCellValue(row.getCell(0)));
+                    }
+                    if (row.getCell(1) != null) {
+                        sysUserGysExcelVO.setRealName(this.getCellValue(row.getCell(1)));
+                    }
+                    if (row.getCell(2) != null) {
+                        sysUserGysExcelVO.setIdCard(this.getCellValue(row.getCell(2)));
+                    }
+                    if (row.getCell(3) != null) {
+                        sysUserGysExcelVO.setMobile(this.getCellValue(row.getCell(3)));
+                    }
+                    if (row.getCell(4) != null) {
+                        sysUserGysExcelVO.setPostName(this.getCellValue(row.getCell(4)));
+                    }
+                    if (row.getCell(5) != null) {
+                        sysUserGysExcelVO.setAvatar(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 5))));
+                    }
+                    if (row.getCell(6) != null) {
+                        sysUserGysExcelVO.setImageUrl(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 6))));
+                    }
+                    if (row.getCell(7) != null) {
+                        sysUserGysExcelVO.setLicensePlate(this.getCellValue(row.getCell(7)));
+                    }
+                    if (row.getCell(8) != null) {
+                        sysUserGysExcelVO.setCarTypeName(this.getCellValue(row.getCell(8)));
+                    }
+                    if (row.getCell(9) != null) {
+                        sysUserGysExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(9)));
+                    }
+
+                    transferList.add(sysUserGysExcelVO);
+                }
+
+                String password = passwordEncoder.encode("hxls123456");
+                // 执行数据处理逻辑
+                ExcelUtils.parseDict(transferList);
+                List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(transferList);
+                sysUserEntities.forEach(user -> {
+                    // 判断手机号是否存在
+                    SysUserEntity  olduser = baseMapper.getByUsername(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    // 判断手机号是否存在
+                    olduser = baseMapper.getByMobile(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    user.setUserType("2");
+                    user.setPassword(password);
+                    user.setOrgId(orgId);
+                    user.setUsername(user.getMobile());
+                    user.setOrgName(byId.getName());
+                    user.setStatus(1);
+                    user.setSuperAdmin(0);
+                });
+
+                saveBatch(sysUserEntities);
+//                return Result.ok();
+            } finally {
+                // 清理临时文件
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+        } catch (IOException e) {
+            throw new ServerException("Error reading Excel from URL.");
+        }
+    }
+
+    private File downloadFile(String fileUrl) throws IOException {
+        URL url = new URL(fileUrl);
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+        int responseCode = httpConn.getResponseCode();
+
+        // Always check HTTP response code first
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            String disposition = httpConn.getHeaderField("Content-Disposition");
+            String fileName = "";
+            if (disposition != null) {
+                // extracts file name from header field
+                int index = disposition.indexOf("filename=");
+                if (index > 0) {
+                    fileName = disposition.substring(index + 10, disposition.length() - 1);
+                }
+            } else {
+                // extracts file name from URL
+                fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1, fileUrl.length());
+            }
+
+            InputStream inputStream = httpConn.getInputStream();
+            File tempFile = File.createTempFile(fileName, ".tmp");
+            try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+            return tempFile;
+        } else {
+            throw new IOException("No file to download. Server replied HTTP code: " + responseCode);
+        }
+    }
+
+    // 在下载文件方法之前添加此代码
+    public static void disableSslVerification() throws NoSuchAlgorithmException, KeyManagementException {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }};
+
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        HostnameVerifier allHostsValid = (hostname, session) -> true;
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+    }
+
+    /**
+     * cell数据格式转换
+     * @param cell
+     * @return
+     */
+    private static String getCellValue(Cell cell){
+        switch (cell.getCellType()) {
+            case NUMERIC: // 数字
+                //如果为时间格式的内容
+                if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                    //注：format格式 yyyy-MM-dd hh:mm:ss 中小时为12小时制，若要24小时制，则把小h变为H即可，yyyy-MM-dd HH:mm:ss
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    return sdf.format(HSSFDateUtil.getJavaDate(cell.
+                            getNumericCellValue()));
+                } else {
+                    return new DecimalFormat("0").format(cell.getNumericCellValue());
+                }
+            case STRING: // 字符串
+                return cell.getStringCellValue();
+            case BOOLEAN: // Boolean
+                return cell.getBooleanCellValue() + "";
+            case FORMULA: // 公式
+                return cell.getCellFormula() + "";
+            case BLANK: // 空值
+                return "";
+            case ERROR: // 故障
+                return null;
+            default:
+                return null;
+        }
+    }
+    /**
+     * 获取Excel2003的图片
+     *
+     * @param workbook
+     */
+    private static void getPicturesXLS(Workbook workbook, HashMap<ExcelController.PicturePosition, String> pictureMap) {
+        List<HSSFPictureData> pictures = (List<HSSFPictureData>) workbook.getAllPictures();
+        HSSFSheet sheet = (HSSFSheet) workbook.getSheetAt(0);
+        if (pictures.size() != 0) {
+            for (HSSFShape shape : sheet.getDrawingPatriarch().getChildren()) {
+                HSSFClientAnchor anchor = (HSSFClientAnchor) shape.getAnchor();
+                if (shape instanceof HSSFPicture) {
+                    HSSFPicture pic = (HSSFPicture) shape;
+                    int pictureIndex = pic.getPictureIndex() - 1;
+                    HSSFPictureData picData = pictures.get(pictureIndex);
+                    ExcelController.PicturePosition picturePosition = ExcelController.PicturePosition.newInstance(anchor.getRow1(), anchor.getCol1());
+                    pictureMap.put(picturePosition, printImg(picData));
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取Excel2007的图片
+     *
+     * @param workbook
+     */
+    private static void getPicturesXLSX(Workbook workbook, HashMap<ExcelController.PicturePosition, String> pictureMap) {
+        XSSFSheet xssfSheet = (XSSFSheet) workbook.getSheetAt(0);
+        for (POIXMLDocumentPart dr : xssfSheet.getRelations()) {
+            if (dr instanceof XSSFDrawing) {
+                XSSFDrawing drawing = (XSSFDrawing) dr;
+                List<XSSFShape> shapes = drawing.getShapes();
+                for (XSSFShape shape : shapes) {
+                    XSSFPicture pic = (XSSFPicture) shape;
+                    try {
+                        XSSFClientAnchor anchor = pic.getPreferredSize();
+                        if(anchor != null){
+                            CTMarker ctMarker = anchor.getFrom();
+                            ExcelController.PicturePosition picturePosition = ExcelController.PicturePosition.newInstance(ctMarker.getRow(), ctMarker.getCol());
+                            pictureMap.put(picturePosition, printImg(pic.getPictureData()));
+                        }
+                    }catch (Exception e){
+                        System.out.println(e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存图片并返回存储地址
+     *
+     * @param pic
+     * @return
+     */
+    public static String printImg(PictureData pic) {
+        try {
+            String filePath = UUID.randomUUID().toString() + "." + pic.suggestFileExtension();
+            byte[] data = pic.getData();
+            // 将二进制数据转换为 Base64 格式
+            String base64String = Base64.getEncoder().encodeToString(data);
+            String faceUrl = "";
+            faceUrl = BaseImageUtils.base64ToUrl(base64String, "GYS/IMAGES", "autoimport");
+            return faceUrl;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 图片位置
+     * 行row 列 col
+     */
+    @Data
+    public static class PicturePosition {
+        private int row;
+        private int col;
+
+        public static ExcelController.PicturePosition newInstance(int row, int col) {
+            ExcelController.PicturePosition picturePosition = new ExcelController.PicturePosition();
+            picturePosition.setRow(row);
+            picturePosition.setCol(col);
+            return picturePosition;
+        }
+    }
+
+    /**
+     * 枚举excel格式
+     */
+    public enum ExcelFormatEnum {
+        XLS(0, "xls"),
+        XLSX(1, "xlsx");
+
+        private final Integer key;
+        private final String value;
+
+        ExcelFormatEnum(Integer key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public Integer getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 }

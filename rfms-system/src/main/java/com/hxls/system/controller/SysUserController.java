@@ -24,6 +24,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 
@@ -291,10 +294,6 @@ public class SysUserController {
         return Result.ok();
     }
 
-
-
-
-
     @PostMapping("synOrg")
     @Operation(summary = "同步组织结构")
     @OperateLog(type = OperateTypeEnum.UPDATE)
@@ -308,6 +307,19 @@ public class SysUserController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
     public Result<String> synUser() {
         sysUserService.synUser();
+        return Result.ok();
+    }
+
+    @PostMapping("importWithPictures")
+    @Operation(summary = "导入供应商用户带图片")
+    @OperateLog(type = OperateTypeEnum.IMPORT)
+    @PreAuthorize("hasAuthority('sys:user:import')")
+    public Result<String> importExcelWithPictures(@RequestBody @Valid SysUserImportVO vo) throws NoSuchAlgorithmException, IOException, KeyManagementException {
+        if (vo.getImageUrl().isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        sysUserService.importByExcelWithPictures(vo.getImageUrl(), passwordEncoder.encode("hxls123456"), vo.getOrgId());
+
         return Result.ok();
     }
 

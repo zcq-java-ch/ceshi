@@ -1,10 +1,20 @@
 package com.hxls.system.controller;
 
 import com.hxls.framework.common.exception.ServerException;
+import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.storage.properties.StorageProperties;
+import com.hxls.system.convert.SysUserConvert;
+import com.hxls.system.dao.SysUserDao;
+import com.hxls.system.entity.SysOrgEntity;
+import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.service.SysOrgService;
+import com.hxls.system.service.SysUserService;
 import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.config.BaseImageUtils;
+import com.hxls.system.vo.SysUserImportVO;
 import com.qcloud.cos.transfer.Transfer;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
@@ -12,10 +22,9 @@ import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -33,6 +42,21 @@ import java.util.*;
 @CrossOrigin
 @Slf4j
 public class ExcelController {
+
+    @Autowired
+    private SysUserDao sysUserDao;
+
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SysOrgService sysOrgService;
+    @Autowired
+    private SysUserService sysUserService;
+    private final StorageProperties properties;
+    public ExcelController(PasswordEncoder passwordEncoder, StorageProperties properties) {
+        this.passwordEncoder = passwordEncoder;
+        this.properties = properties;
+    }
 //    @Autowired
 //    private TransferServiceImpl transferService;
 
@@ -90,18 +114,25 @@ public class ExcelController {
 //    }
 
     @RequestMapping("/readExcelByUrl")
-    public Object readExcelByUrl(@RequestParam("url") String excelUrl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public Object readExcelByUrl(@RequestBody @Valid SysUserImportVO vo) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        String excelUrl = vo.getImageUrl();
+        Long orgId = vo.getOrgId();
+        SysOrgEntity byId = sysOrgService.getById(orgId);
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+        String allUrl = domain+excelUrl;
+
         // 初始化图片容器
         HashMap<PicturePosition, String> pictureMap = new HashMap<>();
 
 
         disableSslVerification();
         // 下载Excel文件到本地临时文件
-        File tempFile = downloadFile(excelUrl);
+        File tempFile = downloadFile(allUrl);
 
         try (InputStream inputStream = new FileInputStream(tempFile)) {
             Workbook workbook;
-            String fileFormat = excelUrl.substring(excelUrl.lastIndexOf('.') + 1);
+            String fileFormat = allUrl.substring(allUrl.lastIndexOf('.') + 1);
             try {
                 if (ExcelFormatEnum.XLS.getValue().equalsIgnoreCase(fileFormat)) {
                     workbook = new HSSFWorkbook(inputStream);
@@ -160,14 +191,31 @@ public class ExcelController {
                     transferList.add(sysUserGysExcelVO);
                 }
 
+                String password = passwordEncoder.encode("hxls123456");
                 // 执行数据处理逻辑
-                // ...
-                for (SysUserGysExcelVO data : transferList) {
-                    // 拿到数据自己操作，该新增还是干嘛
-                    log.info("数据结果图片：{}",data.toString());
-//                transferService.save(data);
-                }
+                ExcelUtils.parseDict(transferList);
+                List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(transferList);
+                sysUserEntities.forEach(user -> {
+                    // 判断手机号是否存在
+                    SysUserEntity  olduser = sysUserDao.getByUsername(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    // 判断手机号是否存在
+                    olduser = sysUserDao.getByMobile(user.getMobile());
+                    if (olduser != null) {
+                        throw new ServerException("手机号已经存在");
+                    }
+                    user.setUserType("2");
+                    user.setPassword(password);
+                    user.setOrgId(orgId);
+                    user.setUsername(user.getMobile());
+                    user.setOrgName(byId.getName());
+                    user.setStatus(1);
+                    user.setSuperAdmin(0);
+                });
 
+                sysUserService.saveBatch(sysUserEntities);
                 return Result.ok();
             } finally {
                 // 清理临时文件
@@ -331,7 +379,7 @@ public class ExcelController {
             // 将二进制数据转换为 Base64 格式
             String base64String = Base64.getEncoder().encodeToString(data);
             String faceUrl = "";
-            faceUrl = BaseImageUtils.base64ToUrl(base64String, "CES/FACE", "tupian");
+            faceUrl = BaseImageUtils.base64ToUrl(base64String, "GYS/IMAGES", "autoimport");
             return faceUrl;
         } catch (Exception e) {
             return "";

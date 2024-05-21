@@ -10,6 +10,9 @@ import com.hxls.system.vo.MainUserVO;
 import com.hxls.system.vo.SysUserBaseVO;
 import com.hxls.system.vo.SysUserVO;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -109,4 +112,13 @@ public interface SysUserService extends BaseService<SysUserEntity> {
      * @param list
      */
     void updateStationIdList(List<SysUserVO> list);
+
+    /**
+      * @author Mryang
+      * @description 上传excel带图片
+      * @date 9:39 2024/5/21
+      * @param
+      * @return
+      */
+    void importByExcelWithPictures(String imageUrl, String hxls123456, Long orgId) throws NoSuchAlgorithmException, KeyManagementException, IOException;
 }
