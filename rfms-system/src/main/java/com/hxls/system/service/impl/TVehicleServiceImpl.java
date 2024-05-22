@@ -403,11 +403,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setStatus(1);
 
                     //下发车辆
-//                    JSONObject vehicle = new JSONObject();
-//                    vehicle.set("sendType","2");
-//                    tVehicle.setStationId(siteId);
-//                    vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
-//                    appointmentFeign.issuedPeople(vehicle);
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType","2");
+                    tVehicle.setStationId(siteId);
+                    vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
+                    appointmentFeign.issuedPeople(vehicle);
 
                 });
 
