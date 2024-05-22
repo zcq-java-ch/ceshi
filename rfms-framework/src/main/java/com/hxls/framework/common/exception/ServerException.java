@@ -35,4 +35,10 @@ public class ServerException extends RuntimeException {
         this.msg = msg;
     }
 
+    public ServerException(String msg, Integer code) {
+        super(msg);
+        this.code = code;
+        this.msg = msg;
+    }
+
 }
