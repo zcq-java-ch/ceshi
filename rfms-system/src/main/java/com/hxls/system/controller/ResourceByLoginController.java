@@ -24,10 +24,7 @@ import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.SysUserQuery;
-import com.hxls.system.service.SysOrgService;
-import com.hxls.system.service.SysSiteAreaService;
-import com.hxls.system.service.SysUserService;
-import com.hxls.system.service.TVehicleService;
+import com.hxls.system.service.*;
 import com.hxls.system.vo.SysOrgVO;
 import com.hxls.system.vo.SysSiteAreaVO;
 import com.hxls.system.vo.SysUserVO;
@@ -73,6 +70,11 @@ public class ResourceByLoginController {
      * 引入密码修改
      */
     private final TVehicleService tVehicleService;
+
+    /**
+     * 引入系统参数
+     */
+    private final SysParamsService sysParamsService;
     @GetMapping("person")
     @Operation(summary = "人员下拉")
     public Result<List<SysUserVO>> person() {
@@ -304,4 +306,18 @@ public class ResourceByLoginController {
         return Result.ok(result);
 
     }
+
+
+    @GetMapping("adviceNote")
+    @Operation(summary = "获取预约告知书")
+    public Result<String> adviceNote() {
+
+        String adviceNote = sysParamsService.getString("advice_note");
+
+        return Result.ok(adviceNote);
+
+    }
+
+
+
 }
