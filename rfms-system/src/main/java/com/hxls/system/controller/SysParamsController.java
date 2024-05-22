@@ -1,5 +1,6 @@
 package com.hxls.system.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.system.entity.SysParamsEntity;
@@ -78,5 +79,15 @@ public class SysParamsController {
         sysParamsService.delete(idList);
 
         return Result.ok();
+    }
+
+
+    @GetMapping("one")
+    @Operation(summary = "获取预约通知书详情")
+    @PreAuthorize("hasAuthority('sys:params:all')")
+    public Result<SysParamsVO> one() {
+
+        SysParamsEntity sysParamsEntity = sysParamsService.getBaseMapper().selectOne(new LambdaQueryWrapper<SysParamsEntity>().eq(SysParamsEntity::getParamKey,"advice_note"));
+        return Result.ok(SysParamsConvert.INSTANCE.convert(sysParamsEntity));
     }
 }
