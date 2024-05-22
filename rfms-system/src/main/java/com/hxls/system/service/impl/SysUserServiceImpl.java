@@ -32,9 +32,11 @@ import com.hxls.system.config.BaseImageUtils;
 import com.hxls.system.controller.ExcelController;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.convert.SysUserConvert;
+import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.enums.SuperAdminEnum;
 import com.hxls.system.query.SysRoleUserQuery;
 import com.hxls.system.query.SysUserQuery;
@@ -85,6 +87,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     private final AppointmentFeign appointmentFeign;
     private final StorageProperties properties;
     private final PasswordEncoder passwordEncoder;
+    private final TVehicleService tVehicleService;
 
     @Override
     public PageResult<SysUserVO> page(SysUserQuery query) {
@@ -97,8 +100,18 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         // 数据列表
         List<SysUserEntity> list = baseMapper.getList(params);
+        List<SysUserVO> sysUserVOS = SysUserConvert.INSTANCE.convertList(list);
 
-        return new PageResult<>(SysUserConvert.INSTANCE.convertList(list), page.getTotal());
+        //查询车辆多归属
+        for (SysUserVO sysUserVO : sysUserVOS) {
+            Long id = sysUserVO.getId();
+            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , id));
+            if (CollectionUtils.isNotEmpty(result)){
+                sysUserVO.setTVehicleVOList(  TVehicleConvert.INSTANCE.convertList(result) );
+            }
+        }
+
+        return new PageResult<>(sysUserVOS, page.getTotal());
     }
 
 
@@ -209,6 +222,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         // 保存用户
         baseMapper.insert(entity);
 
+        if (CollectionUtils.isNotEmpty( vo.getTVehicleVOList() )){
+            List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList());
+            tVehicleService.saveBatch(tVehicleEntities);
+        }
+
+
         //TODO  添加用户的时候人脸下发  还需要判断是否有场站
         if (entity.getStationId() != null && entity.getStationId().equals( Constant.EMPTY )) {
             JSONObject person = new JSONObject();
@@ -312,6 +331,13 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         // 更新用户
         updateById(entity);
+
+        //更换车辆存储位置
+        if (CollectionUtils.isNotEmpty(vo.getTVehicleVOList())){
+            tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , vo.getId()));
+            tVehicleService.saveBatch(TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList()));
+        }
+
 
         if (entity.getStationId() !=null && !entity.getStationId().equals(Constant.EMPTY)) {
             JSONObject person = new JSONObject();

@@ -2,6 +2,7 @@ package com.hxls.system.controller;
 
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.framework.common.constant.Constant;
@@ -14,6 +15,7 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.TBannerQuery;
 import com.hxls.system.service.*;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("sys/resource")
@@ -113,5 +116,37 @@ public class ResourceController {
         tVehicleService.setLicensePlates(byMobile,licensePlate);
         return Result.ok();
     }
+
+    @GetMapping("start")
+    public void start(){
+
+        List<SysUserEntity> list = sysUserService.list();
+        List<SysUserEntity> sysUserEntities = list.stream().filter(item -> item.getLicensePlate() != null && StrUtil.isNotEmpty(item.getLicensePlate())).collect(Collectors.toList());
+
+        List<TVehicleEntity> tVehicleEntityList = new ArrayList<>();
+
+
+        for (SysUserEntity sysUserEntity : sysUserEntities) {
+
+            TVehicleEntity tVehicleEntity = new TVehicleEntity();
+            tVehicleEntity.setCarType(sysUserEntity.getCarType());
+            tVehicleEntity.setUserId(sysUserEntity.getId());
+            tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
+            tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
+            tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
+            tVehicleEntity.setDriverId(sysUserEntity.getId());
+            tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
+            tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+            tVehicleEntity.setSiteId(sysUserEntity.getStationId());
+
+            tVehicleEntityList.add(tVehicleEntity);
+        }
+
+        tVehicleService.saveBatch(tVehicleEntityList);
+
+    }
+
+
+
 
 }

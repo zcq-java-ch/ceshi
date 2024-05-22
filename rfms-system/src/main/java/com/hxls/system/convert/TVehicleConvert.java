@@ -22,6 +22,9 @@ public interface TVehicleConvert {
 
     TVehicleVO convert(TVehicleEntity entity);
 
+
+    List<TVehicleEntity> convertToEntityList(List<TVehicleVO> vo);
+
     List<TVehicleVO> convertList(List<TVehicleEntity> list);
 
     List<TVehicleEntity> convertListEntity(List<TVehicleExcelVO> list);

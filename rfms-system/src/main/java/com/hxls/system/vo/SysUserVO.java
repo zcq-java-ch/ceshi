@@ -171,5 +171,8 @@ public class SysUserVO implements Serializable, TransPojo {
     private List<SysOrgVO> orgList;
 
 
+    @Schema(description = "所属车辆")
+    private List<TVehicleVO> tVehicleVOList;
+
 
 }
