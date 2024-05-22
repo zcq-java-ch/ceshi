@@ -350,7 +350,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                         tVehicleExcelVO.setLicensePlate(this.getCellValue(row.getCell(0)));
                     }
                     if (row.getCell(1) != null) {
-                        tVehicleExcelVO.setCarType(this.getCellValue(row.getCell(1)));
+                        tVehicleExcelVO.setCarTypeName(this.getCellValue(row.getCell(1)));
                     }
                     if (row.getCell(2) != null) {
                         tVehicleExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(2)));
