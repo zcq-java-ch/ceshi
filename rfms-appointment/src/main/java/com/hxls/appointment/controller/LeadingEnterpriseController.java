@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LeadingEnterpriseController {
 
-    private static String token;
+    private static String ALL_TOKEN;
 
     @Resource
     private RedisCache redisCache;
@@ -46,7 +46,7 @@ public class LeadingEnterpriseController {
     private TAppointmentDao appointmentDao;
 
 
-    private static void getToken() {
+    private static String getToken() {
         Map<String, String> map = new HashMap<>();
         map.put("appKey", "hng2702doxyg0aqzyzni8apszbls8clv");
         map.put("appSecret", "5c71fa8a9d1b4b52a5cf7be3e4fb24d3");
@@ -55,8 +55,8 @@ public class LeadingEnterpriseController {
         responseBody bean = JSONUtil.toBean(post, responseBody.class);
 
         //获取到token
-        Object o = bean.getData().get("accessToken");
-        token = o.toString();
+        return  bean.getData().getStr("accessToken");
+
     }
 
     /**
@@ -68,9 +68,12 @@ public class LeadingEnterpriseController {
         System.out.println("开始查询记录");
 
         try {
-            if (ObjectUtil.isNull(token)) {
-                getToken();
+            if (redisCache.get(data.getStartTime() + data.getEndTime()) != null) {
+                return CacheData(data);
             }
+            //获取icps过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
+            String token = getToken();
+            ALL_TOKEN = token;
             Map<String, String> map = new HashMap<>();
             map.put("accessToken", token);
             map.put("apiCode", "getWeightInfoCustom");
@@ -81,11 +84,6 @@ public class LeadingEnterpriseController {
             params.setEndTime(data.getEndTime());
             params.setReceiveStation(data.getReceiveStation());
             map.put("params", JSONUtil.toJsonStr(params));
-            if (redisCache.get(data.getStartTime() + data.getEndTime()) != null) {
-                return CacheData(data);
-            }
-
-            //获取icps过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
             String post = HttpUtil.post("https://lvshe.huashijc.com/third/open/api/send_data", JSONUtil.toJsonStr(map));
             responseBodyList bean = JSONUtil.toBean(post, responseBodyList.class);
             if (!bean.getCode().equals("1001")) {
@@ -327,11 +325,8 @@ public class LeadingEnterpriseController {
     public List<recordInfo> selectOutByTime(String startTime, String endTime) {
 
         List<recordInfo> result = new ArrayList<>();
-        if (ObjectUtil.isNull(token)) {
-            getToken();
-        }
         Map<String, String> map = new HashMap<>();
-        map.put("accessToken", token);
+        map.put("accessToken", ALL_TOKEN);
         map.put("apiCode", "queryLogisticData");
         map.put("httptype", "POST");
         params params = new params();
@@ -421,10 +416,10 @@ public class LeadingEnterpriseController {
 
 
     @GetMapping("/updateToken")
-    public Result updateToken() {
+    public Result<Void> updateToken() {
         System.out.println("开始更新token");
         try {
-            getToken();
+            ALL_TOKEN = getToken();
             return Result.ok();
         } catch (Exception e) {
             return Result.error(500, "请稍后再试");
