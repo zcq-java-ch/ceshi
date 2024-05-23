@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "rfms.security")
 public class SecurityProperties {
     /**
-     * accessToken 过期时间(单位：秒)，默认2小时
+     * accessToken 过期时间(单位：秒)，默认48小时
      */
     private int accessTokenExpire = 60 * 60 * 48;
     /**
