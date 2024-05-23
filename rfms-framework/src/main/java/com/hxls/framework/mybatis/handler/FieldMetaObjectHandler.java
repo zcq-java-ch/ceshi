@@ -34,7 +34,7 @@ public class FieldMetaObjectHandler implements MetaObjectHandler {
             // 更新者
             setFieldValByName(UPDATER, user.getId(), metaObject);
             // 创建者所属机构
-            setFieldValByName(ORG_ID, user.getOrgId(), metaObject);
+//            setFieldValByName(ORG_ID, user.getOrgId(), metaObject);
         }
 
         // 创建时间
