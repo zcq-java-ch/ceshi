@@ -38,4 +38,6 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     void jingchengMakeTaz(String siteId);
 
     void retinuegenerateRecords(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity);
+
+    void supplementAndRecordVehicleInformation(String siteId, String startDateTime, String endDateTime);
 }

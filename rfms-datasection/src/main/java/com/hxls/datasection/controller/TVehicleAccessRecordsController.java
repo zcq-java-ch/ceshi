@@ -273,4 +273,23 @@ public class TVehicleAccessRecordsController extends BaseController {
         }
         return Result.error("数据传入为空");
     }
+
+
+    /**
+      * @author Mryang
+      * @description 管理员接口自动补充某个站点的 车辆记录中，没有数据的字段，比如 记录车辆通行的时候，没有车辆信息，后续补录的车辆信息，用该方法进行补录信息
+      * @date 14:29 2024/5/23
+      * @param
+      * @return
+      */
+    @PostMapping("/supplementAndRecordVehicleInformation")
+    public Result<String> supplementAndRecordVehicleInformation(@RequestParam("siteId") String siteId,
+                                                                @RequestParam("startDateTime") String startDateTime,
+                                                                @RequestParam("endDateTime") String endDateTime){
+        tVehicleAccessRecordsService.supplementAndRecordVehicleInformation(siteId, startDateTime, endDateTime);
+
+
+        return Result.ok();
+    }
+
 }

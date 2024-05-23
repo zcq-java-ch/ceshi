@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.UserFeign;
@@ -16,7 +15,6 @@ import com.hxls.datasection.dao.TPersonAccessRecordsDao;
 import com.hxls.datasection.dao.TVehicleAccessLedgerDao;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
-import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.utils.RandomStringUtils;
 import com.hxls.framework.security.user.UserDetail;
@@ -37,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -607,5 +604,45 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         tPersonAccessRecordsDao.insert(tPersonAccessRecordsEntity);
         log.info("随行人员存储记录结束");
 
+    }
+
+    @Override
+    public void supplementAndRecordVehicleInformation(String siteId, String startDateTime, String endDateTime) {
+        /**
+         * 车辆补录信息为，车辆类型、排放标准、行驶证、随车清单、驾驶员id、驾驶员姓名、驾驶员手机号
+         * */
+        LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TVehicleAccessRecordsEntity::getSiteId, siteId);
+        objectLambdaQueryWrapper.between(TVehicleAccessRecordsEntity::getRecordTime, startDateTime, endDateTime);
+        List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+        List<TVehicleAccessRecordsEntity> filteredRecords = tVehicleAccessRecordsEntities.stream()
+                .filter(record -> record.getVehicleModel() == null ||
+                        record.getEmissionStandard() == null ||
+                        record.getImageUrl() == null ||
+                        record.getLicenseImage() == null)
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < filteredRecords.size(); i++) {
+            TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = filteredRecords.get(i);
+            String plateNumber = tVehicleAccessRecordsEntity.getPlateNumber();
+            JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
+            String carType = jsonObject.getString("carType");
+            String emissionStandard = jsonObject.getString("emissionStandard");
+            String licenseImage = jsonObject.getString("licenseImage");
+            String images = jsonObject.getString("images"); // 随车清单
+            Long driverId = jsonObject.getLong("driverId");
+            String driverName = jsonObject.getString("driverName");
+            String driverMobile = jsonObject.getString("driverMobile");
+
+            tVehicleAccessRecordsEntity.setVehicleModel(carType);
+            tVehicleAccessRecordsEntity.setEmissionStandard(emissionStandard);
+            tVehicleAccessRecordsEntity.setLicenseImage(licenseImage);
+            tVehicleAccessRecordsEntity.setDriverId(driverId);
+            tVehicleAccessRecordsEntity.setDriverName(driverName);
+            tVehicleAccessRecordsEntity.setDriverPhone(driverMobile);
+            baseMapper.updateById(tVehicleAccessRecordsEntity);
+        }
     }
 }
