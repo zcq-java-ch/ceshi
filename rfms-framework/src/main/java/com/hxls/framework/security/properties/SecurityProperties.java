@@ -17,7 +17,7 @@ public class SecurityProperties {
     /**
      * accessToken 过期时间(单位：秒)，默认2小时
      */
-    private int accessTokenExpire = 60 * 60 * 2;
+    private int accessTokenExpire = 60 * 60 * 48;
     /**
      * refreshToken 过期时间(单位：秒)，默认14天
      */
