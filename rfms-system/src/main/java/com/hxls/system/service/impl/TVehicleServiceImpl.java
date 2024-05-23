@@ -15,6 +15,8 @@ import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.ExcelUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.config.BaseImageUtils;
 import com.hxls.system.controller.ExcelController;
@@ -79,6 +81,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         wrapper.like(StringUtils.isNotEmpty(query.getLicensePlate()), TVehicleEntity::getLicensePlate, query.getLicensePlate());
         wrapper.eq(query.getDriverId() != null, TVehicleEntity::getDriverId, query.getDriverId());
         wrapper.eq(query.getStatus() != null, TVehicleEntity::getStatus, query.getStatus());
+        //数据权限判断
+        UserDetail user = SecurityUser.getUser();
+        // 如果是超级管理员，则不进行数据过滤
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            wrapper.in(TVehicleEntity::getSiteId, user.getDataScopeList());
+        }
+
         return wrapper;
     }
 
