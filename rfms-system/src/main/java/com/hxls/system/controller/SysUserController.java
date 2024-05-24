@@ -1,6 +1,7 @@
 package com.hxls.system.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -10,8 +11,10 @@ import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysUserConvert;
+import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.*;
@@ -19,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,6 +51,7 @@ public class SysUserController {
     private final PasswordEncoder passwordEncoder;
     private final SysOrgService sysOrgService;
     private final SysRoleDataScopeService sysRoleDataScopeService;
+    private final TVehicleService tVehicleService;
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -91,6 +96,13 @@ public class SysUserController {
             vo.setOrgName(byId.getName());
         }
 
+        //查询所属车辆
+        List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , id));
+        if (CollectionUtils.isNotEmpty(result)){
+            vo.setTVehicleVOList(  TVehicleConvert.INSTANCE.convertList(result) );
+        }
+
+
         return Result.ok(vo);
     }
 
@@ -131,6 +143,11 @@ public class SysUserController {
                 String OverallOrgStructure = getOverallOrgStructure(byId.getPcode(), orgName);
                 user.setOverallOrgStructure(OverallOrgStructure);
             }
+        }
+        //查询所属车辆
+        List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , user.getId()));
+        if (CollectionUtils.isNotEmpty(result)){
+            user.setTVehicleVOList(  TVehicleConvert.INSTANCE.convertList(result) );
         }
 
         //用户管理的站点数据权限

@@ -216,6 +216,13 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             throw new ServerException("手机号已经存在");
         }
 
+
+        // 判断车牌号是否存在
+        long count = tVehicleService.count(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, entity.getLicensePlate()));
+        if (count>0) {
+            throw new ServerException("车牌号已经存在");
+        }
+
         // 保存用户
         baseMapper.insert(entity);
 
@@ -325,6 +332,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         if (user != null && !user.getId().equals(entity.getId())) {
             throw new ServerException("手机号已经存在");
         }
+
+        // 判断车牌号是否存在
+        List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, entity.getLicensePlate()));
+        if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(list)){
+            if (!list.get(0).getUserId().equals(id)) {
+                throw new ServerException("车牌号已存在");
+            }
+        }
+
+
+
 
         // 更新用户
         updateById(entity);
