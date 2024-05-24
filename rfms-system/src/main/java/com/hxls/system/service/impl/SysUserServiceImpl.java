@@ -269,10 +269,14 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 person.set("data" , JSONUtil.toJsonStr(entity));
                 appointmentFeign.issuedPeople(person);
                 if (StringUtils.isNotEmpty(entity.getLicensePlate())){
-                    JSONObject vehicle = new JSONObject();
-                    vehicle.set("sendType","2");
-                    vehicle.set("data" , JSONUtil.toJsonStr(entity));
-                    appointmentFeign.issuedPeople(vehicle);
+                    String[] licensePlates = entity.getLicensePlate().split(",");
+                    for (String licensePlate : licensePlates) {
+                        JSONObject vehicle = new JSONObject();
+                        vehicle.set("sendType","2");
+                        entity.setLicensePlate(licensePlate);
+                        vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                        appointmentFeign.issuedPeople(vehicle);
+                    }
                 }
             }
         }
@@ -361,12 +365,15 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             appointmentFeign.issuedPeople(person);
 
             if (StringUtils.isNotEmpty(entity.getLicensePlate())){
-                JSONObject vehicle = new JSONObject();
-                vehicle.set("sendType","2");
-                vehicle.set("data" , JSONUtil.toJsonStr(entity));
-                appointmentFeign.issuedPeople(vehicle);
+                String[] licensePlates = entity.getLicensePlate().split(",");
+                for (String licensePlate : licensePlates) {
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType","2");
+                    entity.setLicensePlate(licensePlate);
+                    vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                    appointmentFeign.issuedPeople(vehicle);
+                }
             }
-
         }
 
         //判断是否需要修改其他站点的下发
@@ -393,12 +400,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         person.set("data" , JSONUtil.toJsonStr(byId));
         person.set("DELETE" , "DELETE");
         appointmentFeign.issuedPeople(person);
+
         if (StringUtils.isNotEmpty(entity.getLicensePlate())){
-            JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType","2");
-            vehicle.set("data" , JSONUtil.toJsonStr(byId));
-            vehicle.set("DELETE" , "DELETE");
-            appointmentFeign.issuedPeople(vehicle);
+            String[] licensePlates = entity.getLicensePlate().split(",");
+            for (String licensePlate : licensePlates) {
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                entity.setLicensePlate(licensePlate);
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                vehicle.set("DELETE" , "DELETE");
+                appointmentFeign.issuedPeople(vehicle);
+            }
         }
     }
 
