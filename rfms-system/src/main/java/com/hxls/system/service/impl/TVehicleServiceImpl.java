@@ -6,6 +6,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.constant.Constant;
@@ -86,7 +87,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         UserDetail user = SecurityUser.getUser();
         // 如果是超级管理员，则不进行数据过滤
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
-            wrapper.in(TVehicleEntity::getSiteId, user.getDataScopeList());
+            wrapper.in(TVehicleEntity::getSiteId, CollectionUtils.isEmpty(user.getDataScopeList())? List.of(Constant.EMPTY): user.getDataScopeList());
         }
 
         return wrapper;
