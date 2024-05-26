@@ -243,7 +243,6 @@ public class SysUserController {
         if (idList.contains(userId)) {
             return Result.error("不能删除当前登录用户");
         }
-
         sysUserService.delete(idList);
 
         return Result.ok();
@@ -258,7 +257,6 @@ public class SysUserController {
             // 重置密码
             sysUserService.updatePassword(id, passwordEncoder.encode("hxls123456"));
         }
-
         return Result.ok();
     }
 

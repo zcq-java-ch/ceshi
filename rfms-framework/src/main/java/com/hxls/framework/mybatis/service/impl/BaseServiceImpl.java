@@ -53,6 +53,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         DataScope dataScope = getDataScope(null, null);
         if (dataScope != null) {
             queryWrapper.apply(dataScope.getSqlFilter());
+        }else {
+            queryWrapper.apply("");
         }
     }
 
@@ -86,11 +88,15 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         // 数据权限范围
         List<Long> dataScopeList = user.getDataScopeList();
         // 全部数据权限
-        if (dataScopeList == null) {
-            return null;
-        }
+
+//        if (dataScopeList == null) {
+//            sqlFilter.append(tableAlias).append("creator").append("=").append(user.getId());
+//            sqlFilter.append(")");
+//            return new DataScope(sqlFilter.toString());
+//        }
+
         // 数据过滤
-        if (dataScopeList.size() > 0) {
+        if (!dataScopeList.isEmpty()) {
             if (StringUtils.isBlank(orgIdAlias)) {
                 orgIdAlias = "org_id";
             }

@@ -408,9 +408,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
         //判断是否有随行车辆
         List<TAppointmentVehicleVO> vehicleList = vo.getVehicleList();
-        if (CollectionUtils.isNotEmpty(vehicleList)) {
-            if (vo.getVehicle()) {
-                tAppointmentVehicleService.remove(new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId, vo.getId()));
+        if (vo.getVehicle()) {
+            tAppointmentVehicleService.remove(new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId, vo.getId()));
+            if (CollectionUtils.isNotEmpty(vehicleList)) {
                 List<TAppointmentVehicle> vehicles = BeanUtil.copyToList(vehicleList, TAppointmentVehicle.class);
                 tAppointmentVehicleService.saveBatch(vehicles);
             }

@@ -5,15 +5,10 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.hxls.framework.common.constant.Constant;
-import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
-import com.hxls.framework.security.user.SecurityUser;
-import com.hxls.framework.security.user.UserDetail;
 import com.hxls.storage.properties.StorageProperties;
-import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.SysOrgQuery;
@@ -125,8 +120,13 @@ public class ResourceController {
 
         List<TVehicleEntity> tVehicleEntityList = new ArrayList<>();
 
-
         for (SysUserEntity sysUserEntity : sysUserEntities) {
+            Long id = sysUserEntity.getId();
+
+            List<TVehicleEntity> list1 = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id));
+            if (CollectionUtils.isNotEmpty(list1)){
+                continue;
+            }
 
             TVehicleEntity tVehicleEntity = new TVehicleEntity();
             tVehicleEntity.setCarType(sysUserEntity.getCarType());

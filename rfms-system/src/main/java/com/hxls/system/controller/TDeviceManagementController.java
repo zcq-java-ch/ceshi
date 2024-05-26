@@ -1,10 +1,14 @@
 package com.hxls.system.controller;
 
+import cn.hutool.core.lang.Assert;
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.TDeviceManagementConvert;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.query.TDeviceManagementQuery;
@@ -19,6 +23,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Security;
 import java.util.List;
 
 /**
@@ -39,6 +44,15 @@ public class TDeviceManagementController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('system:device:page')")
     public Result<PageResult<TDeviceManagementVO>> page(@ParameterObject @Valid TDeviceManagementQuery query){
+
+//        if (query.getSiteId() ==null){
+//            UserDetail user = SecurityUser.getUser();
+//            if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+////                user.getDataScopeList()
+//                query.setSiteId(user.getOrgId());
+//            }
+//        }
+
         PageResult<TDeviceManagementVO> page = tDeviceManagementService.page(query);
 
         return Result.ok(page);

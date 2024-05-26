@@ -319,5 +319,20 @@ public class ResourceByLoginController {
     }
 
 
+    @GetMapping("personList")
+    @Operation(summary = "人员模糊查询下拉")
+    public Result<List<SysUserVO>> personList(@RequestParam String name) {
+
+        //配置查询权限
+        List<SysUserVO> result = new ArrayList<>();
+        LambdaQueryWrapper<SysUserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUserEntity::getUserType,"1");
+        wrapper.like(StrUtil.isNotEmpty(name),SysUserEntity::getRealName , name);
+        //获取是否是管理
+        List<SysUserEntity> list = sysUserService.list(wrapper);
+        result.addAll(SysUserConvert.INSTANCE.convertList(list));
+        return Result.ok(result);
+    }
+
 
 }
