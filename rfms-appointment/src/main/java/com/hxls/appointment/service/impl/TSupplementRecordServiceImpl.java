@@ -107,6 +107,12 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     return tAppointmentPersonnel;
                 }).toList();
                 tAppointmentPersonnelService.saveBatch(appointmentPersonnels);
+
+                // 生成对应进出记录
+                for (int i = 0; i < appointmentPersonnels.size(); i++) {
+
+
+                }
             }
         }
     }

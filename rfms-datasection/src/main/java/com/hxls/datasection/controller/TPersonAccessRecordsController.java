@@ -81,7 +81,7 @@ public class TPersonAccessRecordsController extends BaseController {
     @PostMapping("/saveTpersonAccessRecords")
     @Operation(summary = "保存")
     @OperateLog(type = OperateTypeEnum.INSERT)
-    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:save')")
+//    @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:save')")
     public Result<String> saveTpersonAccessRecords(@RequestBody TPersonAccessRecordsVO vo){
         try {
             tPersonAccessRecordsService.save(vo);

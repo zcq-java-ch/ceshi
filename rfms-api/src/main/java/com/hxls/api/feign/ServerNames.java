@@ -17,4 +17,9 @@ public interface ServerNames {
      */
     String APPOINTMENT_SERVER_NAME = "rfms-appointment";
 
+    /**
+     * rfms-datasection 服务名
+     */
+    String DATASECTION_SERVER_NAME = "rfms-datasection";
+
 }
