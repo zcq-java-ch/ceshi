@@ -1089,24 +1089,24 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                  * 如果不存在
                  *  -添加用户，以及对应的车辆
                  * */
-                List<SysUserEntity> saveUserLists = new ArrayList<>();
+//                List<SysUserEntity> saveUserLists = new ArrayList<>();
                 List<TVehicleEntity> saveCarLists = new ArrayList<>();
                 for (int i = 0; i < sysUserEntities.size(); i++) {
                     SysUserEntity sysUserEntity = sysUserEntities.get(i);
                     // 判断手机号是否存在
-                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
+//                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
                     SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
-                    if (olduserusername != null || oldusermobile != null) {
+                    if (oldusermobile != null) {
                         //  如果用户已经存在，则只需要添加车辆信息即可
                         TVehicleEntity tVehicleEntity = new TVehicleEntity();
                         tVehicleEntity.setUserId(oldusermobile.getId());
-                        tVehicleEntity.setLicensePlate(oldusermobile.getLicensePlate());
-                        tVehicleEntity.setImageUrl(oldusermobile.getImageUrl());
-                        tVehicleEntity.setEmissionStandard(oldusermobile.getEmissionStandard());
-                        tVehicleEntity.setCarType(oldusermobile.getCarType());
+                        tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
+                        tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
+                        tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
+                        tVehicleEntity.setCarType(sysUserEntity.getCarType());
                         tVehicleEntity.setDriverId(oldusermobile.getId());
-                        tVehicleEntity.setDriverMobile(oldusermobile.getMobile());
-                        tVehicleEntity.setDriverName(oldusermobile.getRealName());
+                        tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
+                        tVehicleEntity.setDriverName(sysUserEntity.getRealName());
                         saveCarLists.add(tVehicleEntity);
                     }else {
                         sysUserEntity.setUserType("2");
@@ -1116,7 +1116,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         sysUserEntity.setOrgName(byId.getName());
                         sysUserEntity.setStatus(1);
                         sysUserEntity.setSuperAdmin(0);
-                        saveUserLists.add(sysUserEntity);
+                        save(sysUserEntity);
+
 
                         TVehicleEntity tVehicleEntity = new TVehicleEntity();
                         tVehicleEntity.setUserId(9999L);
@@ -1128,11 +1129,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
                         tVehicleEntity.setDriverName(sysUserEntity.getRealName());
                         saveCarLists.add(tVehicleEntity);
-
                     }
                 }
 
-                saveBatch(saveUserLists);
+//                saveBatch(saveUserLists);
                 // 用户添加完成后，需要反向给车辆表设置司机ID
                 saveCarLists.forEach(car -> {
                     String driverMobile = car.getDriverMobile();
