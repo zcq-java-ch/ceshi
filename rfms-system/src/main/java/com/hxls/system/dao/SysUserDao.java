@@ -29,6 +29,6 @@ public interface SysUserDao extends BaseDao<SysUserEntity> {
 	}
 
 	default SysUserEntity getByMobile(String mobile){
-		return this.selectOne(new QueryWrapper<SysUserEntity>().eq("mobile", mobile));
+		return this.selectOne(new QueryWrapper<SysUserEntity>().eq("mobile", mobile).last("LIMIT 1"));
 	}
 }

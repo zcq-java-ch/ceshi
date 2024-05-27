@@ -51,6 +51,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.checkerframework.checker.units.qual.A;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -1076,27 +1077,72 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 // 执行数据处理逻辑
                 ExcelUtils.parseDict(transferList);
                 List<SysUserEntity> sysUserEntities = SysUserConvert.INSTANCE.convertListEntity(transferList);
-                sysUserEntities.forEach(user -> {
-                    // 判断手机号是否存在
-                    SysUserEntity olduser = baseMapper.getByUsername(user.getMobile());
-                    if (olduser != null) {
-                        throw new ServerException("手机号已经存在");
-                    }
-                    // 判断手机号是否存在
-                    olduser = baseMapper.getByMobile(user.getMobile());
-                    if (olduser != null) {
-                        throw new ServerException("手机号已经存在");
-                    }
-                    user.setUserType("2");
-                    user.setPassword(password);
-                    user.setOrgId(orgId);
-                    user.setUsername(user.getMobile());
-                    user.setOrgName(byId.getName());
-                    user.setStatus(1);
-                    user.setSuperAdmin(0);
-                });
 
-                saveBatch(sysUserEntities);
+                /**
+                 * 2024年5月27日
+                 * 新增逻辑
+                 * 一个用户可能有多个车辆，再导入的时候就是多条数据
+                 * 通过当前用户手机号判断是不是已经存在user中，
+                 * 如果存在
+                 *  -添加对应的车辆即可
+                 * 如果不存在
+                 *  -添加用户，以及对应的车辆
+                 * */
+                List<SysUserEntity> saveUserLists = new ArrayList<>();
+                List<TVehicleEntity> saveCarLists = new ArrayList<>();
+                for (int i = 0; i < sysUserEntities.size(); i++) {
+                    SysUserEntity sysUserEntity = sysUserEntities.get(i);
+                    // 判断手机号是否存在
+                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
+                    SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
+                    if (olduserusername != null || oldusermobile != null) {
+                        //  如果用户已经存在，则只需要添加车辆信息即可
+                        TVehicleEntity tVehicleEntity = new TVehicleEntity();
+                        tVehicleEntity.setUserId(oldusermobile.getId());
+                        tVehicleEntity.setLicensePlate(oldusermobile.getLicensePlate());
+                        tVehicleEntity.setImageUrl(oldusermobile.getImageUrl());
+                        tVehicleEntity.setEmissionStandard(oldusermobile.getEmissionStandard());
+                        tVehicleEntity.setCarType(oldusermobile.getCarType());
+                        tVehicleEntity.setDriverId(oldusermobile.getId());
+                        tVehicleEntity.setDriverMobile(oldusermobile.getMobile());
+                        tVehicleEntity.setDriverName(oldusermobile.getRealName());
+                        saveCarLists.add(tVehicleEntity);
+                    }else {
+                        sysUserEntity.setUserType("2");
+                        sysUserEntity.setPassword(password);
+                        sysUserEntity.setOrgId(orgId);
+                        sysUserEntity.setUsername(sysUserEntity.getMobile());
+                        sysUserEntity.setOrgName(byId.getName());
+                        sysUserEntity.setStatus(1);
+                        sysUserEntity.setSuperAdmin(0);
+                        saveUserLists.add(sysUserEntity);
+
+                        TVehicleEntity tVehicleEntity = new TVehicleEntity();
+                        tVehicleEntity.setUserId(9999L);
+                        tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
+                        tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
+                        tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
+                        tVehicleEntity.setCarType(sysUserEntity.getCarType());
+                        tVehicleEntity.setDriverId(9999L);
+                        tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
+                        tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+                        saveCarLists.add(tVehicleEntity);
+
+                    }
+                }
+
+                saveBatch(saveUserLists);
+                // 用户添加完成后，需要反向给车辆表设置司机ID
+                saveCarLists.forEach(car -> {
+                    String driverMobile = car.getDriverMobile();
+                    SysUserEntity oldusermobile = baseMapper.getByMobile(driverMobile);
+                    if (oldusermobile != null) {
+                        car.setUserId(oldusermobile.getId());
+                        car.setDriverId(oldusermobile.getId());
+                    }
+
+                });
+                tVehicleService.saveBatch(saveCarLists);
 //                return Result.ok();
             } finally {
                 // 清理临时文件
