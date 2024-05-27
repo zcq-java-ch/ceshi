@@ -4,8 +4,11 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysRoleConvert;
 import com.hxls.system.dao.SysRoleDao;
 import com.hxls.system.entity.SysRoleEntity;
@@ -37,8 +40,8 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
 
     @Override
     public PageResult<SysRoleVO> page(SysRoleQuery query) {
-        IPage<SysRoleEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
 
+        IPage<SysRoleEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
         return new PageResult<>(SysRoleConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
@@ -54,7 +57,7 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         wrapper.like(StrUtil.isNotBlank(query.getName()), SysRoleEntity::getName, query.getName());
         wrapper.eq(query.getStatus() != null, SysRoleEntity::getStatus, query.getStatus());
         // 数据权限
-        dataScopeWrapper(wrapper);
+        dataScopeWrapperToRole(wrapper);
 
         return wrapper;
     }

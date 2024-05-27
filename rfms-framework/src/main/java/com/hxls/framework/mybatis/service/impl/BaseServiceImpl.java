@@ -53,8 +53,16 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         DataScope dataScope = getDataScope(null, null);
         if (dataScope != null) {
             queryWrapper.apply(dataScope.getSqlFilter());
-        }else {
-            queryWrapper.apply("");
+        }
+    }
+
+    /**
+     * MyBatis-Plus 数据权限
+     */
+    protected void dataScopeWrapperToRole(LambdaQueryWrapper<T> queryWrapper) {
+        DataScope dataScope = getDataScopeToRole(null, null);
+        if (dataScope != null) {
+            queryWrapper.apply(dataScope.getSqlFilter());
         }
     }
 
@@ -88,12 +96,9 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         // 数据权限范围
         List<Long> dataScopeList = user.getDataScopeList();
         // 全部数据权限
-
-//        if (dataScopeList == null) {
-//            sqlFilter.append(tableAlias).append("creator").append("=").append(user.getId());
-//            sqlFilter.append(")");
-//            return new DataScope(sqlFilter.toString());
-//        }
+        if (dataScopeList == null) {
+            return null;
+        }
 
         // 数据过滤
         if (!dataScopeList.isEmpty()) {
@@ -109,6 +114,48 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
 
         // 查询本人数据
         sqlFilter.append(tableAlias).append("id").append("=").append(user.getId());
+
+        sqlFilter.append(")");
+
+        return new DataScope(sqlFilter.toString());
+    }
+    protected DataScope getDataScopeToRole(String tableAlias, String orgIdAlias) {
+        UserDetail user = SecurityUser.getUser();
+        // 如果是超级管理员，则不进行数据过滤
+        if (user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            return null;
+        }
+
+        // 如果为null，则设置成空字符串
+        if (tableAlias == null) {
+            tableAlias = "";
+        }
+
+        // 获取表的别名
+        if (StringUtils.isNotBlank(tableAlias)) {
+            tableAlias += ".";
+        }
+
+        StringBuilder sqlFilter = new StringBuilder();
+        sqlFilter.append(" (");
+
+        // 数据权限范围
+        List<Long> dataScopeList = user.getDataScopeList();
+
+        // 数据过滤
+        if (!dataScopeList.isEmpty()) {
+            if (StringUtils.isBlank(orgIdAlias)) {
+                orgIdAlias = "org_id";
+            }
+            sqlFilter.append(tableAlias).append(orgIdAlias);
+
+            sqlFilter.append(" in(").append(StrUtil.join(",", dataScopeList)).append(")");
+
+            sqlFilter.append(" or ");
+        }
+
+        // 查询本人数据
+        sqlFilter.append(tableAlias).append("creator").append("=").append(user.getId());
 
         sqlFilter.append(")");
 
