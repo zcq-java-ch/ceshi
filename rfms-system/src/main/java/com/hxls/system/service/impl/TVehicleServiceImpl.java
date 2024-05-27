@@ -400,6 +400,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     if (row.getCell(9) != null) {
                         tVehicleExcelVO.setImageUrl(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 9))));
                     }
+                    if (row.getCell(10) != null) {
+                        tVehicleExcelVO.setDriverMobile(this.getCellValue(row.getCell(10)));
+                    }
 
                     transferList.add(tVehicleExcelVO);
                 }
