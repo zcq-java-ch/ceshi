@@ -1,6 +1,7 @@
 package com.hxls.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,6 +24,7 @@ import com.hxls.system.config.BaseImageUtils;
 import com.hxls.system.controller.ExcelController;
 import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.convert.TVehicleConvert;
+import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.dao.TVehicleDao;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
@@ -41,6 +43,7 @@ import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +73,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     private final AppointmentFeign appointmentFeign;
     private final StorageProperties properties;
-    private final SysUserService sysUserService;
+    private final SysUserDao sysUserDao;
 
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
@@ -416,12 +419,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setStatus(1);
 
                     //查询车辆驾驶员信息
-                    String licensePlate = tVehicle.getLicensePlate();
-                    List<SysUserEntity> list = sysUserService.list(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getLicensePlate,licensePlate));
-                    if (CollectionUtils.isNotEmpty(list)){
-                        tVehicle.setUserId(list.get(0).getId());
-                        tVehicle.setDriverMobile(list.get(0).getMobile());
-                        tVehicle.setDriverName(list.get(0).getRealName());
+                    String driverMobile = tVehicle.getDriverMobile();
+                    if (StrUtil.isNotEmpty(driverMobile)){
+                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile,driverMobile));
+                        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+                            tVehicle.setUserId(sysUserEntities.get(0).getId());
+                            tVehicle.setDriverName(sysUserEntities.get(0).getRealName());
+                        }
                     }
                     //下发车辆
                     JSONObject vehicle = new JSONObject();
