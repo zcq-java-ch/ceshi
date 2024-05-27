@@ -753,12 +753,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             for (TVehicleVO tVehicleVO : vo.getTVehicleVOList()) {
                 List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, tVehicleVO.getLicensePlate()));
                 if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(list)) {
-                    throw new ServerException("车牌号已存在");
+                    if (!list.get(0).getUserId().equals(id)) {
+                        throw new ServerException("车牌号已存在");
+                    }
                 }
             }
         }
-
-
 
         // 更新用户
         updateById(entity);
@@ -772,6 +772,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 tVehicleEntity.setDriverId(vo.getId());
                 tVehicleEntity.setDriverName(vo.getRealName());
                 tVehicleEntity.setDriverMobile(vo.getMobile());
+                tVehicleEntity.setId(null);
             }
 
             tVehicleService.saveBatch(tVehicleEntities);

@@ -115,9 +115,8 @@ public class ResourceController {
     @GetMapping("start")
     public void start(){
 
-        List<SysUserEntity> list = sysUserService.list();
-        List<SysUserEntity> sysUserEntities = list.stream().filter(item -> item.getLicensePlate() != null && StrUtil.isNotEmpty(item.getLicensePlate())
-         && item.getUserType().equals("1")).collect(Collectors.toList());
+        List<SysUserEntity> list = sysUserService.list(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getUserType , "1"));
+        List<SysUserEntity> sysUserEntities = list.stream().filter(item -> item.getLicensePlate() != null && StrUtil.isNotEmpty(item.getLicensePlate())).collect(Collectors.toList());
 
         List<TVehicleEntity> tVehicleEntityList = new ArrayList<>();
 
