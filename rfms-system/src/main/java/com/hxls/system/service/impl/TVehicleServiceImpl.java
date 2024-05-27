@@ -28,6 +28,7 @@ import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.service.SysUserService;
 import com.hxls.system.service.TVehicleService;
 import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.vo.SysUserVO;
@@ -69,6 +70,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     private final AppointmentFeign appointmentFeign;
     private final StorageProperties properties;
+    private final SysUserService sysUserService;
 
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
@@ -413,6 +415,14 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
 
+                    //查询车辆驾驶员信息
+                    String licensePlate = tVehicle.getLicensePlate();
+                    List<SysUserEntity> list = sysUserService.list(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getLicensePlate,licensePlate));
+                    if (CollectionUtils.isNotEmpty(list)){
+                        tVehicle.setUserId(list.get(0).getId());
+                        tVehicle.setDriverMobile(list.get(0).getMobile());
+                        tVehicle.setDriverName(list.get(0).getRealName());
+                    }
                     //下发车辆
                     JSONObject vehicle = new JSONObject();
                     vehicle.set("sendType","2");
