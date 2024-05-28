@@ -124,15 +124,15 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     tPersonAccessRecordsDTO.setDeviceId(null);
                     tPersonAccessRecordsDTO.setDeviceName(null);
                     tPersonAccessRecordsDTO.setHeadUrl(null);
-                    tPersonAccessRecordsDTO.setIdCardNumber(null);
+                    tPersonAccessRecordsDTO.setIdCardNumber(tAppointmentPersonnel.getIdCardNumber());
                     tPersonAccessRecordsDTO.setPersonName(tAppointmentPersonnel.getExternalPersonnel());
                     tPersonAccessRecordsDTO.setPhone(tAppointmentPersonnel.getPhone());
-                    tPersonAccessRecordsDTO.setPositionId(null);
-                    tPersonAccessRecordsDTO.setPositionName(null);
+                    tPersonAccessRecordsDTO.setPositionId(tAppointmentPersonnel.getPositionId());
+                    tPersonAccessRecordsDTO.setPositionName(tAppointmentPersonnel.getPositionName());
                     tPersonAccessRecordsDTO.setRecordTime(vo.getSupplementTime());
                     tPersonAccessRecordsDTO.setSiteId(vo.getSiteId());
                     tPersonAccessRecordsDTO.setSiteName(vo.getSiteName());
-                    tPersonAccessRecordsDTO.setSupervisorName(null);
+                    tPersonAccessRecordsDTO.setSupervisorName(tAppointmentPersonnel.getSupervisorName());
                     // 关联补录单ID
                     tPersonAccessRecordsDTO.setSupplementId(entity.getId());
 
