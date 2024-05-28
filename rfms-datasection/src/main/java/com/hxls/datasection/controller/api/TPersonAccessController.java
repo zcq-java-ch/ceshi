@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/tPersonAccess")
@@ -55,6 +52,27 @@ public class TPersonAccessController {
         }catch (Exception e){
             e.printStackTrace();
             log.info("外部存储人员通行记录失败，进入catch:");
+            return false;
+        }
+    }
+
+    /**
+      * @author Mryang
+      * @description 外部调用 删除某个补录单的人员进出记录
+      * @date 11:08 2024/5/28
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/deletePersonAccessRecords")
+    @Operation(summary = "外部删除人员通行记录")
+    @OperateLog(type = OperateTypeEnum.DELETE)
+    public boolean deletePersonAccessRecords(@RequestParam("supplementId") Long supplement){
+        try {
+            tPersonAccessRecordsService.deletePersonAccessRecords(supplement);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.info("外部删除人员通行记录失败，进入catch:");
             return false;
         }
     }

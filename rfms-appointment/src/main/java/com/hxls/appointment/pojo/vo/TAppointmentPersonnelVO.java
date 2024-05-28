@@ -161,4 +161,8 @@ public class TAppointmentPersonnelVO implements Serializable {
     private Date updateTime;
 
 
+    /**
+     * 业务资源
+     */
+    private String busis;
 }

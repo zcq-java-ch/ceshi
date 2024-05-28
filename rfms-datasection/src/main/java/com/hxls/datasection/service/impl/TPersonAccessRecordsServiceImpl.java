@@ -3,6 +3,7 @@ package com.hxls.datasection.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -879,5 +880,16 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         entity.setRecordsId(RandomSnowUtils.getSnowRandom());
 
         baseMapper.insert(entity);
+    }
+
+    @Override
+    public void deletePersonAccessRecords(Long supplement) {
+        if (supplement != null){
+            QueryWrapper<TPersonAccessRecordsEntity> objectQueryWrapper = new QueryWrapper<>();
+            objectQueryWrapper.eq("status", 1);
+            objectQueryWrapper.eq("deleted", 0);
+            objectQueryWrapper.eq("supplement_id", supplement);
+            baseMapper.delete(objectQueryWrapper);
+        }
     }
 }

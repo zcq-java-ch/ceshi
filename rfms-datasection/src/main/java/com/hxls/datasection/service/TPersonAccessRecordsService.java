@@ -71,4 +71,12 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
      */
     void saveFegin(TPersonAccessRecordsDTO accessRecordsDTO);
 
+    /**
+      * @author Mryang
+      * @description 外部调用删除人员通行记录通过出入补录单ID
+      * @date 11:09 2024/5/28
+      * @param
+      * @return
+      */
+    void deletePersonAccessRecords(Long supplement);
 }

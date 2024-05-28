@@ -112,18 +112,18 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                 tAppointmentPersonnelService.saveBatch(appointmentPersonnels);
 
                 // 生成对应进出记录
-                for (int i = 0; i < appointmentPersonnels.size(); i++) {
-                    TAppointmentPersonnel tAppointmentPersonnel = appointmentPersonnels.get(i);
+                for (int i = 0; i < remark.size(); i++) {
+                    TAppointmentPersonnelVO tAppointmentPersonnel = remark.get(i);
 
                     TPersonAccessRecordsDTO tPersonAccessRecordsDTO = new TPersonAccessRecordsDTO();
                     tPersonAccessRecordsDTO.setAccessType(entity.getAccessType());
-                    tPersonAccessRecordsDTO.setBusis("");
+                    tPersonAccessRecordsDTO.setBusis(StringUtils.isNotEmpty(tAppointmentPersonnel.getBusis()) ? tAppointmentPersonnel.getBusis() : null);
                     tPersonAccessRecordsDTO.setChannelId(StringUtils.isNotEmpty(vo.getChannel()) ? Long.valueOf(vo.getChannel()) : null);
                     tPersonAccessRecordsDTO.setChannelName(StringUtils.isNotEmpty(vo.getChannelName()) ? vo.getChannelName() : null);
                     tPersonAccessRecordsDTO.setCreateType("2");
                     tPersonAccessRecordsDTO.setDeviceId(null);
                     tPersonAccessRecordsDTO.setDeviceName(null);
-                    tPersonAccessRecordsDTO.setHeadUrl(null);
+                    tPersonAccessRecordsDTO.setHeadUrl(StringUtils.isNotEmpty(tAppointmentPersonnel.getHeadUrl()) ? tAppointmentPersonnel.getHeadUrl() : null);
                     tPersonAccessRecordsDTO.setIdCardNumber(tAppointmentPersonnel.getIdCardNumber());
                     tPersonAccessRecordsDTO.setPersonName(tAppointmentPersonnel.getExternalPersonnel());
                     tPersonAccessRecordsDTO.setPhone(tAppointmentPersonnel.getPhone());
@@ -133,6 +133,9 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     tPersonAccessRecordsDTO.setSiteId(vo.getSiteId());
                     tPersonAccessRecordsDTO.setSiteName(vo.getSiteName());
                     tPersonAccessRecordsDTO.setSupervisorName(tAppointmentPersonnel.getSupervisorName());
+                    tPersonAccessRecordsDTO.setCompanyId(tAppointmentPersonnel.getOrgCode() != null ? Long.valueOf(tAppointmentPersonnel.getOrgCode()) : null);
+                    tPersonAccessRecordsDTO.setCompanyName(StringUtils.isNotEmpty(tAppointmentPersonnel.getOrgName()) ? tAppointmentPersonnel.getOrgName() : null);
+                    tPersonAccessRecordsDTO.setPersonId(tAppointmentPersonnel.getUserId() != null ? tAppointmentPersonnel.getUserId() : null);
                     // 关联补录单ID
                     tPersonAccessRecordsDTO.setSupplementId(entity.getId());
 
@@ -149,6 +152,14 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
         TSupplementRecord entity = TRecordSupplementConvert.INSTANCE.convert(vo);
         updateById(entity);
 
+        /**
+         * 编辑的同时需要调整进出记录
+         * 1. 先删除原有进出记录
+         * 2. 重新生成进出记录
+         * */
+        // 1. 删除原有进出记录
+        datasectionFeign.deletePersonAccessRecords(entity.getId());
+
         if (vo.getPerson()) {
             Long id = vo.getId();
             tAppointmentPersonnelService.remove(new LambdaQueryWrapper<TAppointmentPersonnel>().eq(TAppointmentPersonnel::getSupplementaryId, id));
@@ -161,6 +172,37 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     return tAppointmentPersonnel;
                 }).toList();
                 tAppointmentPersonnelService.saveBatch(appointmentPersonnels);
+                //2. 生成对应进出记录
+                for (int i = 0; i < remark.size(); i++) {
+                    TAppointmentPersonnelVO tAppointmentPersonnel = remark.get(i);
+
+                    TPersonAccessRecordsDTO tPersonAccessRecordsDTO = new TPersonAccessRecordsDTO();
+                    tPersonAccessRecordsDTO.setAccessType(entity.getAccessType());
+                    tPersonAccessRecordsDTO.setBusis(StringUtils.isNotEmpty(tAppointmentPersonnel.getBusis()) ? tAppointmentPersonnel.getBusis() : null);
+                    tPersonAccessRecordsDTO.setChannelId(StringUtils.isNotEmpty(vo.getChannel()) ? Long.valueOf(vo.getChannel()) : null);
+                    tPersonAccessRecordsDTO.setChannelName(StringUtils.isNotEmpty(vo.getChannelName()) ? vo.getChannelName() : null);
+                    tPersonAccessRecordsDTO.setCreateType("2");
+                    tPersonAccessRecordsDTO.setDeviceId(null);
+                    tPersonAccessRecordsDTO.setDeviceName(null);
+                    tPersonAccessRecordsDTO.setHeadUrl(StringUtils.isNotEmpty(tAppointmentPersonnel.getHeadUrl()) ? tAppointmentPersonnel.getHeadUrl() : null);
+                    tPersonAccessRecordsDTO.setIdCardNumber(tAppointmentPersonnel.getIdCardNumber());
+                    tPersonAccessRecordsDTO.setPersonName(tAppointmentPersonnel.getExternalPersonnel());
+                    tPersonAccessRecordsDTO.setPhone(tAppointmentPersonnel.getPhone());
+                    tPersonAccessRecordsDTO.setPositionId(tAppointmentPersonnel.getPositionId());
+                    tPersonAccessRecordsDTO.setPositionName(tAppointmentPersonnel.getPositionName());
+                    tPersonAccessRecordsDTO.setRecordTime(vo.getSupplementTime());
+                    tPersonAccessRecordsDTO.setSiteId(vo.getSiteId());
+                    tPersonAccessRecordsDTO.setSiteName(vo.getSiteName());
+                    tPersonAccessRecordsDTO.setSupervisorName(tAppointmentPersonnel.getSupervisorName());
+                    tPersonAccessRecordsDTO.setCompanyId(tAppointmentPersonnel.getOrgCode() != null ? Long.valueOf(tAppointmentPersonnel.getOrgCode()) : null);
+                    tPersonAccessRecordsDTO.setCompanyName(StringUtils.isNotEmpty(tAppointmentPersonnel.getOrgName()) ? tAppointmentPersonnel.getOrgName() : null);
+                    tPersonAccessRecordsDTO.setPersonId(tAppointmentPersonnel.getUserId() != null ? tAppointmentPersonnel.getUserId() : null);
+                    // 关联补录单ID
+                    tPersonAccessRecordsDTO.setSupplementId(entity.getId());
+
+                    datasectionFeign.savePersonAccessRecords(tPersonAccessRecordsDTO);
+
+                }
             }
         }
     }
