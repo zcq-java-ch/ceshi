@@ -1,5 +1,6 @@
 package com.hxls.datasection.controller.api;
 
+import com.hxls.api.dto.datasection.TPersonAccessRecordsDTO;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import com.hxls.framework.common.utils.Result;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/tPersonAccess")
-@Tag(name="小程序人员扫码")
+@Tag(name="人员通行记录外部调用")
 @AllArgsConstructor
 @Slf4j
 public class TPersonAccessController {
@@ -38,11 +39,25 @@ public class TPersonAccessController {
         }
     }
 
-
-
-
-
-
+     /**
+      * @Description: 外部存储人员通行记录
+      * @Autor: Mryang
+      * @param
+      * @return:
+      */
+    @PostMapping("/savePersonAccessRecords")
+    @Operation(summary = "外部存储人员通行记录")
+    @OperateLog(type = OperateTypeEnum.INSERT)
+    public boolean savePersonAccessRecords(@RequestBody TPersonAccessRecordsDTO accessRecordsDTO){
+        try {
+            tPersonAccessRecordsService.saveFegin(accessRecordsDTO);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.info("外部存储人员通行记录失败，进入catch:");
+            return false;
+        }
+    }
 
 
 }

@@ -1,5 +1,6 @@
 package com.hxls.datasection.convert;
 
+import com.hxls.api.dto.datasection.TPersonAccessRecordsDTO;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.vo.TPersonAccessRecordsExportVO;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
@@ -11,7 +12,7 @@ import java.util.List;
 /**
 * 人员出入记录表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-29
 */
 @Mapper
@@ -25,5 +26,7 @@ public interface TPersonAccessRecordsConvert {
     List<TPersonAccessRecordsVO> convertList(List<TPersonAccessRecordsEntity> list);
 
     List<TPersonAccessRecordsExportVO> convertExportList(List<TPersonAccessRecordsVO> list);
+
+    TPersonAccessRecordsEntity convertDto(TPersonAccessRecordsDTO dto);
 
 }

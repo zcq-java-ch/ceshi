@@ -2,6 +2,7 @@ package com.hxls.datasection.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONArray;
+import com.hxls.api.dto.datasection.TPersonAccessRecordsDTO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * 人员出入记录表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-29
  */
 public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRecordsEntity> {
@@ -60,4 +61,14 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
      *
      */
     JSONObject queryTheStatisticsOfTheTypeOfWorkBySiteId(Long stationId);
+
+    /**
+     * @author: Mryang
+     * @Description: 外部调用存储人员通行记录
+     * @Date: 2024/5/28 9:22
+     * @param
+     * @return:
+     */
+    void saveFegin(TPersonAccessRecordsDTO accessRecordsDTO);
+
 }

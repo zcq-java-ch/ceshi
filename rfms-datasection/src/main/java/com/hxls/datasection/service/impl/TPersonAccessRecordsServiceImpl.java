@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.api.dto.datasection.TPersonAccessRecordsDTO;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
@@ -869,5 +870,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         jsonObject.put("postAll", groupCountMap);
         jsonObject.put("busisAll", busisGroupCountMap);
         return jsonObject;
+    }
+
+    @Override
+    public void saveFegin(TPersonAccessRecordsDTO accessRecordsDTO) {
+        TPersonAccessRecordsEntity entity = TPersonAccessRecordsConvert.INSTANCE.convertDto(accessRecordsDTO);
+
+        baseMapper.insert(entity);
     }
 }

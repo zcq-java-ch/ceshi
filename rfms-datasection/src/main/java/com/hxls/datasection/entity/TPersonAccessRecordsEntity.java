@@ -14,7 +14,7 @@ import com.hxls.framework.mybatis.entity.BaseEntity;
 /**
  * 人员出入记录表
  *
- * @author zhaohong 
+ * @author zhaohong
  * @since 1.0.0 2024-03-29
  */
 @EqualsAndHashCode(callSuper=false)
@@ -153,5 +153,11 @@ public class TPersonAccessRecordsEntity extends BaseEntity {
 	 * 创建类型（0:自动生成 1:手动创建）
 	 * */
 	private String createType;
+
+	/**
+	 * 补录单ID
+	 * */
+	private Long supplementId;
+
 
 }

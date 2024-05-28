@@ -2,6 +2,7 @@ package com.hxls.appointment.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.api.feign.datasection.DatasectionFeign;
 import com.hxls.appointment.pojo.query.TSupplementRecordQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TSupplementRecordVO;
@@ -33,7 +34,6 @@ import java.util.List;
 @Tag(name = "记录补充")
 @AllArgsConstructor
 public class RecordSupplementController {
-
 
     private final TSupplementRecordService service;
 

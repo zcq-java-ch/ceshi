@@ -1,4 +1,4 @@
-package com.hxls.api.vo;
+package com.hxls.api.dto.datasection;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,14 +10,14 @@ import java.util.Date;
 import java.util.List;
 
 /**
-* 人员出入记录表
+* 人员出入记录外部存储对象
 *
 * @author zhaohong
 * @since 1.0.0 2024-03-29
 */
 @Data
-@Schema(description = "人员出入记录表Fegin")
-public class TPersonAccessRecordsVO implements Serializable {
+@Schema(description = "人员出入记录Fegin")
+public class TPersonAccessRecordsDTO implements Serializable {
 	@Serial
 	private static final long serialVersionUID = 1L;
 
@@ -136,5 +136,6 @@ public class TPersonAccessRecordsVO implements Serializable {
 
 	private String directionType;
 
+	private Long supplementId;
 
 }

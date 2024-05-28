@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.hxls.api.dto.datasection.TPersonAccessRecordsDTO;
+import com.hxls.api.feign.datasection.DatasectionFeign;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.convert.TAppointmentPersonnelConvert;
 import com.hxls.appointment.convert.TRecordSupplementConvert;
@@ -50,6 +52,7 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
     private final TAppointmentPersonnelService tAppointmentPersonnelService;
     private final TAppointmentDao appointmentDao;
+    private final DatasectionFeign datasectionFeign;
 
     @Override
     public PageResult<TSupplementRecordVO> page(TSupplementRecordQuery query) {
@@ -110,7 +113,30 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
 
                 // 生成对应进出记录
                 for (int i = 0; i < appointmentPersonnels.size(); i++) {
+                    TAppointmentPersonnel tAppointmentPersonnel = appointmentPersonnels.get(i);
 
+                    TPersonAccessRecordsDTO tPersonAccessRecordsDTO = new TPersonAccessRecordsDTO();
+                    tPersonAccessRecordsDTO.setAccessType(entity.getAccessType());
+                    tPersonAccessRecordsDTO.setBusis("");
+                    tPersonAccessRecordsDTO.setChannelId(StringUtils.isNotEmpty(vo.getChannel()) ? Long.valueOf(vo.getChannel()) : null);
+                    tPersonAccessRecordsDTO.setChannelName(StringUtils.isNotEmpty(vo.getChannelName()) ? vo.getChannelName() : null);
+                    tPersonAccessRecordsDTO.setCreateType("2");
+                    tPersonAccessRecordsDTO.setDeviceId(null);
+                    tPersonAccessRecordsDTO.setDeviceName(null);
+                    tPersonAccessRecordsDTO.setHeadUrl(null);
+                    tPersonAccessRecordsDTO.setIdCardNumber(null);
+                    tPersonAccessRecordsDTO.setPersonName(tAppointmentPersonnel.getExternalPersonnel());
+                    tPersonAccessRecordsDTO.setPhone(tAppointmentPersonnel.getPhone());
+                    tPersonAccessRecordsDTO.setPositionId(null);
+                    tPersonAccessRecordsDTO.setPositionName(null);
+                    tPersonAccessRecordsDTO.setRecordTime(vo.getSupplementTime());
+                    tPersonAccessRecordsDTO.setSiteId(vo.getSiteId());
+                    tPersonAccessRecordsDTO.setSiteName(vo.getSiteName());
+                    tPersonAccessRecordsDTO.setSupervisorName(null);
+                    // 关联补录单ID
+                    tPersonAccessRecordsDTO.setSupplementId(entity.getId());
+
+                    datasectionFeign.savePersonAccessRecords(tPersonAccessRecordsDTO);
 
                 }
             }

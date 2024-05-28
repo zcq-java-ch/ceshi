@@ -22,7 +22,7 @@ import java.util.List;
 /**
 * 人员出入记录表
 *
-* @author zhaohong 
+* @author zhaohong
 * @since 1.0.0 2024-03-29
 */
 @Data
@@ -186,6 +186,10 @@ public class TPersonAccessRecordsVO implements Serializable, TransPojo {
 
 	@ExcelIgnore
 	private String directionType;
+
+	@ExcelIgnore
+	@Schema(description = "关联补录单ID")
+	private Long supplementId;
 
 	@ExcelIgnore
 	private List<TPersonAccessRecordsEntity> todayDetails;
