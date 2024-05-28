@@ -319,6 +319,7 @@ public class SystemServerApi {
 
             // 按照 busis 字段进行分组
             Map<String, Long> typeCounts = sysUserEntities.stream()
+                    .filter(sysUserEntity ->  StringUtils.isNotEmpty(sysUserEntity.getBusis()))
                     .collect(Collectors.groupingBy(SysUserEntity::getBusis, Collectors.counting()));
             // 打印每个类型及其数量
             JSONObject objects = new JSONObject();
@@ -329,6 +330,7 @@ public class SystemServerApi {
 
             // 按照 busis 字段进行分组
             Map<String, Long> postCounts = sysUserEntities.stream()
+                    .filter(sysUserEntity -> StringUtils.isNotEmpty(sysUserEntity.getPostId()))
                     .collect(Collectors.groupingBy(SysUserEntity::getPostId, Collectors.counting()));
             // 打印每个类型及其数量
             JSONObject postobjects = new JSONObject();
@@ -631,6 +633,11 @@ public class SystemServerApi {
       */
     @PostMapping(value = "/queryNbUserIdByUserIdS")
     public JSONObject queryNbUserIdByUserIdS(@RequestParam("collect") List<Long> collect) {
+        if(!CollectionUtils.isNotEmpty(collect)){
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userIds", new ArrayList<>());
+            return jsonObject;
+        }
         LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);

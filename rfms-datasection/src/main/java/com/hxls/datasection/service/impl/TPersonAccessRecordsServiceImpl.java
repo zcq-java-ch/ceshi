@@ -372,61 +372,62 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 .map(TPersonAccessRecordsEntity::getPersonId)
                 .distinct()
                 .toList();
-        // 筛选出这些id中哪些人 是内部人员
-        JSONObject nbUserIds = userFeign.queryNbUserIdByUserIdS(collect);
-        List<Long> userIds = nbUserIds.getObject("userIds", ArrayList.class);
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userIds)){
-            LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper9 = new LambdaQueryWrapper<>();
-            objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getStatus, 1);
-            objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getDeleted, 0);
-            objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
-            objectLambdaQueryWrapper9.in(TPersonAccessRecordsEntity::getPersonId, userIds);
-            objectLambdaQueryWrapper9.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
-            List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities9 = baseMapper.selectList(objectLambdaQueryWrapper9);
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(collect)){
+            // 筛选出这些id中哪些人 是内部人员
+            JSONObject nbUserIds = userFeign.queryNbUserIdByUserIdS(collect);
+            List<Long> userIds = nbUserIds.getObject("userIds", ArrayList.class);
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userIds)){
+                LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper9 = new LambdaQueryWrapper<>();
+                objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getStatus, 1);
+                objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+                objectLambdaQueryWrapper9.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
+                objectLambdaQueryWrapper9.in(TPersonAccessRecordsEntity::getPersonId, userIds);
+                objectLambdaQueryWrapper9.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+                List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities9 = baseMapper.selectList(objectLambdaQueryWrapper9);
 
-            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tPersonAccessRecordsEntities9)){
-                // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
-                List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities9.stream()
-                        .filter(entity -> {
-                            String devicePersonId = entity.getDevicePersonId();
-                            String personName = entity.getPersonName();
-                            // 保留 devicePersonId 和 personName 至少有一个不为空的实体
-                            return (devicePersonId != null && !devicePersonId.isEmpty()) ||
-                                    (personName != null && !personName.isEmpty());
-                        })
-                        .collect(Collectors.toList());
+                if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tPersonAccessRecordsEntities9)){
+                    // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
+                    List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities9.stream()
+                            .filter(entity -> {
+                                String devicePersonId = entity.getDevicePersonId();
+                                String personName = entity.getPersonName();
+                                // 保留 devicePersonId 和 personName 至少有一个不为空的实体
+                                return (devicePersonId != null && !devicePersonId.isEmpty()) ||
+                                        (personName != null && !personName.isEmpty());
+                            })
+                            .collect(Collectors.toList());
 
-                // 按照姓名进行分组，当devicePersonId为空时
-                Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
-                        .collect(Collectors.groupingBy(
-                                entity -> {
-                                    String devicePersonId = entity.getDevicePersonId();
-                                    if (devicePersonId != null && !devicePersonId.isEmpty()) {
-                                        return devicePersonId;
-                                    } else {
-                                        return entity.getPersonName();
+                    // 按照姓名进行分组，当devicePersonId为空时
+                    Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+                            .collect(Collectors.groupingBy(
+                                    entity -> {
+                                        String devicePersonId = entity.getDevicePersonId();
+                                        if (devicePersonId != null && !devicePersonId.isEmpty()) {
+                                            return devicePersonId;
+                                        } else {
+                                            return entity.getPersonName();
+                                        }
                                     }
-                                }
-                        ));
+                            ));
 
-                // 打印每个分组并更新inNumer变量
-                for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
-                    String devicePersonId = entry.getKey();
-                    List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
+                    // 打印每个分组并更新inNumer变量
+                    for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
+                        String devicePersonId = entry.getKey();
+                        List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
 
 
-                    // 找出每个分组中按照时间排序的最后一条数据
-                    TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
-                    if ("1".equals(lastRecord.getAccessType())) {
-                        // 最后一次为入厂
-                        innbNumer += 1;
-                    } else {
-                        // 最后一次为出厂
+                        // 找出每个分组中按照时间排序的最后一条数据
+                        TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
+                        if ("1".equals(lastRecord.getAccessType())) {
+                            // 最后一次为入厂
+                            innbNumer += 1;
+                        } else {
+                            // 最后一次为出厂
+                        }
                     }
                 }
             }
         }
-
 
 
         /**
