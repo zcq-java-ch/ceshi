@@ -18,4 +18,10 @@ public interface DatasectionFeign {
 
     @PostMapping(value = "api/tPersonAccess/deletePersonAccessRecords")
     public boolean deletePersonAccessRecords(@RequestParam("supplementId") Long supplement);
+
+    /**
+     * 通过人员名字，查看当前人员是否在某个站点内
+     * */
+    @PostMapping(value = "api/tPersonAccess/whetherItIsInTheFieldOrNot")
+    public boolean whetherItIsInTheFieldOrNot(@RequestParam("personlName") String personlName, @RequestParam("stationId") Long stationId);
 }

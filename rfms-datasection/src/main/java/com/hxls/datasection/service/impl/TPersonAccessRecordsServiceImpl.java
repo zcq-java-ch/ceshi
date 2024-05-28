@@ -893,4 +893,31 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             baseMapper.delete(objectQueryWrapper);
         }
     }
+
+    @Override
+    public boolean whetherItIsInTheFieldOrNot(String personlName, Long stationId) {
+
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper3 = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getStatus, 1);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
+        objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getPersonName, personlName);
+        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        // 添加排序条件，按照recordTime降序排列
+        objectLambdaQueryWrapper3.orderByDesc(TPersonAccessRecordsEntity::getRecordTime);
+
+        // 限制结果数量为1，只获取最新的记录
+        List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3).stream().limit(1).collect(Collectors.toList());
+
+        // 或者直接使用MyBatis-Plus的selectOne方法，它会自动限制结果数量为1
+        TPersonAccessRecordsEntity latestRecord = baseMapper.selectOne(objectLambdaQueryWrapper3);
+        if (ObjectUtils.isNotEmpty(latestRecord) && "1".equals(latestRecord.getAccessType())){
+            return true;
+        }else {
+            return false;
+        }
+
+    }
 }

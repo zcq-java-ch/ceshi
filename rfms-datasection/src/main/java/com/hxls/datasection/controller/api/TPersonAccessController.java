@@ -43,7 +43,7 @@ public class TPersonAccessController {
       * @return:
       */
     @PostMapping("/savePersonAccessRecords")
-    @Operation(summary = "外部存储人员通行记录")
+    @Operation(summary = "外部调用-存储人员通行记录")
     @OperateLog(type = OperateTypeEnum.INSERT)
     public boolean savePersonAccessRecords(@RequestBody TPersonAccessRecordsDTO accessRecordsDTO){
         try {
@@ -64,12 +64,33 @@ public class TPersonAccessController {
       * @return
       */
     @PostMapping(value = "/deletePersonAccessRecords")
-    @Operation(summary = "外部删除人员通行记录")
+    @Operation(summary = "外部调用-删除人员通行记录")
     @OperateLog(type = OperateTypeEnum.DELETE)
     public boolean deletePersonAccessRecords(@RequestParam("supplementId") Long supplement){
         try {
             tPersonAccessRecordsService.deletePersonAccessRecords(supplement);
             return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.info("外部删除人员通行记录失败，进入catch:");
+            return false;
+        }
+    }
+
+    /**
+      * @author Mryang
+      * @description 外部调用，通过传入的站点id和人员姓名，查看该用户是否现在在厂内
+      * @date 15:43 2024/5/28
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/whetherItIsInTheFieldOrNot")
+    @Operation(summary = "外部调用-查看人员是否在场内")
+    @OperateLog(type = OperateTypeEnum.GET)
+    public boolean whetherItIsInTheFieldOrNot(@RequestParam("personlName") String personlName, @RequestParam("stationId") Long stationId){
+        try {
+            boolean isInTheFieldOrNot = tPersonAccessRecordsService.whetherItIsInTheFieldOrNot(personlName, stationId);
+            return isInTheFieldOrNot;
         }catch (Exception e){
             e.printStackTrace();
             log.info("外部删除人员通行记录失败，进入catch:");

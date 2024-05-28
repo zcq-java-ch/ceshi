@@ -79,4 +79,14 @@ public interface TPersonAccessRecordsService extends BaseService<TPersonAccessRe
       * @return
       */
     void deletePersonAccessRecords(Long supplement);
+
+    /**
+      * @author Mryang
+      * @description 外部调用，通过传入的站点id和人员姓名，查看该用户是否现在在厂内
+      * @date 15:47 2024/5/28
+      * @param
+      * @return
+      */
+    boolean whetherItIsInTheFieldOrNot(String personlName, Long stationId);
+
 }

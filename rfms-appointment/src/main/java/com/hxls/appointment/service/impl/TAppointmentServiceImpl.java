@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hxls.api.dto.appointment.AppointmentDTO;
+import com.hxls.api.feign.datasection.DatasectionFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.appointment.config.StorageImagesProperties;
 import com.hxls.appointment.convert.TAppointmentConvert;
@@ -89,6 +90,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     private final UserFeign userFeign;
 
     private final StorageImagesProperties properties;
+    private final DatasectionFeign datasectionFeign;
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
@@ -1090,26 +1092,43 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1);
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getSiteId, siteId);
+        objectLambdaQueryWrapper.ge(TAppointmentEntity::getStartTime, LocalDateTime.now());
+        objectLambdaQueryWrapper.le(TAppointmentEntity::getEndTime, LocalDateTime.now());
+
         List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
-
-        // 筛选出预约类型是外部预约的
-        List<Long> list1 = tAppointmentEntities.stream()
-                .filter(entity -> List.of("3", "4", "5").contains(entity.getAppointmentType()))
-                .map(TAppointmentEntity::getId)
-                .toList();
-
-
-        LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
-        personnelLambdaQueryWrapper2.in(TAppointmentPersonnel::getAppointmentId, list1);
-        List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
         int numberOfExternalAppointments = 0;
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)) {
-            numberOfExternalAppointments = tAppointmentPersonnelList2.size();
+        if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentEntities)){
+            for (int i = 0; i < tAppointmentEntities.size(); i++) {
+                TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
+                String appointmentType = tAppointmentEntity.getAppointmentType();
+                if ("3".equals(appointmentType) || "4".equals(appointmentType) ||"4".equals(appointmentType)){
+                    LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                    personnelLambdaQueryWrapper2.eq(TAppointmentPersonnel::getAppointmentId, tAppointmentEntity.getId());
+                    List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
+                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)){
+                        // 检查每人当前是否在场内
+                        for (int i1 = 0; i1 < tAppointmentPersonnelList2.size(); i1++) {
+                            TAppointmentPersonnel tAppointmentPersonnel = tAppointmentPersonnelList2.get(i1);
+                            String externalPersonnel = tAppointmentPersonnel.getExternalPersonnel();
+                            // 查询该人员是否在场内
+                            boolean b = datasectionFeign.whetherItIsInTheFieldOrNot(externalPersonnel, siteId);
+                            if (b){
+                                numberOfExternalAppointments ++;
+                            }
+                        }
+                    }
+                }
+            }
+            com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+            jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
+            return jsonObject;
+        }else {
+            com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+            jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
+            return jsonObject;
         }
-        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
-        jsonObject.put("numberOfExternalAppointments", numberOfExternalAppointments);
-        return jsonObject;
     }
 
     @Override
