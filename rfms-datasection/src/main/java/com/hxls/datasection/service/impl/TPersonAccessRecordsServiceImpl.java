@@ -15,6 +15,7 @@ import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.TVehicleAccessLedgerService;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.common.utils.RandomSnowUtils;
 import com.hxls.framework.security.user.UserDetail;
 import lombok.AllArgsConstructor;
 import com.hxls.framework.common.utils.PageResult;
@@ -875,6 +876,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     @Override
     public void saveFegin(TPersonAccessRecordsDTO accessRecordsDTO) {
         TPersonAccessRecordsEntity entity = TPersonAccessRecordsConvert.INSTANCE.convertDto(accessRecordsDTO);
+        entity.setRecordsId(RandomSnowUtils.getSnowRandom());
 
         baseMapper.insert(entity);
     }
