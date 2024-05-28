@@ -275,6 +275,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper2.between(TVehicleAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
         List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper2);
         int inAllNumer = 0;
