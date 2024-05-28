@@ -66,6 +66,9 @@ public class TVehicleExcelVO implements Serializable, TransPojo {
 	@ExcelProperty("车辆照片名（不能重复）")
 	private String imageUrl;
 
+	@ExcelProperty("随车清单")
+	private String images;
+
 	@ExcelProperty("司机手机号")
 	private String driverMobile;
 
