@@ -365,13 +365,13 @@ public class SystemServerApi {
         JSONObject entries = new JSONObject();
         Integer totalCar = 0;
         totalCar += tVehicleEntities.size();
-        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
-        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
-        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
-        userEntityLambdaQueryWrapper.isNotNull(SysUserEntity::getLicensePlate);
-        List<SysUserEntity> list = sysUserService.list(userEntityLambdaQueryWrapper);
-        totalCar += list.size();
+//        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
+//        userEntityLambdaQueryWrapper.isNotNull(SysUserEntity::getLicensePlate);
+//        List<SysUserEntity> list = sysUserService.list(userEntityLambdaQueryWrapper);
+//        totalCar += list.size();
         entries.put("siteCarNumberTotal", totalCar);
 
         return entries;
