@@ -62,7 +62,18 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         wrapper.eq(SysOrgEntity::getDeleted, 0);
         wrapper.eq(query.getStatus() != null, SysOrgEntity::getStatus, query.getStatus());
         wrapper.like(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
-        wrapper.like(StringUtils.isNotEmpty(query.getPcode()), SysOrgEntity::getPcode, query.getPcode());
+
+        List<String> codeList = new ArrayList<>();
+        if (StringUtils.isNotEmpty(query.getPcode())) {
+            List<SysOrgEntity> list = list();
+            for (SysOrgEntity sysOrgEntity : list) {
+                if (checkData(sysOrgEntity , list,query.getPcode())) {
+                    codeList.add(sysOrgEntity.getCode());
+                }
+            }
+        }
+
+        wrapper.in(CollectionUtils.isNotEmpty(codeList), SysOrgEntity::getCode, codeList);
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
         wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
@@ -71,6 +82,22 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             wrapper.or().eq(SysOrgEntity::getCreator,query.getCreator());
         }
         return wrapper;
+    }
+
+    private Boolean checkData(SysOrgEntity sysOrgEntity, List<SysOrgEntity> list,String pcode) {
+
+        if (sysOrgEntity.getPcode() == null){
+            return false;
+        }
+        if ( sysOrgEntity.getPcode().equals(pcode)){
+            return true;
+        }
+        for (SysOrgEntity item : list) {
+            if (item.getCode().equals(sysOrgEntity.getPcode())) {
+                return checkData(item, list,pcode);
+            }
+        }
+        return false;
     }
 
     @Override

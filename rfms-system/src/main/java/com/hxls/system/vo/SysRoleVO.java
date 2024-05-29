@@ -63,5 +63,6 @@ public class SysRoleVO implements Serializable {
     @Schema(description = "排序")
     private Integer sort;
 
+    private Long orgId;
 
 }

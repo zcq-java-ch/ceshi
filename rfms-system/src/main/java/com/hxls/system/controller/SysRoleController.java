@@ -48,10 +48,7 @@ public class SysRoleController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('sys:role:page')")
     public Result<PageResult<SysRoleVO>> page(@ParameterObject @Valid SysRoleQuery query) {
-//        query.setOrder("sort");
-//        query.setAsc(true);
         PageResult<SysRoleVO> page = sysRoleService.page(query);
-
         //添加创建人
         for (SysRoleVO roleVO : page.getList()){
             SysUserEntity byId = sysUserService.getById(roleVO.getCreator());
@@ -99,6 +96,8 @@ public class SysRoleController {
     @OperateLog(type = OperateTypeEnum.INSERT)
     @PreAuthorize("hasAuthority('sys:role:save')")
     public Result<String> save(@RequestBody @Valid SysRoleVO vo) {
+        UserDetail user = SecurityUser.getUser();
+        vo.setOrgId(user.getOrgId());
         sysRoleService.save(vo);
 
         return Result.ok();
