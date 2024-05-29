@@ -4,8 +4,15 @@
 <mapper namespace="com.hxls.system.dao.SysOrgDao">
 
 	<select id="getList" resultType="com.hxls.system.entity.SysOrgEntity">
-		select t1.*, (select t2.name from sys_org t2 where t2.code = t1.pcode) parentName from sys_org t1 where t1.deleted = 0  and t1.status = 1
-			order by t1.sort asc
+		SELECT t1.*,
+			   (SELECT t2.name
+				FROM sys_org t2
+				WHERE t2.code = t1.pcode
+				   LIMIT 1) AS parentName
+		FROM sys_org t1
+		WHERE t1.deleted = 0
+		  AND t1.status = 1
+		ORDER BY t1.sort ASC;
 	</select>
 
 	<select id="getIdAndPidList" resultType="com.hxls.system.entity.SysOrgEntity">
