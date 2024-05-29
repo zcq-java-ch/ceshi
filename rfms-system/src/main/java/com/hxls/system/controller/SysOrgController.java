@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import com.hxls.system.convert.SysOrgConvert;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -56,9 +57,11 @@ public class SysOrgController {
     public Result<PageResult<SysOrgVO>> pageByGys(@ParameterObject @Valid SysOrgQuery query) {
         //获取登录账户的供应商
         UserDetail user = SecurityUser.getUser();
-        if(user.getOrgId() != null ){
-            query.setId(user.getOrgId());
-        }
+//        if(user.getOrgId() != null ){
+//            query.setId(user.getOrgId());
+//        }
+
+        query.setOrgList(CollectionUtils.isNotEmpty(user.getDataScopeList())? user.getDataScopeList() : null);
         PageResult<SysOrgVO> page = sysOrgService.page(query);
         return Result.ok(page);
     }

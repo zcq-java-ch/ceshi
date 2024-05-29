@@ -67,9 +67,12 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> pageByGys(@ParameterObject @Valid SysUserQuery query) {
         UserDetail user = SecurityUser.getUser();
-        if (user.getOrgId() != null) {
-            query.setOrgId(user.getOrgId());
-        }
+//        if (user.getOrgId() != null) {
+//            query.setOrgId(user.getOrgId());
+//        }
+
+        query.setOrgList(CollectionUtils.isNotEmpty(user.getDataScopeList())? user.getDataScopeList() : null);
+
         PageResult<SysUserVO> page = sysUserService.pageByGys(query);
         return Result.ok(page);
     }

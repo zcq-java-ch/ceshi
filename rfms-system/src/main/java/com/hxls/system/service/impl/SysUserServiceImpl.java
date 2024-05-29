@@ -130,6 +130,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         params.put("realName", query.getRealName());
         params.put("orgName", query.getOrgName());
         params.put("orgId", query.getOrgId());
+        params.put("orgList", query.getOrgList());
         // 分页查询
         IPage<SysUserEntity> page = getPage(query);
         params.put(Constant.PAGE, page);
