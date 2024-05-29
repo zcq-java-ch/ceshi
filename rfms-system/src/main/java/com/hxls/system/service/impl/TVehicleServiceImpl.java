@@ -60,6 +60,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 通用车辆管理表
@@ -404,7 +405,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                         tVehicleExcelVO.setImages(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 10))));
                     }
                     if (row.getCell(11) != null) {
-                        tVehicleExcelVO.setDriverMobile(this.getCellValue(row.getCell(10)));
+                        tVehicleExcelVO.setDriverMobile(this.getCellValue(row.getCell(11)));
                     }
 
                     transferList.add(tVehicleExcelVO);
@@ -430,6 +431,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                         List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile,driverMobile));
                         if (CollectionUtils.isNotEmpty(sysUserEntities)){
                             tVehicle.setUserId(sysUserEntities.get(0).getId());
+                            tVehicle.setDriverId(sysUserEntities.get(0).getId());
                             tVehicle.setDriverName(sysUserEntities.get(0).getRealName());
                         }
                     }
@@ -544,7 +546,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         for (POIXMLDocumentPart dr : xssfSheet.getRelations()) {
             if (dr instanceof XSSFDrawing) {
                 XSSFDrawing drawing = (XSSFDrawing) dr;
-                List<XSSFShape> shapes = drawing.getShapes();
+                List<XSSFShape> shapes = drawing.getShapes()
+                        .stream().filter(s->s instanceof XSSFPicture).collect(Collectors.toList());
                 for (XSSFShape shape : shapes) {
                     XSSFPicture pic = (XSSFPicture) shape;
                     try {
