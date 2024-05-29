@@ -1,6 +1,7 @@
 package com.hxls.system.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -44,10 +45,16 @@ public class SysOrgController {
     public Result<PageResult<SysOrgVO>> page(@ParameterObject @Valid SysOrgQuery query) {
         //获取登录账户的数据权限
         UserDetail user = SecurityUser.getUser();
-        if(user.getDataScopeList() != null ){
+        if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
             query.setOrgList(user.getDataScopeList());
+        }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            query.setOrgList(List.of(Constant.EMPTY));
         }
+
         PageResult<SysOrgVO> page = sysOrgService.page(query);
+
+
+
         return Result.ok(page);
     }
 
@@ -57,11 +64,12 @@ public class SysOrgController {
     public Result<PageResult<SysOrgVO>> pageByGys(@ParameterObject @Valid SysOrgQuery query) {
         //获取登录账户的供应商
         UserDetail user = SecurityUser.getUser();
-//        if(user.getOrgId() != null ){
-//            query.setId(user.getOrgId());
-//        }
-
-        query.setOrgList(CollectionUtils.isNotEmpty(user.getDataScopeList())? user.getDataScopeList() : null);
+        if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
+            query.setOrgList(user.getDataScopeList());
+        }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            query.setOrgList(List.of(Constant.EMPTY));
+        }
+        query.setCreator(user.getId());
         PageResult<SysOrgVO> page = sysOrgService.page(query);
         return Result.ok(page);
     }

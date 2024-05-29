@@ -38,4 +38,6 @@ public class SysOrgQuery extends Query {
 
     private List<Long> orgList;
 
+    private Long creator;
+
 }

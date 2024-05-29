@@ -2,6 +2,7 @@ package com.hxls.system.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
@@ -67,12 +68,11 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> pageByGys(@ParameterObject @Valid SysUserQuery query) {
         UserDetail user = SecurityUser.getUser();
-//        if (user.getOrgId() != null) {
-//            query.setOrgId(user.getOrgId());
-//        }
-
-        query.setOrgList(CollectionUtils.isNotEmpty(user.getDataScopeList())? user.getDataScopeList() : null);
-
+        if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
+            query.setOrgList(user.getDataScopeList());
+        }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            query.setOrgList(List.of(Constant.EMPTY));
+        }
         PageResult<SysUserVO> page = sysUserService.pageByGys(query);
         return Result.ok(page);
     }

@@ -244,6 +244,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
             List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList());
             for (TVehicleEntity tVehicleEntity : tVehicleEntities) {
+                tVehicleEntity.setSiteId(entity.getStationId());
+                tVehicleEntity.setStationId(entity.getStationId());
                 tVehicleEntity.setUserId(vo.getId());
                 tVehicleEntity.setDriverId(vo.getId());
                 tVehicleEntity.setDriverName(vo.getRealName());

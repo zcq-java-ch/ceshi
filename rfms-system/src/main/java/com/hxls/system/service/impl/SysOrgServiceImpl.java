@@ -67,6 +67,9 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
         wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
 
+        if (query.getCreator()!=null){
+            wrapper.or().eq(SysOrgEntity::getCreator,query.getCreator());
+        }
         return wrapper;
     }
 
@@ -75,7 +78,8 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         Map<String, Object> params = new HashMap<>();
 
         // 数据权限
-        params.put(Constant.DATA_SCOPE, getDataScope("t1", "id"));
+        params.put(Constant.DATA_SCOPE, getDataScopeByCreator("t1", "id"));
+
 
         // 机构列表
         List<SysOrgEntity> entityList = baseMapper.getList(params);
