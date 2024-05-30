@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * 机构列表
  *
@@ -85,4 +87,6 @@ public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
     @Schema(description = "状态 0:正常, 1:删除")
     private Integer deleted;
 
+
+    private List<SysSiteAreaVO> sysSiteAreaList;
 }

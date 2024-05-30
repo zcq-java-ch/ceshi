@@ -94,4 +94,8 @@ public class SysSiteAreaVO implements Serializable {
 	@Schema(description = "新增绑定车辆出口关联设备")
 	private List<Long> carOutCodeAddDevices;
 
+
+	@Schema(description = "转换名字")
+	private String name;
+
 }

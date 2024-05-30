@@ -35,7 +35,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class AppointmentAuditController {
 
-
     private final TAppointmentService tAppointmentService;
 
     @GetMapping("page")

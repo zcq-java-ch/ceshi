@@ -116,7 +116,6 @@ public class SysSiteAreaController {
         sysSiteAreaService.addNewDevices(vo.getCarIntCodeAddDevices(), carIntCode);
         sysSiteAreaService.addNewDevices(vo.getCarOutCodeAddDevices(), carOutCode);
 
-
         vo.setFaceInCode(faceInCode);
         vo.setFaceOutCode(faceOutCode);
         vo.setCarIntCode(carIntCode);

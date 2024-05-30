@@ -133,7 +133,7 @@ public class TSupplementRecordServiceImpl extends BaseServiceImpl<TSupplementRec
                     tPersonAccessRecordsDTO.setSiteId(vo.getSiteId());
                     tPersonAccessRecordsDTO.setSiteName(vo.getSiteName());
                     tPersonAccessRecordsDTO.setSupervisorName(tAppointmentPersonnel.getSupervisorName());
-                    tPersonAccessRecordsDTO.setCompanyId(tAppointmentPersonnel.getOrgCode() != null ? Long.valueOf(tAppointmentPersonnel.getOrgCode()) : null);
+                    tPersonAccessRecordsDTO.setCompanyId(StringUtils.isNotEmpty(tAppointmentPersonnel.getOrgCode()) ? Long.valueOf(tAppointmentPersonnel.getOrgCode()) : null);
                     tPersonAccessRecordsDTO.setCompanyName(StringUtils.isNotEmpty(tAppointmentPersonnel.getOrgName()) ? tAppointmentPersonnel.getOrgName() : null);
                     tPersonAccessRecordsDTO.setPersonId(tAppointmentPersonnel.getUserId() != null ? tAppointmentPersonnel.getUserId() : null);
                     // 关联补录单ID
