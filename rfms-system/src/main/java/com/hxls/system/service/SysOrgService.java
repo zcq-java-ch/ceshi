@@ -2,6 +2,7 @@ package com.hxls.system.service;
 
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.vo.SysOrgVO;
@@ -44,4 +45,9 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 	 */
 	SysOrgEntity getByCodeNoStatus(String string);
 
+	/**
+	 * 获取厂站及下属区域
+	 * @param user
+	 */
+	List<SysOrgVO> getOrgSiteList(UserDetail user);
 }

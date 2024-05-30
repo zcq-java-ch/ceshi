@@ -3,6 +3,7 @@ package com.hxls.system.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.framework.common.constant.Constant;
@@ -25,6 +26,7 @@ import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.*;
+import com.hxls.system.vo.OrganizationVO;
 import com.hxls.system.vo.SysOrgVO;
 import com.hxls.system.vo.SysSiteAreaVO;
 import com.hxls.system.vo.SysUserVO;
@@ -32,6 +34,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,6 +78,9 @@ public class ResourceByLoginController {
      * 引入系统参数
      */
     private final SysParamsService sysParamsService;
+
+    private final SysAreacodeDeviceService sysAreacodeDeviceService;
+
     @GetMapping("person")
     @Operation(summary = "人员下拉")
     public Result<List<SysUserVO>> person() {
@@ -321,12 +327,12 @@ public class ResourceByLoginController {
 
     @GetMapping("personList")
     @Operation(summary = "人员模糊查询下拉")
-    public Result<List<SysUserVO>> personList(@RequestParam String name) {
+    public Result<List<SysUserVO>> personList(@RequestParam String name,@RequestParam String userType) {
 
         //配置查询权限
         List<SysUserVO> result = new ArrayList<>();
         LambdaQueryWrapper<SysUserEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysUserEntity::getUserType,"1");
+        wrapper.eq(StrUtil.isNotEmpty(userType),SysUserEntity::getUserType,userType);
         wrapper.like(StrUtil.isNotEmpty(name),SysUserEntity::getRealName , name);
         //获取是否是管理
         List<SysUserEntity> list = sysUserService.list(wrapper);
@@ -334,5 +340,60 @@ public class ResourceByLoginController {
         return Result.ok(result);
     }
 
+    @GetMapping("getOrgSiteList")
+    @Operation(summary = "获取厂站区域列表")
+//    @PreAuthorize("hasAuthority('sys:org:getOrgSiteList')")
+    public Result<List<SysOrgVO>> getOrgSiteList() {
+        UserDetail user = SecurityUser.getUser();
+        List<Long> dataScopeList = user.getDataScopeList();
+        if (CollectionUtils.isEmpty(dataScopeList)){
+            return Result.ok(new ArrayList<>());
+        }
+        List<SysOrgVO> orgSiteList = sysOrgService.getOrgSiteList(user);
+        if (CollectionUtils.isNotEmpty(orgSiteList)){
+            for (SysOrgVO sysOrgVO : orgSiteList) {
+                LambdaQueryWrapper<SysSiteAreaEntity> sysSiteAreaEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getSiteId, sysOrgVO.getId());
+                sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getStatus, 1);
+                sysSiteAreaEntityLambdaQueryWrapper.eq(SysSiteAreaEntity::getDeleted, 0);
+                List<SysSiteAreaEntity> sysSiteAreaEntityList = sysSiteAreaService.list(sysSiteAreaEntityLambdaQueryWrapper);
+                if (CollectionUtils.isNotEmpty(sysSiteAreaEntityList)){
+                    List<SysSiteAreaVO> returnList = new ArrayList<>();
+                    for (int i = 0; i < sysSiteAreaEntityList.size(); i++) {
+                        SysSiteAreaEntity entity = sysSiteAreaService.getById(sysSiteAreaEntityList.get(i).getId());
+                        SysSiteAreaVO convert = SysSiteAreaConvert.INSTANCE.convert(entity);
+                        String faceInCode = entity.getFaceInCode();
+                        if (StringUtils.isNotEmpty(faceInCode)){
+                            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceInCode);
+                            convert.setFaceInCodeAndDevices(objects);
+                        }
+                        String faceOutCode = entity.getFaceOutCode();
+                        if (StringUtils.isNotEmpty(faceOutCode)){
+                            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(faceOutCode);
+                            convert.setFaceOutCodeAndDevices(objects);
+                        }
+                        String carInCode = entity.getCarIntCode();
+                        if (StringUtils.isNotEmpty(carInCode)){
+                            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carInCode);
+                            convert.setCarIntCodeAndDevices(objects);
+                        }
+                        String carOutCode = entity.getCarOutCode();
+                        if (StringUtils.isNotEmpty(carOutCode)){
+                            JSONArray objects = sysAreacodeDeviceService.queryDeviceListByCode(carOutCode);
+                            convert.setCarOutCodeAndDevices(objects);
+                        }
+                        convert.setName(convert.getAreaName());
+                        returnList.add(convert);
+                    }
+                    sysOrgVO.setSysSiteAreaList(returnList);
+                }else {
+                    sysOrgVO.setSysSiteAreaList(new ArrayList<>());
+                }
+            }
+
+            return Result.ok(orgSiteList);
+        }
+        return Result.ok(new ArrayList<>());
+    }
 
 }

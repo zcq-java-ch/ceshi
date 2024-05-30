@@ -16,6 +16,7 @@ import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.dao.SysOrgDao;
@@ -269,4 +270,21 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             return null;
         }
     }
+
+
+    @Override
+    public List<SysOrgVO> getOrgSiteList(UserDetail user) {
+        LambdaQueryWrapper<SysOrgEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysOrgEntity::getProperty, 4);
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            wrapper.in(SysOrgEntity::getId,user.getDataScopeList());
+        }
+        List<SysOrgEntity> list = list(wrapper);
+
+        return SysOrgConvert.INSTANCE.convertList(list);
+
+
+    }
+
+
 }
