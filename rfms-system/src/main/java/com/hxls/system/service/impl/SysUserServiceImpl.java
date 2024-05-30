@@ -9,6 +9,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -1096,11 +1097,19 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 List<TVehicleEntity> saveCarLists = new ArrayList<>();
                 for (int i = 0; i < sysUserEntities.size(); i++) {
                     SysUserEntity sysUserEntity = sysUserEntities.get(i);
-                    // 判断手机号是否存在
+                    //判断车牌号有没有，车牌号只能被创建一次
+                    long valusCount = baseMapper.selectCount(new QueryWrapper<SysUserEntity>()
+                            .eq("license_plate", sysUserEntity.getLicensePlate())
+                            .eq("deleted", 0));
+                    if (valusCount > 0) {
+                        throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"已存在，不能重复添加");
+                    }
+
 //                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
                     SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
                     if (oldusermobile != null) {
                         //  如果用户已经存在，则只需要添加车辆信息即可
+
                         TVehicleEntity tVehicleEntity = new TVehicleEntity();
                         tVehicleEntity.setUserId(oldusermobile.getId());
                         tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
@@ -1120,7 +1129,6 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         sysUserEntity.setStatus(1);
                         sysUserEntity.setSuperAdmin(0);
                         save(sysUserEntity);
-
 
                         TVehicleEntity tVehicleEntity = new TVehicleEntity();
                         tVehicleEntity.setUserId(9999L);
