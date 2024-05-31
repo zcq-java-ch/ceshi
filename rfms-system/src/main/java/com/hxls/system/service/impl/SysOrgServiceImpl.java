@@ -2,6 +2,7 @@ package com.hxls.system.service.impl;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
@@ -64,20 +65,16 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         wrapper.eq(query.getStatus() != null, SysOrgEntity::getStatus, query.getStatus());
         wrapper.like(StringUtils.isNotEmpty(query.getCode()), SysOrgEntity::getCode, query.getCode());
 
-        List<String> codeList = new ArrayList<>();
         if (StringUtils.isNotEmpty(query.getPcode())) {
-            List<SysOrgEntity> list = list();
-            for (SysOrgEntity sysOrgEntity : list) {
-                if (checkData(sysOrgEntity , list,query.getPcode())) {
-                    codeList.add(sysOrgEntity.getCode());
-                }
-            }
+            List<String> subOrgCodeList = getSubOrgCodeList(query.getPcode());
+            wrapper.in(CollectionUtils.isNotEmpty(subOrgCodeList), SysOrgEntity::getCode, subOrgCodeList);
         }
 
-        wrapper.in(CollectionUtils.isNotEmpty(codeList), SysOrgEntity::getCode, codeList);
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
-        wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
+        if (StrUtil.isEmpty(query.getPcode())){
+            wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
+        }
 
         if (query.getCreator()!=null){
             wrapper.or().eq(SysOrgEntity::getCreator,query.getCreator());
@@ -94,7 +91,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             return true;
         }
         for (SysOrgEntity item : list) {
-            if (item.getCode().equals(sysOrgEntity.getPcode())) {
+            if (item.getPcode().equals(sysOrgEntity.getCode())) {
                 return checkData(item, list,pcode);
             }
         }

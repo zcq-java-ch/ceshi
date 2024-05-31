@@ -208,17 +208,30 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     public void setByLicensePlates(String licensePlates, Long userId, Integer type) {
 
-        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate ,licensePlates ));
-        if (ObjectUtil.isNull(one)){
+        List<TVehicleEntity> list = list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, licensePlates));
+        if (CollectionUtils.isEmpty(list)){
             throw new ServerException(ErrorCode.NOT_FOUND.getMsg());
         }
-        //修改默认司机
-        one.setDriverId(userId);
+
         if( type < 1){
             //修改默认司机
-            one.setDriverId(-1L);
+            list.forEach(item-> {
+                item.setDriverId(Constant.EMPTY);
+                item.setUserId(Constant.EMPTY);
+                item.setDriverMobile("未绑定");
+                item.setDriverName("未绑定");
+            });
+        }else {
+            //修改默认司机
+            SysUserEntity byId = sysUserDao.getById(userId);
+            list.forEach(item-> {
+                item.setDriverId(userId);
+                item.setUserId(userId);
+                item.setDriverMobile(byId.getMobile());
+                item.setDriverName(byId.getRealName());
+            });
         }
-        updateById(one);
+        updateBatchById(list);
     }
 
     /**
