@@ -141,4 +141,14 @@
         select t.id from sys_user u join t_appointment t on u.id = t.creator where u.real_name like concat('%', #{name}, '%') AND u.deleted = 0 AND u.status = 1
     </select>
 
+
+    <select id="selectNewByIds" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT  device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password,
+        master_ip as master ,manufacturer_code as type  FROM t_device_management where id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </select>
+
 </mapper>

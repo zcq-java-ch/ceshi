@@ -137,4 +137,7 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
     */
 
    List<Long> selectByName(@Param("name")String name);
+
+
+   List<JSONObject> selectNewByIds(@Param("ids") List<Long> list);
 }
