@@ -1105,6 +1105,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"已存在，不能重复添加");
                     }
 
+                    checkData(sysUserEntity);
 //                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
                     SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
                     if (oldusermobile != null) {
@@ -1165,6 +1166,53 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         } catch (IOException e) {
             throw new ServerException("Error reading Excel from URL.");
         }
+    }
+
+    private void checkData(SysUserEntity sysUserEntity) {
+        String Mobile1 = sysUserEntity.getMobile();
+        if (org.apache.commons.lang3.StringUtils.isEmpty(Mobile1)){
+            throw new ServerException("手机号不能为空，请调整数据");
+        }
+
+        // 手机号11位判断
+        int phoneminLength = 11; // 一般手机号长度
+        if (phoneminLength != Mobile1.length()) {
+            throw new ServerException("手机号长度不对，请调整数据");
+        }
+
+        String realName = sysUserEntity.getRealName();
+        if (org.apache.commons.lang3.StringUtils.isEmpty(realName)){
+            throw new ServerException("用户姓名不能为空，请调整数据");
+        }
+
+        String idCard = sysUserEntity.getIdCard();
+        if (org.apache.commons.lang3.StringUtils.isEmpty(idCard)){
+            throw new ServerException("用户身份证号码不能为空，请调整数据");
+        }
+
+        // 身份证18位判断
+        int idcardLength = 18;
+        if (idcardLength != idCard.length()) {
+            throw new ServerException("身份证号码长度不对，请调整数据");
+        }
+
+        String licensePlate = sysUserEntity.getLicensePlate();
+        // 车牌号不能为空
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(licensePlate)){
+            // 车牌号去空格
+            sysUserEntity.setLicensePlate(licensePlate.trim());
+
+            int minLength = 6; // 一般车牌号的最小长度
+            int maxLength = 10; // 一般车牌号的最大长度
+            // 验证长度是否在指定范围内
+            int length = licensePlate.length();
+            if (length >= minLength && length <= maxLength) {
+//                        System.out.println("车牌号长度符合要求。");
+            } else {
+                throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"车牌号不符合长度，不能添加");
+            }
+        }
+
     }
 
     private File downloadFile(String fileUrl) throws IOException {

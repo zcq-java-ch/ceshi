@@ -426,6 +426,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
 
+                    // 数据规则校验
+                    checkData(tVehicle);
+
+
+
+
+
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
                     if (StrUtil.isNotEmpty(driverMobile)){
@@ -455,6 +462,38 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             }
         } catch (IOException e) {
             throw new ServerException("Error reading Excel from URL.");
+        }
+    }
+
+    private void checkData(TVehicleEntity tVehicle) {
+        String driverMobile1 = tVehicle.getDriverMobile();
+        if (StringUtils.isEmpty(driverMobile1)){
+            throw new ServerException("司机手机号不能为空，请调整数据");
+        }
+
+        // 手机号11位判断
+        int phoneminLength = 11; // 一般手机号长度
+        if (phoneminLength != driverMobile1.length()) {
+            throw new ServerException("手机号长度不对，请调整数据");
+        }
+
+        String licensePlate = tVehicle.getLicensePlate();
+        // 车牌号不能为空
+        if (StringUtils.isEmpty(licensePlate)){
+            throw new ServerException("车牌号不能为空，请调整数据");
+        }
+
+        // 车牌号去空格
+        tVehicle.setLicensePlate(licensePlate.trim());
+
+        int minLength = 6; // 一般车牌号的最小长度
+        int maxLength = 10; // 一般车牌号的最大长度
+        // 验证长度是否在指定范围内
+        int length = licensePlate.length();
+        if (length >= minLength && length <= maxLength) {
+//                        System.out.println("车牌号长度符合要求。");
+        } else {
+            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"车牌号不符合长度，不能添加");
         }
     }
 

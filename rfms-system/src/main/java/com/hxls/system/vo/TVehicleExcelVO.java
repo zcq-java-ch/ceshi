@@ -5,7 +5,10 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.vo.TransPojo;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -28,6 +31,7 @@ public class TVehicleExcelVO implements Serializable, TransPojo {
 
 
 	@ExcelProperty("车牌号")
+	@NotBlank(message = "车牌号不能为空")
 	private String licensePlate;
 
 
@@ -70,6 +74,7 @@ public class TVehicleExcelVO implements Serializable, TransPojo {
 	private String images;
 
 	@ExcelProperty("司机手机号")
+	@NotBlank(message = "司机手机号不能为空")
 	private String driverMobile;
 
 
