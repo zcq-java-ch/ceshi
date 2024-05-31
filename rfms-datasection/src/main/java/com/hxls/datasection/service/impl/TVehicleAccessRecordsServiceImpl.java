@@ -351,38 +351,52 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         LambdaQueryWrapper<TVehicleAccessRecordsEntity> objectLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getDeleted, 0);
+        objectLambdaQueryWrapper2.eq(TVehicleAccessRecordsEntity::getSiteId, stationId);
         objectLambdaQueryWrapper2.between(TVehicleAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
         List<TVehicleAccessRecordsEntity> tVehicleAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper2);
+
         JSONArray objects = new JSONArray();
-        // 按照车牌进行分组
-        Map<String, List<TVehicleAccessRecordsEntity>> groupedByDevicePersonId2 = tVehicleAccessRecordsEntities.stream()
-                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
-
-        // 打印每个分组并更新inNumer变量
-        for (Map.Entry<String, List<TVehicleAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
-            String devicePersonId = entry.getKey();
-            List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
-
-//            System.out.println("车牌: " + devicePersonId);
-//            System.out.println("Records:");
-//            System.out.println("---------------------------------");
-
-            // 找出每个分组中按照时间排序的最后一条数据
-            TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
-            if ("1".equals(lastRecord.getAccessType())) {
-                // 最后一次为入厂
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("licensePlateNumber", lastRecord.getPlateNumber());
-                jsonObject.put("driver", lastRecord.getDriverName());
-                jsonObject.put("models", lastRecord.getVehicleModel());
-                jsonObject.put("emissionStandards", lastRecord.getEmissionStandard());
-                jsonObject.put("time", lastRecord.getRecordTime());
-                jsonObject.put("typeOfEntryAndExit", lastRecord.getAccessType());
-                objects.add(jsonObject);
-            } else {
-                // 最后一次为出厂
-            }
+        for (int i = 0; i < tVehicleAccessRecordsEntities.size(); i++) {
+            TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = tVehicleAccessRecordsEntities.get(0);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("licensePlateNumber", tVehicleAccessRecordsEntity.getPlateNumber());
+            jsonObject.put("driver", tVehicleAccessRecordsEntity.getDriverName());
+            jsonObject.put("models", tVehicleAccessRecordsEntity.getVehicleModel());
+            jsonObject.put("emissionStandards", tVehicleAccessRecordsEntity.getEmissionStandard());
+            jsonObject.put("time", tVehicleAccessRecordsEntity.getRecordTime());
+            jsonObject.put("typeOfEntryAndExit", tVehicleAccessRecordsEntity.getAccessType());
+            objects.add(jsonObject);
         }
+
+//        // 按照车牌进行分组
+//        Map<String, List<TVehicleAccessRecordsEntity>> groupedByDevicePersonId2 = tVehicleAccessRecordsEntities.stream()
+//                .collect(Collectors.groupingBy(TVehicleAccessRecordsEntity::getPlateNumber));
+//
+//        // 打印每个分组并更新inNumer变量
+//        for (Map.Entry<String, List<TVehicleAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
+//            String devicePersonId = entry.getKey();
+//            List<TVehicleAccessRecordsEntity> recordsList = entry.getValue();
+//
+////            System.out.println("车牌: " + devicePersonId);
+////            System.out.println("Records:");
+////            System.out.println("---------------------------------");
+//
+//            // 找出每个分组中按照时间排序的最后一条数据
+//            TVehicleAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TVehicleAccessRecordsEntity::getRecordTime));
+//            if ("1".equals(lastRecord.getAccessType())) {
+//                // 最后一次为入厂
+//                JSONObject jsonObject = new JSONObject();
+//                jsonObject.put("licensePlateNumber", lastRecord.getPlateNumber());
+//                jsonObject.put("driver", lastRecord.getDriverName());
+//                jsonObject.put("models", lastRecord.getVehicleModel());
+//                jsonObject.put("emissionStandards", lastRecord.getEmissionStandard());
+//                jsonObject.put("time", lastRecord.getRecordTime());
+//                jsonObject.put("typeOfEntryAndExit", lastRecord.getAccessType());
+//                objects.add(jsonObject);
+//            } else {
+//                // 最后一次为出厂
+//            }
+//        }
         return objects;
     }
 

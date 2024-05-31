@@ -324,6 +324,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void importByExcelWithPictures(String excelUrl, Long siteId) throws NoSuchAlgorithmException, KeyManagementException, IOException {
         //导入时候获取的地址是相对路径 需要拼接服务器路径
         String domain = properties.getConfig().getDomain();
