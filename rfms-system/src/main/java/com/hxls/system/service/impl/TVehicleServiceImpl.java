@@ -429,6 +429,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                 ExcelUtils.parseDict(transferList);
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(transferList);
                 tVehicleEntities.forEach(tVehicle -> {
+                    // 数据规则校验
+                    checkData(tVehicle);
+
                     //判断车牌号有没有，车牌号只能被创建一次
                     long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
                             .eq("license_plate", tVehicle.getLicensePlate())
@@ -439,8 +442,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
 
-                    // 数据规则校验
-                    checkData(tVehicle);
+
 
 
 

@@ -1175,31 +1175,57 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 List<TVehicleEntity> saveCarLists = new ArrayList<>();
                 for (int i = 0; i < sysUserEntities.size(); i++) {
                     SysUserEntity sysUserEntity = sysUserEntities.get(i);
-                    //判断车牌号有没有，车牌号只能被创建一次
-                    long valusCount = baseMapper.selectCount(new QueryWrapper<SysUserEntity>()
-                            .eq("license_plate", sysUserEntity.getLicensePlate())
-                            .eq("deleted", 0));
-                    if (valusCount > 0) {
-                        throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"已存在，不能重复添加");
-                    }
 
+                    // 数据规则校验
                     checkData(sysUserEntity);
-//                    SysUserEntity olduserusername = baseMapper.getByUsername(sysUserEntity.getMobile());
-                    SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
-                    if (oldusermobile != null) {
-                        //  如果用户已经存在，则只需要添加车辆信息即可
 
-                        TVehicleEntity tVehicleEntity = new TVehicleEntity();
-                        tVehicleEntity.setUserId(oldusermobile.getId());
-                        tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
-                        tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
-                        tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
-                        tVehicleEntity.setCarType(sysUserEntity.getCarType());
-                        tVehicleEntity.setDriverId(oldusermobile.getId());
-                        tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
-                        tVehicleEntity.setDriverName(sysUserEntity.getRealName());
-                        saveCarLists.add(tVehicleEntity);
+
+                    //判断车牌号有没有，车牌号只能被创建一次
+                    if (org.apache.commons.lang3.StringUtils.isNotEmpty(sysUserEntity.getLicensePlate())){
+                        long valusCount = tVehicleService.count(new QueryWrapper<TVehicleEntity>()
+                                .eq("license_plate", sysUserEntity.getLicensePlate())
+                                .eq("deleted", 0));
+                        if (valusCount > 0) {
+                            throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"已存在，不能重复添加");
+                        }
+                        SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
+                        if (oldusermobile != null) {
+                            //  如果用户已经存在，则只需要添加车辆信息即可
+
+                            TVehicleEntity tVehicleEntity = new TVehicleEntity();
+                            tVehicleEntity.setUserId(oldusermobile.getId());
+                            tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
+                            tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
+                            tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
+                            tVehicleEntity.setCarType(sysUserEntity.getCarType());
+                            tVehicleEntity.setDriverId(oldusermobile.getId());
+                            tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
+                            tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+                            saveCarLists.add(tVehicleEntity);
+                        }else {
+                            sysUserEntity.setUserType("2");
+                            sysUserEntity.setPassword(password);
+                            sysUserEntity.setOrgId(orgId);
+                            sysUserEntity.setUsername(sysUserEntity.getMobile());
+                            sysUserEntity.setOrgName(byId.getName());
+                            sysUserEntity.setStatus(1);
+                            sysUserEntity.setSuperAdmin(0);
+                            save(sysUserEntity);
+
+                            TVehicleEntity tVehicleEntity = new TVehicleEntity();
+                            tVehicleEntity.setUserId(9999L);
+                            tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
+                            tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
+                            tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
+                            tVehicleEntity.setCarType(sysUserEntity.getCarType());
+                            tVehicleEntity.setDriverId(9999L);
+                            tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
+                            tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+                            saveCarLists.add(tVehicleEntity);
+                        }
+
                     }else {
+                        // 没有车牌号
                         sysUserEntity.setUserType("2");
                         sysUserEntity.setPassword(password);
                         sysUserEntity.setOrgId(orgId);
@@ -1208,33 +1234,21 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         sysUserEntity.setStatus(1);
                         sysUserEntity.setSuperAdmin(0);
                         save(sysUserEntity);
-
-                        TVehicleEntity tVehicleEntity = new TVehicleEntity();
-                        tVehicleEntity.setUserId(9999L);
-                        tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
-                        tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
-                        tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
-                        tVehicleEntity.setCarType(sysUserEntity.getCarType());
-                        tVehicleEntity.setDriverId(9999L);
-                        tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
-                        tVehicleEntity.setDriverName(sysUserEntity.getRealName());
-                        saveCarLists.add(tVehicleEntity);
                     }
                 }
-
-//                saveBatch(saveUserLists);
                 // 用户添加完成后，需要反向给车辆表设置司机ID
-                saveCarLists.forEach(car -> {
-                    String driverMobile = car.getDriverMobile();
-                    SysUserEntity oldusermobile = baseMapper.getByMobile(driverMobile);
-                    if (oldusermobile != null) {
-                        car.setUserId(oldusermobile.getId());
-                        car.setDriverId(oldusermobile.getId());
-                    }
+                if(CollectionUtils.isNotEmpty(saveCarLists)){
+                    saveCarLists.forEach(car -> {
+                        String driverMobile = car.getDriverMobile();
+                        SysUserEntity oldusermobile = baseMapper.getByMobile(driverMobile);
+                        if (oldusermobile != null) {
+                            car.setUserId(oldusermobile.getId());
+                            car.setDriverId(oldusermobile.getId());
+                        }
 
-                });
-                tVehicleService.saveBatch(saveCarLists);
-//                return Result.ok();
+                    });
+                    tVehicleService.saveBatch(saveCarLists);
+                }
             } finally {
                 // 清理临时文件
                 if (tempFile.exists()) {
