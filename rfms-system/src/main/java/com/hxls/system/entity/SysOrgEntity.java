@@ -91,4 +91,9 @@ public class SysOrgEntity extends BaseEntity {
      * 站点管理员名字（多个）
      * */
     private String siteAdminNames;
+
+    /*
+     *免审核组织 -- 只有厂站下面会有关联
+     */
+    private String authOrgIdList;
 }

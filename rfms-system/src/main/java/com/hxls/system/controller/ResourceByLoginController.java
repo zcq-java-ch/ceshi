@@ -303,10 +303,8 @@ public class ResourceByLoginController {
                     result.addAll(SysOrgConvert.INSTANCE.convertList(list));
                 }
             }
-
             return Result.ok(result);
         }
-
         List<SysOrgEntity> list = sysOrgService.list(wrapper);
         result.addAll(SysOrgConvert.INSTANCE.convertList(list));
         return Result.ok(result);
@@ -317,10 +315,35 @@ public class ResourceByLoginController {
     @GetMapping("adviceNote")
     @Operation(summary = "获取预约告知书")
     public Result<String> adviceNote() {
-
         String adviceNote = sysParamsService.getString("advice_note");
-
         return Result.ok(adviceNote);
+    }
+
+    /**
+     * 比对当前登陆人得组织是否是当前预约厂站得免审核组织
+     * @param id 厂站id
+     * @return 布尔值
+     */
+    @GetMapping("compareOrg")
+    @Operation(summary = "比对是否免审核")
+    public Result<Boolean> compareOrg(@RequestParam Long id) {
+
+        UserDetail user = SecurityUser.getUser();
+        if (user==null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        
+        if (Objects.equals(user.getSuperAdmin(), Constant.SUPER_ADMIN)){
+            return Result.ok(true);
+        }
+        SysOrgEntity byId = sysOrgService.getById(id);
+        if (byId ==null){
+            throw new ServerException(ErrorCode.NOT_FOUND);
+        }
+        if ( StringUtils.isNotEmpty( byId.getAuthOrgIdList() ) && byId.getAuthOrgIdList().contains(user.getOrgId().toString())) {
+            return Result.ok(true);
+        }
+        return Result.ok(false);
 
     }
 
@@ -346,7 +369,7 @@ public class ResourceByLoginController {
     public Result<List<SysOrgVO>> getOrgSiteList() {
         UserDetail user = SecurityUser.getUser();
         List<Long> dataScopeList = user.getDataScopeList();
-        if (CollectionUtils.isEmpty(dataScopeList)){
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN) && CollectionUtils.isEmpty(dataScopeList)){
             return Result.ok(new ArrayList<>());
         }
         List<SysOrgVO> orgSiteList = sysOrgService.getOrgSiteList(user);
@@ -385,9 +408,21 @@ public class ResourceByLoginController {
                         convert.setName(convert.getAreaName());
                         returnList.add(convert);
                     }
+
+                    if (CollectionUtils.isNotEmpty(returnList)){
+                        for (SysSiteAreaVO sysSiteAreaVO : returnList) {
+                            sysSiteAreaVO.setAreaId("A"+sysSiteAreaVO.getId());
+                        }
+                    }
                     sysOrgVO.setSysSiteAreaList(returnList);
                 }else {
                     sysOrgVO.setSysSiteAreaList(new ArrayList<>());
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(orgSiteList)){
+                for (SysOrgVO sysOrgVO : orgSiteList) {
+                    sysOrgVO.setAreaId("S"+sysOrgVO.getId());
                 }
             }
 

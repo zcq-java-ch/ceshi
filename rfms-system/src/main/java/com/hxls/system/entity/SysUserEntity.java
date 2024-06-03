@@ -183,4 +183,9 @@ public class SysUserEntity extends BaseEntity {
     * 排序
     **/
     private Integer sort;
+
+    /**
+     * 所属区域
+     **/
+    private String areaList;
 }
