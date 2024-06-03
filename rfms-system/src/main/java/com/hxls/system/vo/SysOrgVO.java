@@ -89,4 +89,9 @@ public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
 
 
     private List<SysSiteAreaVO> sysSiteAreaList;
+
+    private String authOrgIdList;
+
+    @Schema(description = "前端分级使用")
+    private String areaId;
 }

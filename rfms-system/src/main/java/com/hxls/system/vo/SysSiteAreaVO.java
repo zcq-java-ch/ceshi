@@ -98,4 +98,7 @@ public class SysSiteAreaVO implements Serializable {
 	@Schema(description = "转换名字")
 	private String name;
 
+	@Schema(description = "转换id,供前端使用")
+	private String areaId;
+
 }
