@@ -7,19 +7,15 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hxls.appointment.dao.TAppointmentDao;
-import com.hxls.appointment.pojo.vo.TPersonAccessRecordsVO;
 import com.hxls.appointment.pojo.vo.TVehicleVO;
 import com.hxls.appointment.pojo.vo.leadingVO.*;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.DateUtils;
 import com.hxls.framework.common.utils.ExcelUtils;
-import com.hxls.framework.common.utils.JsonUtils;
 import com.hxls.framework.common.utils.Result;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +23,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/record")
@@ -90,7 +87,7 @@ public class LeadingEnterpriseController {
                 return Result.error(505, bean.getCodeMsg());
             }
 
-            List<recordInfo> recordInfoList = selectOutByTime(data.getStartTime(), data.getEndTime());
+            List<recordInfo> recordInfoList = selectOutByTime(data.getStartTime(), data.getEndTime(),data.getReceiveStation());
             for (recordInfo datum : bean.getData()) {
                 datum.setFreightVolume(new BigDecimal(datum.getFirstWeight()).subtract(new BigDecimal(datum.getSecondWeight())));
                 datum.setUnit("t");
@@ -132,6 +129,23 @@ public class LeadingEnterpriseController {
                         item.setFirstTime(firstTime);
                     }
 //                    item.setSecondTime(secondTime == null ? "" : secondTime);
+                }
+            }
+
+
+            if (data.getReceiveStation().equals("精诚站")){
+                //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
+                LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0);
+                LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0);
+                for (recordInfo recordInfo : recordInfos1) {
+                    if (recordInfo.getCarNum().equals("川ACT602")) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                        LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                        LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                        if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                                recordInfo.setCarNum("川ACV281");
+                        }
+                    }
                 }
             }
 
@@ -218,6 +232,23 @@ public class LeadingEnterpriseController {
                     item.setFirstTime(firstTime);
                 }
 //                item.setSecondTime(secondTime == null ? "" : secondTime);
+            }
+        }
+
+
+        if (data.getReceiveStation().equals("精诚站")){
+            //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
+            LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0);
+            LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0);
+            for (recordInfo recordInfo : recordInfos1) {
+                if (recordInfo.getCarNum().equals("川ACT602")) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                        recordInfo.setCarNum("川ACV281");
+                    }
+                }
             }
         }
 
@@ -322,7 +353,7 @@ public class LeadingEnterpriseController {
     /**
      * 获取混凝土过磅信息
      */
-    public List<recordInfo> selectOutByTime(String startTime, String endTime) {
+    public List<recordInfo> selectOutByTime(String startTime, String endTime, String receiveStation) {
 
         List<recordInfo> result = new ArrayList<>();
         Map<String, String> map = new HashMap<>();
@@ -332,8 +363,11 @@ public class LeadingEnterpriseController {
         params params = new params();
         params.setStartTime(startTime);
         params.setEndTime(endTime);
-        params.setStationName("精城站");
-        params.setStationCode("HJ03");
+        params.setStationName(receiveStation);
+
+        if (receiveStation.equals("精诚站")){
+            params.setStationCode("HJ03");
+        }
         map.put("params", JSONUtil.toJsonStr(params));
 
         //获取过磅信息的url ：https://lvshe.huashijc.com/third/open/api/send_data
