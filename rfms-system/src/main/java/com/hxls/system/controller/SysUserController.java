@@ -290,8 +290,12 @@ public class SysUserController {
     @Operation(summary = "主数据人员下拉数据")
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<List<MainUserVO>> queryByMainUsers() {
-        List<MainUserVO> userVOS = sysUserService.queryByMainUsers();
-        return Result.ok(userVOS);
+        try {
+            List<MainUserVO> userVOS = sysUserService.queryByMainUsers();
+            return Result.ok(userVOS);
+        }catch (Exception e){
+            throw new ServerException("主数据人员异常");
+        }
     }
 
     @PostMapping("updateStatus")

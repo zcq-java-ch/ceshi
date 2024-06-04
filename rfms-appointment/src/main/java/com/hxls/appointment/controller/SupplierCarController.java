@@ -53,7 +53,6 @@ public class SupplierCarController {
         return Result.ok(page);
     }
 
-
     @GetMapping("{id}")
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('supplierCar:appointment:info')")

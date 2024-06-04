@@ -357,10 +357,19 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
                     //遍历
                     for (String key : master.keySet()) {
+                        //科飞达智主机
+
+                        Set<String> name = new HashSet<>();
                         //主机下面带的设备
                         for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
                             //遍历预约车辆
                             for (TAppointmentVehicle tAppointmentVehicle : list) {
+                                if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
+                                    if (!name.isEmpty()){
+                                        continue;
+                                    }
+                                }
+
                                 JSONObject entries = new JSONObject();
                                 entries.set("type", jsonObject.getString("type"));
                                 if (byId.getSupplierSubclass().equals(1)) {
@@ -380,8 +389,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                             }
                             //如果是科飞达智设备,就不需要循环
-                            if (jsonObject.getString("type").equals(Constant.KFDZ)) {
-                                return;
+                            if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
+                                name.add(Constant.KFDZ);
                             }
                         }
                     }
@@ -675,8 +684,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     //遍历
                     for (String key : master.keySet()) {
                         //主机下面带的设备
+                        Set<String> name = new HashSet<>();
                         for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
                             //遍历预约车辆
+                            if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
+                                if (!name.isEmpty()){
+                                    continue;
+                                }
+                            }
+
                             for (TAppointmentVehicle tAppointmentVehicle : list) {
                                 JSONObject entries = new JSONObject();
                                 entries.set("type", jsonObject.getString("type"));
@@ -698,7 +714,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             }
                             //如果是科飞达智设备,就不需要循环
                             if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
-                                return;
+                                name.add(Constant.KFDZ);
                             }
                         }
                     }
@@ -863,14 +879,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //编码 code
                 String code = entries.getStr("id");
 
-                String ids = data.getStr("ids");
-                List<Long> list = JSONUtil.toList(ids, Long.class);
-
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
-                if (CollectionUtils.isNotEmpty(list)){
-                    jsonObjects = appointmentDao.selectNewByIds(list);
+                if(StringUtils.isNotEmpty(data.getStr("ids"))){
+                    String ids = data.getStr("ids");
+                    List<Long> list = JSONUtil.toList(ids, Long.class);
+                    if (CollectionUtils.isNotEmpty(list)){
+                        jsonObjects = appointmentDao.selectNewByIds(list);
+                    }
                 }
                 if (CollectionUtils.isNotEmpty(jsonObjects)) {
                     Map<String, List<com.alibaba.fastjson.JSONObject>> listMap = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("type")));
@@ -917,6 +934,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
             }
 
             case "2" -> {
+
+
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
@@ -927,21 +946,32 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     licensePlate = entries.getStr("plateNumber");
                 }
 
-                String ids = data.getStr("ids");
-                List<Long> list = JSONUtil.toList(ids, Long.class);
-
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
-                if (CollectionUtils.isNotEmpty(list)){
-                    jsonObjects = appointmentDao.selectNewByIds(list);
+
+                if(StringUtils.isNotEmpty(data.getStr("ids"))){
+                    String ids = data.getStr("ids");
+                    List<Long> list = JSONUtil.toList(ids, Long.class);
+                    if (CollectionUtils.isNotEmpty(list)){
+                        jsonObjects = appointmentDao.selectNewByIds(list);
+                    }
                 }
                 //主机分组
                 Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
                 //遍历
                 for (String key : master.keySet()) {
                     //主机下面带的设备
+
+                    Set<String> name = new HashSet<>();
                     for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
+
+                        if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
+                            if (!name.isEmpty()){
+                                continue;
+                            }
+                        }
+
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", jsonObject.getString("type"));
                         sendData.set("startTime", "2024-04-01 00:00:00");
@@ -957,7 +987,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
                         //如果是科飞达智设备,就不需要循环
                         if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
-                            return;
+                            name.add(Constant.KFDZ);
                         }
                     }
                 }

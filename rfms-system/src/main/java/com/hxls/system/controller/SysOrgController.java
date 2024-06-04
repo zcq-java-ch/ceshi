@@ -118,7 +118,6 @@ public class SysOrgController {
     @PreAuthorize("hasAuthority('sys:org:update')")
     public Result<String> update(@RequestBody @Valid SysOrgVO vo) {
         sysOrgService.update(vo);
-
         return Result.ok();
     }
 
