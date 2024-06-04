@@ -82,4 +82,12 @@ public interface AppointmentFeign {
 
     @GetMapping("api/appointment/queryappointmentFormspecifyLicensePlatesAndEntourage")
     public com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(@RequestParam String plateNumber, @RequestParam String recordTime);
+
+    /**
+      * @author Mryang
+      * @description 通过用户ID或者用户名字，查询预约单所对应的站点
+      * @date 10:07 2024/6/4
+      */
+    @GetMapping("api/appointment/queryStationIdFromAppointmentByUserInfo")
+    JSONObject queryStationIdFromAppointmentByUserInfo(@RequestParam String personId, @RequestParam String personName);
 }

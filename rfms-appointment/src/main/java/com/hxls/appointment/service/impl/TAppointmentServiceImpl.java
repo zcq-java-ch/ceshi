@@ -1213,5 +1213,32 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         return jsonObject;
     }
 
+    @Override
+    public com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByUserInfo(String personId, String personName) {
+        LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1);
+        objectLambdaQueryWrapper.ge(TAppointmentEntity::getStartTime, LocalDateTime.now());
+        objectLambdaQueryWrapper.le(TAppointmentEntity::getEndTime, LocalDateTime.now());
+        List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
 
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("stationId", null);
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentEntities)) {
+            for (int i = 0; i < tAppointmentEntities.size(); i++) {
+                TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
+                LambdaQueryWrapper<TAppointmentPersonnel> personnelLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                personnelLambdaQueryWrapper2.eq(TAppointmentPersonnel::getAppointmentId, tAppointmentEntity.getId());
+                personnelLambdaQueryWrapper2.eq(TAppointmentPersonnel::getExternalPersonnel, personName);
+                List<TAppointmentPersonnel> tAppointmentPersonnelList2 = tAppointmentPersonnelService.list(personnelLambdaQueryWrapper2);
+                if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentPersonnelList2)) {
+                    TAppointmentPersonnel tAppointmentPersonnel = tAppointmentPersonnelList2.get(0);
+                    jsonObject.put("stationId", tAppointmentPersonnel.getStationId());
+
+                }
+            }
+        }
+        return jsonObject;
+    }
 }

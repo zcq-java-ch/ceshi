@@ -2,6 +2,7 @@ package com.hxls.datasection.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
@@ -34,13 +35,14 @@ public class SynMessageDataContorller {
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     private final VehicleFeign vehicleFeign;
     private final UserFeign userFeign;
+    private final AppointmentFeign appointmentFeign;
     /**
      * 接收客户端传来的人员人别记录
      *
      * 目前接收的是：华安视讯  凌智恒
      * */
-    @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
+//    @RabbitHandler
+//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
     public void receiveFaceDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 
@@ -58,6 +60,10 @@ public class SynMessageDataContorller {
                 log.info("人脸数据已经存在不进行存储");
             }else {
                 log.info("人脸数据不存在，开始存储");
+                Long siteId = jsonObjectRecords.getLong("siteId");
+                // 设备人员ID【客户端设备 数据清理后就是平台用户ID】
+                String personId = jsonObjectRecords.getString("device_person_id");
+                String personName = jsonObjectRecords.getString("person_name");
                 TPersonAccessRecordsEntity tPersonAccessRecordsEntity = new TPersonAccessRecordsEntity();
                 tPersonAccessRecordsEntity.setChannelId(jsonObjectRecords.getLong("channel_id"));
                 tPersonAccessRecordsEntity.setChannelName(jsonObjectRecords.getString("channel_name"));
@@ -74,21 +80,77 @@ public class SynMessageDataContorller {
                 tPersonAccessRecordsEntity.setSiteName(jsonObjectRecords.getString("siteName"));
                 tPersonAccessRecordsEntity.setRecordsId(recordsId);
 
-                // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
-                String devicePersonId = jsonObjectRecords.getString("device_person_id");
-                if (StringUtils.isNotEmpty(devicePersonId)){
-                    JSONObject userDetail = userFeign.queryUserInformationUserId(devicePersonId);
-                    if (ObjectUtils.isNotEmpty(userDetail)) {
-                        tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
-                        tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
-                        tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
-                        tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
-                        tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
-                        tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
-                        tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
-                        tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+
+                /**
+                 * 新增业务，多站点公用设备
+                 * 如果传入的数据来源站点是：崇州搅拌站或者是 崇州装配式
+                 * 1. 先把来源人去预约单里面找，他预约的是那个站点，然后保存通行记录的时候，设置预约的站点
+                 * 2. 如果预约单里面没有的话，那就去人员管理里面找， 看他是那个站点的， 在设置对应的站点
+                 * */
+                Long czzps = 1481L;
+                Long czjbz = 1440L;
+
+                if (czzps.equals(siteId) || czjbz.equals(siteId)) {
+                    // 设备公用站点
+
+                    // 1. 先通过用户ID或者用户名字找对应的预约单，返回对应预约单的站点ID
+                    JSONObject stationJson = appointmentFeign.queryStationIdFromAppointmentByUserInfo(personId, personName);
+                    if (ObjectUtils.isNotEmpty(stationJson.getLong("stationId"))){
+                        tPersonAccessRecordsEntity.setSiteId(stationJson.getLong("stationId"));
+
+                        // 前期还无法用用户id作为用户唯一值的时候，用用户姓名进行判断站点
+                        JSONObject userDetail = userFeign.queryUserInformationUserName(personName);
+                        if (ObjectUtils.isNotEmpty(userDetail)) {
+                            tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
+                            tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
+                            tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
+                            tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
+                            tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
+                            tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
+                            tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
+                            tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+                        }
+
+                    }else {
+                        // 2. 如果用户ID和用户名字没有找到预约单，那么就去找用户表
+                        // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+                        if (StringUtils.isNotEmpty(personId)){
+                            JSONObject userDetail = userFeign.queryUserInformationUserId(personId);
+                            if (ObjectUtils.isNotEmpty(userDetail)) {
+                                tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
+                                tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
+                                tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
+                                tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
+                                tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
+                                tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
+                                tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
+                                tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+                                // 如果是崇州装配式或者崇州搅拌站则需要更换站点ID
+                                tPersonAccessRecordsEntity.setSiteId(userDetail.getLong("stationId"));
+                            }
+                        }
+                    }
+
+                }else {
+                    // 普通站点
+
+                    // 通过用户唯一编码查询用户，然后将客户端的识别数据与平台的用户数据进行绑定
+                    String devicePersonId = jsonObjectRecords.getString("device_person_id");
+                    if (StringUtils.isNotEmpty(devicePersonId)){
+                        JSONObject userDetail = userFeign.queryUserInformationUserId(devicePersonId);
+                        if (ObjectUtils.isNotEmpty(userDetail)) {
+                            tPersonAccessRecordsEntity.setCompanyId(userDetail.getLong("orgId"));
+                            tPersonAccessRecordsEntity.setCompanyName(userDetail.getString("orgName"));
+                            tPersonAccessRecordsEntity.setSupervisorName(userDetail.getString("supervisor"));
+                            tPersonAccessRecordsEntity.setIdCardNumber(userDetail.getString("idCard"));
+                            tPersonAccessRecordsEntity.setPhone(userDetail.getString("mobile"));
+                            tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
+                            tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
+                            tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
+                        }
                     }
                 }
+
                 tPersonAccessRecordsService.save(tPersonAccessRecordsEntity);
                 log.info("人脸数据不存在，结束存储");
             }
@@ -102,8 +164,8 @@ public class SynMessageDataContorller {
     /**
      * 接收客户端传来的车辆道闸记录
      * */
-    @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
+//    @RabbitHandler
+//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
     public void receiveCarDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 

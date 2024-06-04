@@ -238,4 +238,16 @@ public class AppointmentApiController {
         return objects;
     }
 
+    /**
+     * @author Mryang
+     * @description 通过用户ID或者用户名字，查询预约单所对应的站点
+     * @date 10:07 2024/6/4
+     */
+    @GetMapping("queryStationIdFromAppointmentByUserInfo")
+    @Operation(summary = "查询预约单站点")
+    public com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByUserInfo(@RequestParam String personId, @RequestParam String personName) {
+        com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryStationIdFromAppointmentByUserInfo(personId, personName);
+        return objects;
+    }
+
 }

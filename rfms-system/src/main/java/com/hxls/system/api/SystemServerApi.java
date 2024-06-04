@@ -589,6 +589,7 @@ public class SystemServerApi {
             entries.put("postName", sysUserEntity.getPostName());
             entries.put("busis", sysUserEntity.getBusis());
             entries.put("personName", sysUserEntity.getRealName());
+            entries.put("stationId", sysUserEntity.getStationId());
         }
         return entries;
     }
@@ -680,4 +681,38 @@ public class SystemServerApi {
             return false;
         }
     }
+
+
+    /**
+      * @author Mryang
+      * @description 通过用户姓名返回用户信息，如果有多个  则返回一个
+      * @date 9:32 2024/6/4
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/queryUserInformationUserName")
+    public JSONObject queryUserInformationUserName(@RequestParam("userName") String userName) {
+        LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(SysUserEntity::getRealName, userName);
+        List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtils.isNotEmpty(userEntities)){
+            SysUserEntity sysUserEntity = userEntities.get(0);
+            entries.put("orgId", sysUserEntity.getOrgId());
+            entries.put("orgName", sysUserEntity.getOrgName());
+            entries.put("supervisor", sysUserEntity.getSupervisor());
+            entries.put("idCard", sysUserEntity.getIdCard());
+            entries.put("mobile", sysUserEntity.getMobile());
+            entries.put("postId", sysUserEntity.getPostId());
+            entries.put("postName", sysUserEntity.getPostName());
+            entries.put("busis", sysUserEntity.getBusis());
+            entries.put("personName", sysUserEntity.getRealName());
+            entries.put("stationId", sysUserEntity.getStationId());
+        }
+        return entries;
+    }
+
+
 }
