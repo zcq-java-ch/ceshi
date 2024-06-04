@@ -41,8 +41,8 @@ public class SynMessageDataContorller {
      *
      * 目前接收的是：华安视讯  凌智恒
      * */
-//    @RabbitHandler
-//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
+    @RabbitHandler
+    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
     public void receiveFaceDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 
@@ -164,8 +164,8 @@ public class SynMessageDataContorller {
     /**
      * 接收客户端传来的车辆道闸记录
      * */
-//    @RabbitHandler
-//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
+    @RabbitHandler
+    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
     public void receiveCarDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 
@@ -182,6 +182,8 @@ public class SynMessageDataContorller {
                 // 存在
             }else {
                 log.info("开始插入车辆记录");
+                Long siteId = jsonObjectRecords.getLong("siteId");
+                String palteNumber = jsonObjectRecords.getString("plateNumber");
                 TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = new TVehicleAccessRecordsEntity();
                 tVehicleAccessRecordsEntity.setChannelId(jsonObjectRecords.getLong("channel_id"));
                 tVehicleAccessRecordsEntity.setChannelName(jsonObjectRecords.getString("channel_name"));
@@ -217,6 +219,23 @@ public class SynMessageDataContorller {
                     }
                 }
 
+                /**
+                 * 新增业务，多站点公用设备
+                 * 如果传入的数据来源站点是：崇州搅拌站或者是 崇州装配式
+                 * 1. 先把车牌拿到预约单中找，他预约的是那个站点，然后保存通行记录的时候，设置预约的站点
+                 * 2. 如果预约单里面没有的话，那就去车辆管理里面找， 看他是那个站点的， 在设置对应的站点
+                 * */
+                Long czzps = 1481L;
+                Long czjbz = 1440L;
+                if (czzps.equals(siteId) || czjbz.equals(siteId)) {
+                    // 1. 先通过车牌找有没有该时间的预约单，如果有 返回对应预约单的站点ID
+                    JSONObject stationJson = appointmentFeign.queryStationIdFromAppointmentByPlatenumber(palteNumber);
+                    if (ObjectUtils.isNotEmpty(stationJson.getLong("stationId"))) {
+                        tVehicleAccessRecordsEntity.setSiteId(stationJson.getLong("stationId"));
+                    }else {
+
+                    }
+                }
                 tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);
 
                 // 存储车辆进出场展示台账

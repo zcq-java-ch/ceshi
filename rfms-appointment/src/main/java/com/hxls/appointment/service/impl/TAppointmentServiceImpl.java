@@ -1241,4 +1241,32 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
         return jsonObject;
     }
+
+    @Override
+    public com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByPlatenumber(String palteNumber) {
+        LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1);
+        objectLambdaQueryWrapper.ge(TAppointmentEntity::getStartTime, LocalDateTime.now());
+        objectLambdaQueryWrapper.le(TAppointmentEntity::getEndTime, LocalDateTime.now());
+        List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
+
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("stationId", null);
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentEntities)) {
+            for (int i = 0; i < tAppointmentEntities.size(); i++) {
+                TAppointmentEntity tAppointmentEntity = tAppointmentEntities.get(i);
+                LambdaQueryWrapper<TAppointmentVehicle> tvehicleLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                tvehicleLambdaQueryWrapper2.eq(TAppointmentVehicle::getAppointmentId, tAppointmentEntity.getId());
+                tvehicleLambdaQueryWrapper2.eq(TAppointmentVehicle::getPlateNumber, palteNumber);
+                List<TAppointmentVehicle> tAppointmentTvehicleLists = tAppointmentVehicleService.list(tvehicleLambdaQueryWrapper2);
+                if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppointmentTvehicleLists)) {
+                    TAppointmentVehicle tAppointmentVehicle = tAppointmentTvehicleLists.get(0);
+                    jsonObject.put("stationId", tAppointmentVehicle.getStationId());
+                }
+            }
+        }
+        return jsonObject;
+    }
 }

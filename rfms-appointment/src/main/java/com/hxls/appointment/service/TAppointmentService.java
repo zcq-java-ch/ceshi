@@ -124,4 +124,6 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
     com.alibaba.fastjson.JSONObject queryappointmentFormspecifyLicensePlatesAndEntourage(String plateNumber, String recordTime);
 
     com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByUserInfo(String personId, String personName);
+
+    com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByPlatenumber(String palteNumber);
 }

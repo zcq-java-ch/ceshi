@@ -250,4 +250,16 @@ public class AppointmentApiController {
         return objects;
     }
 
+    /**
+     * @author Mryang
+     * @description 通过车牌找该时间内有没有预约单，如果有预约单，则返沪这个预约单对应的站点ID
+     * @date 15:51 2024/6/4
+     */
+    @GetMapping("queryStationIdFromAppointmentByPlatenumber")
+    @Operation(summary = "查询预约单站点")
+    public com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByPlatenumber(@RequestParam String palteNumber) {
+        com.alibaba.fastjson.JSONObject objects = tAppointmentService.queryStationIdFromAppointmentByPlatenumber(palteNumber);
+        return objects;
+    }
+
 }
