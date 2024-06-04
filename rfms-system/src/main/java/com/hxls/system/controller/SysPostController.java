@@ -1,5 +1,6 @@
 package com.hxls.system.controller;
 
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -9,6 +10,7 @@ import com.hxls.system.entity.SysPostEntity;
 import com.hxls.system.query.SysPostQuery;
 import com.hxls.system.service.SysPostService;
 import com.hxls.system.vo.MainPostVO;
+import com.hxls.system.vo.MainUserVO;
 import com.hxls.system.vo.SysPostVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -94,7 +96,11 @@ public class SysPostController {
     @Operation(summary = "主数据岗位下拉数据")
     @PreAuthorize("hasAuthority('sys:post:page')")
     public Result<List<MainPostVO>> queryByMainPosts(@ParameterObject @Valid SysPostQuery query) {
-        List<MainPostVO> postVOS= sysPostService.queryByMainPosts(query);
-        return Result.ok(postVOS);
+        try {
+            List<MainPostVO> postVOS= sysPostService.queryByMainPosts(query);
+            return Result.ok(postVOS);
+        }catch (Exception e){
+            throw new ServerException("主数据岗位异常");
+        }
     }
 }

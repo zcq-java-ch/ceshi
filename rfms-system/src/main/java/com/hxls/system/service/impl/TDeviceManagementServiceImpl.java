@@ -3,6 +3,8 @@ package com.hxls.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.system.convert.TDeviceManagementConvert;
@@ -34,11 +36,25 @@ public class TDeviceManagementServiceImpl extends BaseServiceImpl<TDeviceManagem
 
     private final SysAreacodeDeviceService sysAreacodeDeviceService;
 
+    private final RedisCache redisCache;
+
     @Override
     public PageResult<TDeviceManagementVO> page(TDeviceManagementQuery query) {
         IPage<TDeviceManagementEntity> page = baseMapper.selectPage(getPage(query), getWrapper(query));
+        List<TDeviceManagementVO> tDeviceManagementVOS = TDeviceManagementConvert.INSTANCE.convertList(page.getRecords());
 
-        return new PageResult<>(TDeviceManagementConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
+        //查询是否在线
+        for (TDeviceManagementVO tDeviceManagementVO : tDeviceManagementVOS) {
+            String deviceSn = tDeviceManagementVO.getDeviceSn();
+            if (tDeviceManagementVO.getDeviceType().equals("1")) {
+                tDeviceManagementVO.setIsOnline(redisCache.get("DEVICES_STATUS:FACE:" + deviceSn) != null);
+            }
+            if (tDeviceManagementVO.getDeviceType().equals("2")) {
+                tDeviceManagementVO.setIsOnline(redisCache.get("DEVICES_STATUS:CAR:" + deviceSn) != null);
+            }
+        }
+
+        return new PageResult<>(tDeviceManagementVOS, page.getTotal());
     }
 
     private LambdaQueryWrapper<TDeviceManagementEntity> getWrapper(TDeviceManagementQuery query){

@@ -100,4 +100,7 @@ public class TDeviceManagementVO implements Serializable {
 
 	@Schema(description = "所属站点名称")
 	private String siteName;
+
+	@Schema(description = "是否在线")
+	private Boolean isOnline;
 }
