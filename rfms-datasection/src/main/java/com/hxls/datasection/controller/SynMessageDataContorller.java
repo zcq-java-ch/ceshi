@@ -125,8 +125,15 @@ public class SynMessageDataContorller {
                                 tPersonAccessRecordsEntity.setPositionId(userDetail.getLong("postId"));
                                 tPersonAccessRecordsEntity.setPositionName(userDetail.getString("postName"));
                                 tPersonAccessRecordsEntity.setBusis(userDetail.getString("busis"));
-                                // 如果是崇州装配式或者崇州搅拌站则需要更换站点ID
-                                tPersonAccessRecordsEntity.setSiteId(userDetail.getLong("stationId"));
+                                if (ObjectUtils.isNotEmpty(userDetail.getLong("stationId"))){
+                                    Long aLong = userDetail.getLong("stationId");
+                                    if (czzps.equals(aLong) || czjbz.equals(aLong)) {
+                                        // 如果不为空，并且站点ID是崇州这两个站的，才会设置用户的站点ID [相当于，当前记录的用户是崇州搅拌站或者装配式的员工]
+                                        tPersonAccessRecordsEntity.setSiteId(userDetail.getLong("stationId"));
+                                    }
+                                    // 如果用户站点不为空，但是又不是崇州两个站的，一般不会出现这种情况，但是出现了又不能设置用户自己的站点，只能设置当前设备的站点
+                                }
+                                // 如果为空个，说明是供应商人员，或者外部预约人员，则需要设置为当前设备所属站点ID
                             }
                         }
                     }
