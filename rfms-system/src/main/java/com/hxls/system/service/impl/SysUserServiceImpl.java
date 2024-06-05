@@ -250,8 +250,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             for (TVehicleEntity tVehicleEntity : tVehicleEntities) {
                 tVehicleEntity.setSiteId(entity.getStationId());
                 tVehicleEntity.setStationId(entity.getStationId());
-                tVehicleEntity.setUserId(vo.getId());
-                tVehicleEntity.setDriverId(vo.getId());
+                tVehicleEntity.setUserId(entity.getId());
+                tVehicleEntity.setDriverId(entity.getId());
                 tVehicleEntity.setDriverName(vo.getRealName());
                 tVehicleEntity.setDriverMobile(vo.getMobile());
                 if ("1".equals(vo.getUserType())){
