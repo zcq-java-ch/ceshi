@@ -100,4 +100,14 @@ public class TVehicleVO implements Serializable {
 
 	@Schema(description = "车辆类型")
 	private String carType;
+
+	@Schema(description = "车辆所属（数据字典）")
+	private String carClass;
+
+	@Schema(description = "供应商ID")
+	private Long supplierId;
+
+	@Schema(description = "供应商名字")
+	private String supplierName;
+
 }

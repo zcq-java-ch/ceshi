@@ -254,6 +254,15 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 tVehicleEntity.setDriverId(vo.getId());
                 tVehicleEntity.setDriverName(vo.getRealName());
                 tVehicleEntity.setDriverMobile(vo.getMobile());
+                if ("1".equals(vo.getUserType())){
+                    // 如果是内部员工 设置车辆所属为内部私家车
+                    tVehicleEntity.setCarClass("1");
+                }else {
+                    // 如果是外部员工  设置车辆所属为外部私家车
+                    tVehicleEntity.setCarClass("3");
+                    tVehicleEntity.setSupplierId(vo.getOrgId());
+                    tVehicleEntity.setSupplierName(vo.getOrgName());
+                }
             }
             tVehicleService.saveBatch(tVehicleEntities);
         }
@@ -380,7 +389,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         //更换车辆存储位置
         if (vo.getVehicle()) {
-            tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, vo.getId()));
+            // 删除这个用户关联的车辆中，内部私家车 外部私家车
+            tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, vo.getId()).in(TVehicleEntity::getCarClass, "1","3"));
             if (CollectionUtils.isNotEmpty(vo.getTVehicleVOList())) {
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList());
                 for (TVehicleEntity tVehicleEntity : tVehicleEntities) {
@@ -390,6 +400,15 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     tVehicleEntity.setDriverId(vo.getId());
                     tVehicleEntity.setDriverName(vo.getRealName());
                     tVehicleEntity.setDriverMobile(vo.getMobile());
+                    if ("1".equals(vo.getUserType())){
+                        // 如果是内部员工 设置车辆所属为内部私家车
+                        tVehicleEntity.setCarClass("1");
+                    }else {
+                        // 如果是外部员工  设置车辆所属为外部私家车
+                        tVehicleEntity.setCarClass("3");
+                        tVehicleEntity.setSupplierId(vo.getOrgId());
+                        tVehicleEntity.setSupplierName(vo.getOrgName());
+                    }
                 }
                 tVehicleService.saveBatch(tVehicleEntities);
             }

@@ -110,6 +110,24 @@ public class TVehicleEntity extends BaseEntity {
 	 */
 	private String carType;
 
+
+	/**
+	 * 车辆所属（数据字典）
+	 */
+	private String carClass;
+
+
+	/**
+	 * 供应商ID
+	 */
+	private Long supplierId;
+
+
+	/**
+	 * 供应商名字
+	 */
+	private String supplierName;
+
 	@TableField(exist = false)
 	private Long stationId;
 
