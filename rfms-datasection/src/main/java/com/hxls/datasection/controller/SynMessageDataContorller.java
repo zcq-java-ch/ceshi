@@ -86,6 +86,7 @@ public class SynMessageDataContorller {
                  * 如果传入的数据来源站点是：崇州搅拌站或者是 崇州装配式
                  * 1. 先把来源人去预约单里面找，他预约的是那个站点，然后保存通行记录的时候，设置预约的站点
                  * 2. 如果预约单里面没有的话，那就去人员管理里面找， 看他是那个站点的， 在设置对应的站点
+                 * 3. 如果人员管理中没有该用户，或者有该用户但是没有站点，或者，有站点，但是站点不是崇州这两个站的情况，都设置为当前设备站点
                  * */
                 Long czzps = 1481L;
                 Long czjbz = 1440L;
@@ -230,7 +231,9 @@ public class SynMessageDataContorller {
                  * 新增业务，多站点公用设备
                  * 如果传入的数据来源站点是：崇州搅拌站或者是 崇州装配式
                  * 1. 先把车牌拿到预约单中找，他预约的是那个站点，然后保存通行记录的时候，设置预约的站点
-                 * 2. 如果预约单里面没有的话，那就去车辆管理里面找， 看他是那个站点的， 在设置对应的站点
+                 * 2. 如果预约单里面没有的话，那就去车辆管理里面找， 看他是那个站点的
+                 * 3. 如果有站点，并且站点是崇州两个站之一的话，就设置车辆的站点
+                 * 4. 如果没有站点，或者站点不是崇州两个站点之一，或者没有车辆数据，都将站点设置为当前设备站点
                  * */
                 Long czzps = 1481L;
                 Long czjbz = 1440L;
@@ -240,7 +243,27 @@ public class SynMessageDataContorller {
                     if (ObjectUtils.isNotEmpty(stationJson.getLong("stationId"))) {
                         tVehicleAccessRecordsEntity.setSiteId(stationJson.getLong("stationId"));
                     }else {
+                        JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(jsonObjectRecords.getString("plateNumber"));
+                        if(ObjectUtils.isNotEmpty(jsonObject)){
+                            tVehicleAccessRecordsEntity.setVehicleModel(jsonObject.getString("carType"));
+                            tVehicleAccessRecordsEntity.setEmissionStandard(jsonObject.getString("emissionStandard"));
+                            tVehicleAccessRecordsEntity.setDriverId(jsonObject.getLong("driverId"));
+                            tVehicleAccessRecordsEntity.setDriverName(jsonObject.getString("driverName"));
+                            tVehicleAccessRecordsEntity.setDriverPhone(jsonObject.getString("driverMobile"));
+                            tVehicleAccessRecordsEntity.setImageUrl(jsonObject.getString("imageUrl"));
+                            tVehicleAccessRecordsEntity.setLicenseImage(jsonObject.getString("licenseImage"));
 
+                            if (ObjectUtils.isNotEmpty(jsonObject.getLong("stationId"))){
+                                Long aLong = jsonObject.getLong("stationId");
+                                if (czzps.equals(aLong) || czjbz.equals(aLong)) {
+                                    // 如果不为空，并且站点ID是崇州这两个站的，才会设置车辆的站点ID [相当于，当前记录的用户是崇州搅拌站或者装配式的车辆]
+                                    tVehicleAccessRecordsEntity.setSiteId(jsonObject.getLong("stationId"));
+                                }
+                                // 如果车辆站点不为空，但是又不是崇州两个站的，一般不会出现这种情况，但是出现了又不能设置用户自己的站点，只能设置当前设备的站点
+                            }
+                            // 如果查询车辆没有站点，说明是供应商车辆，或者供应商私家车，所以站点设置为当前设备占地啊你
+                        }
+                        // 车牌号为空说名是外部车辆临时放行，站点设置为当前设备站点
                     }
                 }
                 tVehicleAccessRecordsService.save(tVehicleAccessRecordsEntity);

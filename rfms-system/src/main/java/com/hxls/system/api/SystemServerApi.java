@@ -272,29 +272,31 @@ public class SystemServerApi {
             entries.put("driverName", tVehicleEntity.getDriverName());
             entries.put("driverMobile", tVehicleEntity.getDriverMobile());
             entries.put("imageUrl", tVehicleEntity.getImageUrl());
-        }else {
-            LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
-            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
-            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getLicensePlate, licensePlates);
-            List<SysUserEntity> sysUserEntities = sysUserService.list(sysUserEntityLambdaQueryWrapper);
-            if (CollectionUtils.isNotEmpty(sysUserEntities)){
-                SysUserEntity sysUserEntity = sysUserEntities.get(0);
-
-                entries.put("carType", sysUserEntity.getCarType());
-                entries.put("emissionStandard", sysUserEntity.getEmissionStandard());
-                entries.put("licenseImage", "");
-                // 随车环报清单
-                entries.put("images", "无");
-                entries.put("fleetName", "无");
-                entries.put("vinNumber", "无");
-                entries.put("engineNumber", "无");
-                entries.put("driverId", sysUserEntity.getId());
-                entries.put("driverName", sysUserEntity.getRealName());
-                entries.put("driverMobile", sysUserEntity.getMobile());
-                entries.put("imageUrl", sysUserEntity.getImageUrl());
-            }
+            entries.put("stationId", tVehicleEntity.getStationId());
         }
+//        else {
+//            LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
+//            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+//            sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getLicensePlate, licensePlates);
+//            List<SysUserEntity> sysUserEntities = sysUserService.list(sysUserEntityLambdaQueryWrapper);
+//            if (CollectionUtils.isNotEmpty(sysUserEntities)){
+//                SysUserEntity sysUserEntity = sysUserEntities.get(0);
+//
+//                entries.put("carType", sysUserEntity.getCarType());
+//                entries.put("emissionStandard", sysUserEntity.getEmissionStandard());
+//                entries.put("licenseImage", "");
+//                // 随车环报清单
+//                entries.put("images", "无");
+//                entries.put("fleetName", "无");
+//                entries.put("vinNumber", "无");
+//                entries.put("engineNumber", "无");
+//                entries.put("driverId", sysUserEntity.getId());
+//                entries.put("driverName", sysUserEntity.getRealName());
+//                entries.put("driverMobile", sysUserEntity.getMobile());
+//                entries.put("imageUrl", sysUserEntity.getImageUrl());
+//            }
+//        }
         return entries;
     }
 
