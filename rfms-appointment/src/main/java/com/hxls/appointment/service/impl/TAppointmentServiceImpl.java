@@ -641,7 +641,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
                         .eq(TAppointmentPersonnel::getAppointmentId, id));
                 //审核通过之后,如果有修改，需要先删除之前的
-                //deleteInfo(list, personnelList, byId.getSiteId());
+               // deleteInfo(list, personnelList, byId.getSiteId());
+
                 if (CollectionUtils.isNotEmpty(personnelList)) {
                     String domain = properties.getConfig().getDomain();
                     String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
@@ -879,63 +880,45 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //编码 code
                 String code = entries.getStr("id");
 
-                //场站关联编码
-                String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
+//                //场站关联编码
+//                String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
                 if(StringUtils.isNotEmpty(data.getStr("ids"))){
                     String ids = data.getStr("ids");
                     List<Long> list = JSONUtil.toList(ids, Long.class);
                     if (CollectionUtils.isNotEmpty(list)){
-                        jsonObjects = appointmentDao.selectNewByIds(list);
+                        jsonObjects = appointmentDao.selectNewByIds(list, sendType);
                     }
                 }
                 if (CollectionUtils.isNotEmpty(jsonObjects)) {
-                    Map<String, List<com.alibaba.fastjson.JSONObject>> listMap = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("type")));
-                    for (String type : listMap.keySet()) {
-                        JSONObject sendData = new JSONObject();
-                        sendData.set("type", type);
-                        sendData.set("startTime", "2024-04-01 00:00:00");
-                        sendData.set("deadline", "2034-04-01 00:00:00");
-                        sendData.set("peopleName", peopleName);
-                        sendData.set("peopleCode", code);
-                        sendData.set("faceUrl", faceUrl);
-                        sendData.set("masterIp", jsonObjects.get(0).getString("master"));
-                        sendData.set("faceUrl", domain + faceUrl);
-                        sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
-                        sendData.set("password", jsonObjects.get(0).getString("password"));
-                        sendData.set("DELETE", data.getStr("DELETE"));
-                        log.info("发送的消息：" + sendData);
-                        rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
+
+                    //按照厂站分组
+                    Map<String, List<com.alibaba.fastjson.JSONObject>> listMap = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("siteCode")));
+                    for (String siteCode : listMap.keySet()) {
+                        List<com.alibaba.fastjson.JSONObject> devices = listMap.get(siteCode);
+                        //按照设备类型分组
+                        Map<String, List<com.alibaba.fastjson.JSONObject>> types = devices.stream().collect(Collectors.groupingBy(item -> item.getString("type")));
+                        for (String type : types.keySet()) {
+                            List<com.alibaba.fastjson.JSONObject> typeList = types.get(type);
+                            JSONObject sendData = new JSONObject();
+                            sendData.set("type", type);
+                            sendData.set("startTime", "2024-04-01 00:00:00");
+                            sendData.set("deadline", "2034-04-01 00:00:00");
+                            sendData.set("peopleName", peopleName);
+                            sendData.set("peopleCode", code);
+                            sendData.set("masterIp",typeList.get(0).getString("master"));
+                            sendData.set("faceUrl", domain + faceUrl);
+                            sendData.set("deviceInfos", JSONUtil.toJsonStr(typeList));
+                            sendData.set("password", typeList.get(0).getString("password"));
+                            sendData.set("DELETE", data.getStr("DELETE"));
+                            log.info("发送的消息：" + sendData);
+                            rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
+                        }
                     }
                 }
-                //主机分组
-//                Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
-//                //遍历
-//                for (String key : master.keySet()) {
-//                    //主机下面带的设备
-//                    for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
-//                        JSONObject sendData = new JSONObject();
-//                        sendData.set("type", jsonObject.getString("type"));
-//                        sendData.set("startTime", "2024-04-01 00:00:00");
-//                        sendData.set("deadline", "2034-04-01 00:00:00");
-//                        sendData.set("peopleName", peopleName);
-//                        sendData.set("peopleCode", code);
-//                        sendData.set("faceUrl", faceUrl);
-//                        sendData.set("masterIp", key);
-//                        sendData.set("faceUrl", domain + faceUrl);
-//                        sendData.set("masterIp", key);
-//                        sendData.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
-//                        sendData.set("password", jsonObjects.get(0).getString("password"));
-//                        sendData.set("DELETE", data.getStr("DELETE"));
-//                        log.info("发送的消息：" + sendData);
-//                        rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
-//                    }
-//                }
             }
 
             case "2" -> {
-
-
                 //车辆进入
                 JSONObject entries = JSONUtil.parseObj(data.get("data"));
                 //所属站点
@@ -945,7 +928,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 if (StrUtil.isEmpty(licensePlate)){
                     licensePlate = entries.getStr("plateNumber");
                 }
-
                 //场站关联编码
                 String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
                 List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
@@ -954,7 +936,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     String ids = data.getStr("ids");
                     List<Long> list = JSONUtil.toList(ids, Long.class);
                     if (CollectionUtils.isNotEmpty(list)){
-                        jsonObjects = appointmentDao.selectNewByIds(list);
+                        jsonObjects = appointmentDao.selectNewByIds(list, sendType);
                     }
                 }
                 //主机分组
@@ -962,16 +944,13 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //遍历
                 for (String key : master.keySet()) {
                     //主机下面带的设备
-
                     Set<String> name = new HashSet<>();
                     for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
-
                         if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
                             if (!name.isEmpty()){
                                 continue;
                             }
                         }
-
                         JSONObject sendData = new JSONObject();
                         sendData.set("type", jsonObject.getString("type"));
                         sendData.set("startTime", "2024-04-01 00:00:00");
@@ -999,11 +978,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     public JSONArray querOtherAppointmentService(Long siteId, Integer page, Integer limit) {
 
         JSONArray objects = new JSONArray();
-
-//        UserDetail user = SecurityUser.getUser();
-//        if (ObjectUtil.isNull(user)) {
-//            throw new ServerException(ErrorCode.FORBIDDEN);
-//        }
         Query query = new Query();
         query.setPage(page);
         query.setLimit(limit);
