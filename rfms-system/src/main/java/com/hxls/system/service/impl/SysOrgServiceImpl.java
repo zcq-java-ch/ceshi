@@ -36,10 +36,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 机构管理
@@ -109,7 +107,39 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         // 机构列表
         List<SysOrgEntity> entityList = baseMapper.getList(params);
 
+        // 获取全部组织
+        List<SysOrgEntity> list = list();
+
+        //添加上级组织
+        checkUpData(entityList ,list );
+
+
         return TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(entityList));
+    }
+
+    /**
+     * 将上级组织添加进去
+     * @param entityList 返回组织
+     * @param list 全量组织
+     */
+    private void checkUpData(List<SysOrgEntity> entityList, List<SysOrgEntity> list) {
+
+        Set<String> code = new HashSet<>();
+        List<String> codes = entityList.stream().map(SysOrgEntity::getCode).collect(Collectors.toList());
+        for (SysOrgEntity sysOrgEntity : entityList) {
+           if (StringUtils.isNotEmpty(sysOrgEntity.getPcode()) && !codes.contains(sysOrgEntity.getPcode())){
+               code.add(sysOrgEntity.getPcode());
+           }
+        }
+
+        if (CollectionUtils.isNotEmpty(code)){
+            for (SysOrgEntity sysOrgEntity : list) {
+                if (code.contains(sysOrgEntity.getCode())){
+                    entityList.add(sysOrgEntity);
+                }
+            }
+            checkUpData(entityList , list);
+        }
     }
 
     @Override

@@ -48,13 +48,9 @@ public class SysOrgController {
         if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
             query.setOrgList(user.getDataScopeList());
         }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
-            query.setOrgList(List.of(Constant.EMPTY));
+            query.setId(user.getOrgId());
         }
-
         PageResult<SysOrgVO> page = sysOrgService.page(query);
-
-
-
         return Result.ok(page);
     }
 
@@ -67,7 +63,7 @@ public class SysOrgController {
         if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
             query.setOrgList(user.getDataScopeList());
         }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
-            query.setOrgList(List.of(Constant.EMPTY));
+            query.setId(user.getOrgId());
         }
         query.setCreator(user.getId());
         PageResult<SysOrgVO> page = sysOrgService.page(query);
