@@ -106,7 +106,7 @@ public class SysUserController {
         }
 
         //查询所属车辆
-        List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , id));
+        List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId , id).in(TVehicleEntity::getCarClass, 1,3));
         if (CollectionUtils.isNotEmpty(result)){
             vo.setTVehicleVOList(  TVehicleConvert.INSTANCE.convertList(result) );
         }
