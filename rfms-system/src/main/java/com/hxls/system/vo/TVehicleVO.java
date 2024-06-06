@@ -118,5 +118,7 @@ public class TVehicleVO implements Serializable {
 	@Schema(description = "运输货物")
 	private String transportGoods;
 
+	@Schema(description = "权限区域")
+	private String areaList;
 
 }

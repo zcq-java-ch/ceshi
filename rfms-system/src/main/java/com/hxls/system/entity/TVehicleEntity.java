@@ -140,6 +140,11 @@ public class TVehicleEntity extends BaseEntity {
 	 * */
 	private String transportGoods;
 
+	/**
+	 * 权限区域
+	 * */
+	private String areaList;
+
 
 	@TableField(exist = false)
 	private Long stationId;

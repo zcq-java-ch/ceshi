@@ -120,6 +120,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             vehicle.set("data" , JSONUtil.toJsonStr(entity));
             appointmentFeign.issuedPeople(vehicle);
         }
+
+        // TODO 当单独保存的车辆数据为供应商车辆管理的时候，需要处理权限区域问题
+        if ("4".equals(entity.getCarClass())){
+
+        }
     }
 
     @Override
@@ -163,6 +168,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             appointmentFeign.issuedPeople(vehicle);
         }
 
+        // TODO 当单独修改的车辆数据为供应商车辆管理的时候，需要处理权限区域问题
+        if ("4".equals(entity.getCarClass())){
+
+        }
     }
 
     @Override
