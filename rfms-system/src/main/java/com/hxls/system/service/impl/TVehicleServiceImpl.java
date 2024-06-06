@@ -37,6 +37,7 @@ import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
@@ -115,14 +116,15 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
         baseMapper.insert(entity);
 
-        //通用车辆下发
-        JSONObject vehicle = new JSONObject();
-        vehicle.set("sendType","2");
-        entity.setStationId(entity.getSiteId());
-        vehicle.set("data" , JSONUtil.toJsonStr(entity));
-        appointmentFeign.issuedPeople(vehicle);
-
-
+        // 为空的情况是，外部人员私家车，和外部人员大车
+        if (ObjectUtils.isNotEmpty(entity.getSiteId())){
+            //通用车辆下发
+            JSONObject vehicle = new JSONObject();
+            vehicle.set("sendType","2");
+            entity.setStationId(entity.getSiteId());
+            vehicle.set("data" , JSONUtil.toJsonStr(entity));
+            appointmentFeign.issuedPeople(vehicle);
+        }
     }
 
     @Override
