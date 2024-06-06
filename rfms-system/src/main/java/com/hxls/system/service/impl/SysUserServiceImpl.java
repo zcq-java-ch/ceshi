@@ -109,7 +109,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         //查询车辆多归属
         for (SysUserVO sysUserVO : sysUserVOS) {
             Long id = sysUserVO.getId();
-            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id));
+            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id).in(TVehicleEntity::getCarClass, 1, 3));
             if (CollectionUtils.isNotEmpty(result)) {
                 sysUserVO.setTVehicleVOList(TVehicleConvert.INSTANCE.convertList(result));
             }
@@ -147,7 +147,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         //查询车辆多归属
         for (SysUserVO sysUserVO : sysUserVOS) {
             Long id = sysUserVO.getId();
-            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id));
+            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id).in(TVehicleEntity::getCarClass, 1,3));
             if (CollectionUtils.isNotEmpty(result)) {
                 sysUserVO.setTVehicleVOList(TVehicleConvert.INSTANCE.convertList(result));
             }
