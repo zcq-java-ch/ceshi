@@ -83,4 +83,10 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
       * @date 10:00 2024/6/6
       */
     void importGysWithPictures(String imageUrl, Long supplierId, String supplierName) throws NoSuchAlgorithmException, KeyManagementException, IOException;
+
+    /**
+     * 批量修改权限区域
+     * @param list
+     */
+    void updateStationIdList(List<TVehicleVO> list);
 }

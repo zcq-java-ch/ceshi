@@ -253,7 +253,6 @@ public class SysUserController {
             return Result.error("不能删除当前登录用户");
         }
         sysUserService.delete(idList);
-
         return Result.ok();
     }
 
@@ -279,7 +278,6 @@ public class SysUserController {
             return Result.error("请选择需要上传的文件");
         }
         sysUserService.importByExcel(vo.getImageUrl(), passwordEncoder.encode("hxls123456"), vo.getOrgId());
-
         return Result.ok();
     }
 

@@ -14,6 +14,7 @@ import com.hxls.system.service.SysOrgService;
 import com.hxls.system.service.SysUserService;
 import com.hxls.system.service.TVehicleService;
 import com.hxls.system.vo.SysRoleVO;
+import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -162,6 +163,18 @@ public class TVehicleController {
     }
 
 
+    @PostMapping("updateStationId")
+    @Operation(summary = "批量修改所属站点")
+    @OperateLog(type = OperateTypeEnum.UPDATE)
+    @PreAuthorize("hasAuthority('system:vehicle:updateStationId')")
+    public Result<String> updateStationIdList(@RequestBody List<TVehicleVO> list) {
+        tVehicleService.updateStationIdList(list);
+        return Result.ok();
+    }
+
+
+
+
     @PostMapping("import")
     @Operation(summary = "导入通用车辆")
     @OperateLog(type = OperateTypeEnum.IMPORT)
@@ -171,7 +184,6 @@ public class TVehicleController {
             return Result.error("请选择需要上传的文件");
         }
         tVehicleService.importByExcel(vo.getImageUrl(),vo.getSiteId());
-
         return Result.ok();
     }
 

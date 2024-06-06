@@ -303,9 +303,6 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
     public List<SysOrgVO> getOrgSiteList(UserDetail user) {
         LambdaQueryWrapper<SysOrgEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysOrgEntity::getProperty, 4);
-        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
-            wrapper.in(SysOrgEntity::getId,user.getDataScopeList());
-        }
         List<SysOrgEntity> list = list(wrapper);
 
         return SysOrgConvert.INSTANCE.convertList(list);

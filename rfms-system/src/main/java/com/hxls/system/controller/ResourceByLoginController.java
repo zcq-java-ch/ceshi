@@ -368,10 +368,7 @@ public class ResourceByLoginController {
 //    @PreAuthorize("hasAuthority('sys:org:getOrgSiteList')")
     public Result<List<SysOrgVO>> getOrgSiteList() {
         UserDetail user = SecurityUser.getUser();
-        List<Long> dataScopeList = user.getDataScopeList();
-        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN) && CollectionUtils.isEmpty(dataScopeList)){
-            return Result.ok(new ArrayList<>());
-        }
+//        List<Long> dataScopeList = user.getDataScopeList();
         List<SysOrgVO> orgSiteList = sysOrgService.getOrgSiteList(user);
         if (CollectionUtils.isNotEmpty(orgSiteList)){
             for (SysOrgVO sysOrgVO : orgSiteList) {

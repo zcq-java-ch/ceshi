@@ -25,9 +25,13 @@ import com.hxls.system.controller.ExcelController;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.dao.TVehicleDao;
+import com.hxls.system.entity.SysAreacodeDeviceEntity;
+import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.service.SysAreacodeDeviceService;
+import com.hxls.system.service.SysSiteAreaService;
 import com.hxls.system.service.TVehicleService;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
@@ -72,6 +76,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     private final AppointmentFeign appointmentFeign;
     private final StorageProperties properties;
     private final SysUserDao sysUserDao;
+    private final SysSiteAreaService sysSiteAreaService;
+    private final SysAreacodeDeviceService sysAreacodeDeviceService;
 
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
@@ -79,7 +85,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         return new PageResult<>(TVehicleConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
-    private LambdaQueryWrapper<TVehicleEntity> getWrapper(TVehicleQuery query){
+    private LambdaQueryWrapper<TVehicleEntity> getWrapper(TVehicleQuery query) {
         LambdaQueryWrapper<TVehicleEntity> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(query.getSiteId() != null, TVehicleEntity::getSiteId, query.getSiteId());
         wrapper.like(StringUtils.isNotEmpty(query.getLicensePlate()), TVehicleEntity::getLicensePlate, query.getLicensePlate());
@@ -92,7 +98,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         UserDetail user = SecurityUser.getUser();
         // 如果是超级管理员，则不进行数据过滤
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
-            wrapper.in(TVehicleEntity::getSiteId, CollectionUtils.isEmpty(user.getDataScopeList())? List.of(Constant.EMPTY): user.getDataScopeList());
+            wrapper.in(TVehicleEntity::getSiteId, CollectionUtils.isEmpty(user.getDataScopeList()) ? List.of(Constant.EMPTY) : user.getDataScopeList());
         }
 
         return wrapper;
@@ -107,6 +113,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         if (valusCount > 0) {
             throw new ServerException("当前车牌号已存在，不能重复添加");
         }
+
+        Long id = vo.getId();
+        TVehicleEntity byId = getById(id);
 
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
 
@@ -123,8 +132,46 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         }
 
         // TODO 当单独保存的车辆数据为供应商车辆管理的时候，需要处理权限区域问题
-        if ("4".equals(entity.getCarClass())){
+        if ("4".equals(entity.getCarClass())) {
+            if (StringUtils.isNotEmpty(vo.getAreaList())) {
+                String areaList = vo.getAreaList();
+                List<String> areas = JSONUtil.toList(areaList, String.class);
+                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                    return Long.parseLong(item.substring(1));
+                }).toList();
+                //删除老站点ID
+                if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType", "2");
+                    vehicle.set("data", JSONUtil.toJsonStr(byId));
+                    vehicle.set("DELETE", "DELETE");
+                    appointmentFeign.issuedPeople(vehicle);
+                }
 
+                //下发
+                List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
+                //获取到人脸设备
+                if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysSiteAreaEntities)) {
+                    //获取到设备编码
+                    List<String> deviceIds = new ArrayList<>();
+                    for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
+                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
+                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                    }
+                    List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
+                    if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
+                        List<Long> ids = areacodeDeviceEntities.stream().map(SysAreacodeDeviceEntity::getDeviceId).toList();
+                        //下发设备
+                        if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
+                            JSONObject vehicle = new JSONObject();
+                            vehicle.set("sendType", "2");
+                            vehicle.set("data", JSONUtil.toJsonStr(entity));
+                            vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                            appointmentFeign.issuedPeople(vehicle);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -141,7 +188,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         //修改之前要判断是否更换了厂站
         Long id = vo.getId();
         TVehicleEntity byId = getById(id);
-        if (ObjectUtil.isNull(byId)){
+        if (ObjectUtil.isNull(byId)) {
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
         updateById(entity);
@@ -151,13 +198,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             //原厂站的id
             Long siteId = byId.getSiteId();
 
-            if (!siteId.equals(vo.getSiteId())){
+            if (!siteId.equals(vo.getSiteId())) {
                 //删除原厂站的信息
                 JSONObject vehicle = new JSONObject();
-                vehicle.set("sendType","2");
+                vehicle.set("sendType", "2");
                 entity.setStationId(entity.getSiteId());
-                vehicle.set("data" , JSONUtil.toJsonStr(entity));
-                vehicle.set("DELETE","DELETE");
+                vehicle.set("data", JSONUtil.toJsonStr(entity));
+                vehicle.set("DELETE", "DELETE");
                 appointmentFeign.issuedPeople(vehicle);
             }
 
@@ -170,8 +217,46 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         }
 
         // TODO 当单独修改的车辆数据为供应商车辆管理的时候，需要处理权限区域问题
-        if ("4".equals(entity.getCarClass())){
+        if ("4".equals(entity.getCarClass())) {
+            if (StringUtils.isNotEmpty(vo.getAreaList())) {
+                String areaList = vo.getAreaList();
+                List<String> areas = JSONUtil.toList(areaList, String.class);
+                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                    return Long.parseLong(item.substring(1));
+                }).toList();
+                //删除老站点ID
+                if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType", "2");
+                    vehicle.set("data", JSONUtil.toJsonStr(byId));
+                    vehicle.set("DELETE", "DELETE");
+                    appointmentFeign.issuedPeople(vehicle);
+                }
 
+                //下发
+                List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
+                //获取到人脸设备
+                if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysSiteAreaEntities)) {
+                    //获取到设备编码
+                    List<String> deviceIds = new ArrayList<>();
+                    for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
+                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
+                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                    }
+                    List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
+                    if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
+                        List<Long> ids = areacodeDeviceEntities.stream().map(SysAreacodeDeviceEntity::getDeviceId).toList();
+                        //下发设备
+                        if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
+                            JSONObject vehicle = new JSONObject();
+                            vehicle.set("sendType", "2");
+                            vehicle.set("data", JSONUtil.toJsonStr(entity));
+                            vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                            appointmentFeign.issuedPeople(vehicle);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -184,10 +269,10 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
             //删除原厂站的信息
             JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType","2");
+            vehicle.set("sendType", "2");
             entity.setStationId(entity.getSiteId());
-            vehicle.set("data" , JSONUtil.toJsonStr(entity));
-            vehicle.set("DELETE","DELETE");
+            vehicle.set("data", JSONUtil.toJsonStr(entity));
+            vehicle.set("DELETE", "DELETE");
             appointmentFeign.issuedPeople(vehicle);
         }
 
@@ -195,18 +280,18 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         removeByIds(idList);
 
 
-
     }
 
     /**
      * 通过车牌号，查询车辆基本信息
+     *
      * @param data 入参车牌号
      * @return 返回车辆信息
      */
     @Override
     public List<TVehicleVO> getByLicensePlates(List<String> data) {
-        List<TVehicleEntity> list = this.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getLicensePlate , data));
-        return  TVehicleConvert.INSTANCE.convertList(list);
+        List<TVehicleEntity> list = this.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getLicensePlate, data));
+        return TVehicleConvert.INSTANCE.convertList(list);
     }
 
     /**
@@ -220,22 +305,22 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     public void setByLicensePlates(String licensePlates, Long userId, Integer type) {
 
         List<TVehicleEntity> list = list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, licensePlates));
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             throw new ServerException(ErrorCode.NOT_FOUND.getMsg());
         }
 
-        if( type < 1){
+        if (type < 1) {
             //修改默认司机
-            list.forEach(item-> {
+            list.forEach(item -> {
                 item.setDriverId(Constant.EMPTY);
                 item.setUserId(Constant.EMPTY);
                 item.setDriverMobile("未绑定");
                 item.setDriverName("未绑定");
             });
-        }else {
+        } else {
             //修改默认司机
             SysUserEntity byId = sysUserDao.getById(userId);
-            list.forEach(item-> {
+            list.forEach(item -> {
                 item.setDriverId(userId);
                 item.setUserId(userId);
                 item.setDriverMobile(byId.getMobile());
@@ -249,14 +334,14 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
      * 通过车牌号去设置绑定与解绑
      *
      * @param licensePlates 车牌号
-     * @param userId 登陆人员id
+     * @param userId        登陆人员id
      */
     @Override
     public String getVehicleByLicensePlates(String licensePlates, Long userId) {
-        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate,licensePlates)
-                .eq(TVehicleEntity::getDriverId,userId));
-        if (ObjectUtil.isNull(one)){
-            return  "绑定车辆";
+        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, licensePlates)
+                .eq(TVehicleEntity::getDriverId, userId));
+        if (ObjectUtil.isNull(one)) {
+            return "绑定车辆";
         }
         return "解绑车辆";
     }
@@ -266,18 +351,18 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         for (TVehicleVO vo : list) {
             TVehicleEntity entity = new TVehicleEntity();
             entity.setId(vo.getId());
-            if(vo.getStatus() != null ){
+            if (vo.getStatus() != null) {
                 entity.setStatus(vo.getStatus());
             }
             // 更新实体
             this.updateById(entity);
             //删除车辆在设备上的信息
             JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType","2");
+            vehicle.set("sendType", "2");
             entity.setStationId(entity.getSiteId());
-            vehicle.set("data" , JSONUtil.toJsonStr(entity));
-            if (vo.getStatus().equals(Constant.DISABLE)){
-                vehicle.set("DELETE","DELETE");
+            vehicle.set("data", JSONUtil.toJsonStr(entity));
+            if (vo.getStatus().equals(Constant.DISABLE)) {
+                vehicle.set("DELETE", "DELETE");
             }
             appointmentFeign.issuedPeople(vehicle);
         }
@@ -285,8 +370,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void importByExcel(String file,Long siteId){
-        try{
+    public void importByExcel(String file, Long siteId) {
+        try {
             //导入时候获取的地址是相对路径 需要拼接服务器路径
             String domain = properties.getConfig().getDomain();
 
@@ -310,16 +395,16 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                                 .eq("license_plate", tVehicle.getLicensePlate())
                                 .eq("deleted", 0));
                         if (valusCount > 0) {
-                            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                            throw new ServerException("车辆" + tVehicle.getLicensePlate() + "已存在，不能重复添加");
                         }
                         tVehicle.setSiteId(siteId);
                         tVehicle.setStatus(1);
 
                         //下发车辆
                         JSONObject vehicle = new JSONObject();
-                        vehicle.set("sendType","2");
+                        vehicle.set("sendType", "2");
                         tVehicle.setStationId(siteId);
-                        vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
+                        vehicle.set("data", JSONUtil.toJsonStr(tVehicle));
                         appointmentFeign.issuedPeople(vehicle);
 
                     });
@@ -327,7 +412,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                 }
             });
 
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ServerException("导入数据不正确");
         }
     }
@@ -335,8 +420,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     public void setLicensePlates(SysUserVO byMobile, String licensePlate) {
 
-        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate ,licensePlate ));
-        if (ObjectUtil.isNull(one)){
+        TVehicleEntity one = getOne(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, licensePlate));
+        if (ObjectUtil.isNull(one)) {
             throw new ServerException(ErrorCode.NOT_FOUND.getMsg());
         }
         //修改默认司机
@@ -352,7 +437,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     public void importByExcelWithPictures(String excelUrl, Long siteId) throws NoSuchAlgorithmException, KeyManagementException, IOException {
         //导入时候获取的地址是相对路径 需要拼接服务器路径
         String domain = properties.getConfig().getDomain();
-        String allUrl = domain+excelUrl;
+        String allUrl = domain + excelUrl;
 
         // 初始化图片容器
         HashMap<ExcelController.PicturePosition, String> pictureMap = new HashMap<>();
@@ -448,16 +533,16 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                             .eq("license_plate", tVehicle.getLicensePlate())
                             .eq("deleted", 0));
                     if (valusCount > 0) {
-                        throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                        throw new ServerException("车辆" + tVehicle.getLicensePlate() + "已存在，不能重复添加");
                     }
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
 
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
-                    if (StrUtil.isNotEmpty(driverMobile)){
-                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile,driverMobile));
-                        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+                    if (StrUtil.isNotEmpty(driverMobile)) {
+                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile, driverMobile));
+                        if (CollectionUtils.isNotEmpty(sysUserEntities)) {
                             tVehicle.setUserId(sysUserEntities.get(0).getId());
                             tVehicle.setDriverId(sysUserEntities.get(0).getId());
                             tVehicle.setDriverName(sysUserEntities.get(0).getRealName());
@@ -465,9 +550,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     }
                     //下发车辆
                     JSONObject vehicle = new JSONObject();
-                    vehicle.set("sendType","2");
+                    vehicle.set("sendType", "2");
                     tVehicle.setStationId(siteId);
-                    vehicle.set("data" , JSONUtil.toJsonStr(tVehicle));
+                    vehicle.set("data", JSONUtil.toJsonStr(tVehicle));
                     appointmentFeign.issuedPeople(vehicle);
 
                 });
@@ -487,7 +572,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     private void checkData(TVehicleEntity tVehicle) {
         String driverMobile1 = tVehicle.getDriverMobile();
-        if (StringUtils.isEmpty(driverMobile1)){
+        if (StringUtils.isEmpty(driverMobile1)) {
             throw new ServerException("司机手机号不能为空，请调整数据");
         }
 
@@ -499,7 +584,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
         String licensePlate = tVehicle.getLicensePlate();
         // 车牌号不能为空
-        if (StringUtils.isEmpty(licensePlate)){
+        if (StringUtils.isEmpty(licensePlate)) {
             throw new ServerException("车牌号不能为空，请调整数据");
         }
 
@@ -513,12 +598,12 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         if (length >= minLength && length <= maxLength) {
 //                        System.out.println("车牌号长度符合要求。");
         } else {
-            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"车牌号不符合长度，不能添加");
+            throw new ServerException("车辆" + tVehicle.getLicensePlate() + "车牌号不符合长度，不能添加");
         }
 
         // 车辆类型只能是 2 3 大车
-        if (!"2".equals(tVehicle.getCarType()) && !"3".equals(tVehicle.getCarType())){
-            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"车辆类型只能是[货车]或者[罐车]");
+        if (!"2".equals(tVehicle.getCarType()) && !"3".equals(tVehicle.getCarType())) {
+            throw new ServerException("车辆" + tVehicle.getLicensePlate() + "车辆类型只能是[货车]或者[罐车]");
         }
 
         try {
@@ -529,15 +614,15 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         } catch (NumberFormatException e) {
             // 如果转换失败，说明字符串不是数字类型的
             // 在这里你可以处理该情况，例如给出一个错误提示或采取其他适当的措施
-            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"最大容量不是一个有效的数字。");
+            throw new ServerException("车辆" + tVehicle.getLicensePlate() + "最大容量不是一个有效的数字。");
         }
 
         // 如果运输量不为空的时候  需要校验他的输入类型
-        if (StringUtils.isNotEmpty(tVehicle.getTransportVolume())){
+        if (StringUtils.isNotEmpty(tVehicle.getTransportVolume())) {
             try {
                 BigDecimal transportVolume = new BigDecimal(tVehicle.getTransportVolume());
             } catch (NumberFormatException e) {
-                throw new ServerException("车辆"+tVehicle.getLicensePlate()+"运输量不是一个有效的数字。");
+                throw new ServerException("车辆" + tVehicle.getLicensePlate() + "运输量不是一个有效的数字。");
             }
         }
     }
@@ -632,17 +717,17 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             if (dr instanceof XSSFDrawing) {
                 XSSFDrawing drawing = (XSSFDrawing) dr;
                 List<XSSFShape> shapes = drawing.getShapes()
-                        .stream().filter(s->s instanceof XSSFPicture).collect(Collectors.toList());
+                        .stream().filter(s -> s instanceof XSSFPicture).collect(Collectors.toList());
                 for (XSSFShape shape : shapes) {
                     XSSFPicture pic = (XSSFPicture) shape;
                     try {
                         XSSFClientAnchor anchor = pic.getPreferredSize();
-                        if(anchor != null){
+                        if (anchor != null) {
                             CTMarker ctMarker = anchor.getFrom();
                             ExcelController.PicturePosition picturePosition = ExcelController.PicturePosition.newInstance(ctMarker.getRow(), ctMarker.getCol());
                             pictureMap.put(picturePosition, printImg(pic.getPictureData()));
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         System.out.println(e);
                     }
                 }
@@ -673,10 +758,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     /**
      * cell数据格式转换
+     *
      * @param cell
      * @return
      */
-    private static String getCellValue(Cell cell){
+    private static String getCellValue(Cell cell) {
         switch (cell.getCellType()) {
             case NUMERIC: // 数字
                 //如果为时间格式的内容
@@ -707,7 +793,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     public void importGysWithPictures(String excelUrl, Long supplierId, String supplierName) throws NoSuchAlgorithmException, KeyManagementException, IOException {
         //导入时候获取的地址是相对路径 需要拼接服务器路径
         String domain = properties.getConfig().getDomain();
-        String allUrl = domain+excelUrl;
+        String allUrl = domain + excelUrl;
 
         // 初始化图片容器
         HashMap<ExcelController.PicturePosition, String> pictureMap = new HashMap<>();
@@ -808,7 +894,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                             .eq("license_plate", tVehicle.getLicensePlate())
                             .eq("deleted", 0));
                     if (valusCount > 0) {
-                        throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                        throw new ServerException("车辆" + tVehicle.getLicensePlate() + "已存在，不能重复添加");
                     }
                     tVehicle.setSupplierId(supplierId);
                     tVehicle.setSupplierName(supplierName);
@@ -816,9 +902,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
-                    if (StrUtil.isNotEmpty(driverMobile)){
-                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile,driverMobile));
-                        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+                    if (StrUtil.isNotEmpty(driverMobile)) {
+                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile, driverMobile));
+                        if (CollectionUtils.isNotEmpty(sysUserEntities)) {
                             tVehicle.setUserId(sysUserEntities.get(0).getId());
                             tVehicle.setDriverId(sysUserEntities.get(0).getId());
                             tVehicle.setDriverName(sysUserEntities.get(0).getRealName());
@@ -836,6 +922,63 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             }
         } catch (IOException e) {
             throw new ServerException("Error reading Excel from URL.");
+        }
+    }
+
+    @Override
+    public void updateStationIdList(List<TVehicleVO> list) {
+
+        for (TVehicleVO vo : list) {
+//            Boolean issued = false;
+            TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
+            //查询车辆  --
+            Long id = vo.getId();
+            //查询车辆详情
+            TVehicleEntity byId = getById(id);
+            //判断是否更换区域,删除之前得老区域，下发新站点和区域
+            if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType", "2");
+                vehicle.set("data", JSONUtil.toJsonStr(byId));
+                vehicle.set("DELETE", "DELETE");
+                appointmentFeign.issuedPeople(vehicle);
+            }
+            // 更新实体
+            this.updateById(entity);
+
+            if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotEmpty(vo.getAreaList())) {
+                String areaList = vo.getAreaList();
+                List<String> areas = JSONUtil.toList(areaList, String.class);
+                List<Long> result = areas.stream().filter(item -> item.contains("A")).map(item -> {
+                    return Long.parseLong(item.substring(1));
+                }).collect(Collectors.toList());
+                //下发
+                if (CollectionUtils.isEmpty(result)){
+                    throw new ServerException("所选厂站下没有划分区域");
+                }
+                List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
+                //获取到人脸设备
+                if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysSiteAreaEntities)) {
+                    //获取到设备编码
+                    List<String> deviceIds = new ArrayList<>();
+                    for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
+                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
+                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                    }
+                    List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
+                    if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
+                        List<Long> ids = areacodeDeviceEntities.stream().map(SysAreacodeDeviceEntity::getDeviceId).toList();
+                        //下发设备
+                        if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
+                            JSONObject vehicle = new JSONObject();
+                            vehicle.set("sendType", "2");
+                            vehicle.set("data", JSONUtil.toJsonStr(entity));
+                            vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                            appointmentFeign.issuedPeople(vehicle);
+                        }
+                    }
+                }
+            }
         }
     }
 }
