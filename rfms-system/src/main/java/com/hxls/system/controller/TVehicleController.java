@@ -62,6 +62,10 @@ public class TVehicleController {
                 tVehicleVO.setSiteName(sysOrgEntity.getName());
             }
 
+            SysOrgEntity supplierOrgEntity = sysOrgService.getById(tVehicleVO.getSupplierId());
+            if(sysOrgEntity != null){
+                tVehicleVO.setSupplierName(supplierOrgEntity.getName());
+            }
         }
         return Result.ok(page);
     }

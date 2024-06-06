@@ -33,4 +33,8 @@ public class TVehicleQuery extends Query {
     @Schema(description = "状态 0:停用, 1:启用")
     private Integer status;
 
+    @Schema(description = "车辆所属（数据字典）")
+    private String carClass;
+
+
 }
