@@ -86,6 +86,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         wrapper.eq(query.getDriverId() != null, TVehicleEntity::getDriverId, query.getDriverId());
         wrapper.eq(query.getStatus() != null, TVehicleEntity::getStatus, query.getStatus());
         wrapper.eq(query.getCarClass() != null, TVehicleEntity::getCarClass, query.getCarClass());
+        wrapper.eq(query.getSupplierId() != null, TVehicleEntity::getSupplierId, query.getSupplierId());
         wrapper.orderByAsc(TVehicleEntity::getId);
         //数据权限判断
         UserDetail user = SecurityUser.getUser();

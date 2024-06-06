@@ -36,5 +36,6 @@ public class TVehicleQuery extends Query {
     @Schema(description = "车辆所属（数据字典）")
     private String carClass;
 
-
+    @Schema(description = "供应商ID")
+    private Long supplierId;
 }
