@@ -68,10 +68,16 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('sys:user:page')")
     public Result<PageResult<SysUserVO>> pageByGys(@ParameterObject @Valid SysUserQuery query) {
         UserDetail user = SecurityUser.getUser();
-        if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
-            query.setOrgList(user.getDataScopeList());
-        }else if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
-            query.setOrgList(List.of(Constant.EMPTY));
+        if (user ==null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            if(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(user.getDataScopeList())){
+                user.getDataScopeList().add(user.getOrgId());
+                query.setOrgList(user.getDataScopeList());
+            }else {
+                query.setOrgList(List.of(user.getOrgId()));
+            }
         }
         PageResult<SysUserVO> page = sysUserService.pageByGys(query);
         return Result.ok(page);

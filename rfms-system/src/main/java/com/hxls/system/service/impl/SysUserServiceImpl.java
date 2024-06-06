@@ -1012,6 +1012,13 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             SysUserEntity entity = new SysUserEntity();
             //设置id和站点所属
             entity.setId(vo.getId());
+            //查询车辆  --
+            Long id = vo.getId();
+
+            List<TVehicleEntity> carNum = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId,id));
+            String join = String.join(",", carNum.stream().map(TVehicleEntity::getLicensePlate).toList());
+
+            entity.setLicensePlate(join);
             entity.setStationId(vo.getStationId());
             entity.setAreaList(vo.getAreaList());
             //查询人员详情
