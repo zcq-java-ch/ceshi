@@ -133,7 +133,7 @@ public class TVehicleEntity extends BaseEntity {
 	/**
 	 * 运输量
 	 * */
-	private BigDecimal transportVolume;
+	private String transportVolume;
 
 	/**
 	 * 运输货物

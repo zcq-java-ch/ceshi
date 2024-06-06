@@ -113,7 +113,7 @@ public class TVehicleVO implements Serializable {
 	private String supplierName;
 
 	@Schema(description = "运输量")
-	private BigDecimal transportVolume;
+	private String transportVolume;
 
 	@Schema(description = "运输货物")
 	private String transportGoods;

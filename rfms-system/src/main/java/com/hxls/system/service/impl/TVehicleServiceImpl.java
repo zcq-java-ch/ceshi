@@ -22,17 +22,13 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.storage.properties.StorageProperties;
 import com.hxls.system.config.BaseImageUtils;
 import com.hxls.system.controller.ExcelController;
-import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.dao.TVehicleDao;
-import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
-import com.hxls.system.service.SysUserService;
 import com.hxls.system.service.TVehicleService;
-import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
@@ -44,7 +40,6 @@ import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -524,8 +519,16 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         } catch (NumberFormatException e) {
             // 如果转换失败，说明字符串不是数字类型的
             // 在这里你可以处理该情况，例如给出一个错误提示或采取其他适当的措施
-            System.out.println("最大容量不是一个有效的数字。");
             throw new ServerException("车辆"+tVehicle.getLicensePlate()+"最大容量不是一个有效的数字。");
+        }
+
+        // 如果运输量不为空的时候  需要校验他的输入类型
+        if (StringUtils.isNotEmpty(tVehicle.getTransportVolume())){
+            try {
+                BigDecimal transportVolume = new BigDecimal(tVehicle.getTransportVolume());
+            } catch (NumberFormatException e) {
+                throw new ServerException("车辆"+tVehicle.getLicensePlate()+"运输量不是一个有效的数字。");
+            }
         }
     }
 
@@ -687,6 +690,142 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                 return null;
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public void importGysWithPictures(String excelUrl, Long supplierId, String supplierName) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+        //导入时候获取的地址是相对路径 需要拼接服务器路径
+        String domain = properties.getConfig().getDomain();
+        String allUrl = domain+excelUrl;
+
+        // 初始化图片容器
+        HashMap<ExcelController.PicturePosition, String> pictureMap = new HashMap<>();
+
+        disableSslVerification();
+        // 下载Excel文件到本地临时文件
+        File tempFile = downloadFile(allUrl);
+
+        try (InputStream inputStream = new FileInputStream(tempFile)) {
+            Workbook workbook;
+            String fileFormat = allUrl.substring(allUrl.lastIndexOf('.') + 1);
+            try {
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new HSSFWorkbook(inputStream);
+                } else if (ExcelController.ExcelFormatEnum.XLSX.getValue().equalsIgnoreCase(fileFormat)) {
+                    workbook = new XSSFWorkbook(inputStream);
+                } else {
+                    throw new ServerException("Unsupported file format.");
+                }
+
+                //读取excel所有图片
+                if (ExcelController.ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+                    getPicturesXLS(workbook, pictureMap);
+                } else {
+                    getPicturesXLSX(workbook, pictureMap);
+                }
+
+                List<TVehicleExcelVO> transferList = new ArrayList<>();
+
+
+                Sheet sheet = workbook.getSheetAt(0);
+                int rows = sheet.getLastRowNum();
+                for (int i = 1; i <= rows; i++) {
+                    Row row = sheet.getRow(i);
+                    TVehicleExcelVO tVehicleExcelVO = new TVehicleExcelVO();
+                    if (row.getCell(0) != null) {
+                        tVehicleExcelVO.setLicensePlate(this.getCellValue(row.getCell(0)));
+                    }
+                    if (row.getCell(1) != null) {
+                        tVehicleExcelVO.setCarTypeName(this.getCellValue(row.getCell(1)));
+                    }
+                    if (row.getCell(2) != null) {
+                        tVehicleExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(2)));
+                    }
+                    if (row.getCell(3) != null) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        String cellValue = this.getCellValue(row.getCell(3));
+                        try {
+                            tVehicleExcelVO.setRegistrationDate(dateFormat.parse(cellValue));
+                        } catch (ParseException e) {
+//                            throw new RuntimeException(e);
+                            tVehicleExcelVO.setRegistrationDate(new Date());
+                        }
+                    }
+                    if (row.getCell(4) != null) {
+                        tVehicleExcelVO.setVinNumber(this.getCellValue(row.getCell(4)));
+                    }
+                    if (row.getCell(5) != null) {
+                        tVehicleExcelVO.setEngineNumber(this.getCellValue(row.getCell(5)));
+                    }
+                    if (row.getCell(6) != null) {
+                        tVehicleExcelVO.setFleetName(this.getCellValue(row.getCell(6)));
+                    }
+                    if (row.getCell(7) != null) {
+                        tVehicleExcelVO.setMaxCapacity(this.getCellValue(row.getCell(7)));
+                    }
+                    if (row.getCell(8) != null) {
+                        tVehicleExcelVO.setLicenseImage(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 8))));
+                    }
+                    if (row.getCell(9) != null) {
+                        tVehicleExcelVO.setImageUrl(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 9))));
+                    }
+                    if (row.getCell(10) != null) {
+                        tVehicleExcelVO.setImages(String.valueOf(pictureMap.get(ExcelController.PicturePosition.newInstance(i, 10))));
+                    }
+                    if (row.getCell(11) != null) {
+                        tVehicleExcelVO.setDriverMobile(this.getCellValue(row.getCell(11)));
+                    }
+                    if (row.getCell(12) != null) {
+                        tVehicleExcelVO.setTransportVolume(this.getCellValue(row.getCell(12)));
+                    }
+                    if (row.getCell(13) != null) {
+                        tVehicleExcelVO.setTransportGoods(this.getCellValue(row.getCell(13)));
+                    }
+                    transferList.add(tVehicleExcelVO);
+                }
+
+                // 执行数据处理逻辑
+                ExcelUtils.parseDict(transferList);
+                List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertListEntity(transferList);
+                tVehicleEntities.forEach(tVehicle -> {
+                    // 数据规则校验
+                    checkData(tVehicle);
+
+                    //判断车牌号有没有，车牌号只能被创建一次
+                    long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
+                            .eq("license_plate", tVehicle.getLicensePlate())
+                            .eq("deleted", 0));
+                    if (valusCount > 0) {
+                        throw new ServerException("车辆"+tVehicle.getLicensePlate()+"已存在，不能重复添加");
+                    }
+                    tVehicle.setSupplierId(supplierId);
+                    tVehicle.setSupplierName(supplierName);
+                    tVehicle.setStatus(1);
+
+                    //查询车辆驾驶员信息
+                    String driverMobile = tVehicle.getDriverMobile();
+                    if (StrUtil.isNotEmpty(driverMobile)){
+                        List<SysUserEntity> sysUserEntities = sysUserDao.selectList(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getMobile,driverMobile));
+                        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+                            tVehicle.setUserId(sysUserEntities.get(0).getId());
+                            tVehicle.setDriverId(sysUserEntities.get(0).getId());
+                            tVehicle.setDriverName(sysUserEntities.get(0).getRealName());
+                        }
+                    }
+                });
+
+                saveBatch(tVehicleEntities);
+//                return Result.ok();
+            } finally {
+                // 清理临时文件
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+        } catch (IOException e) {
+            throw new ServerException("Error reading Excel from URL.");
         }
     }
 }

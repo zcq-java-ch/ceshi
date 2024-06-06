@@ -188,4 +188,17 @@ public class TVehicleController {
         return Result.ok();
     }
 
+    @PostMapping("importGysWithPictures")
+    @Operation(summary = "导入供应商通用车辆带图片")
+    @OperateLog(type = OperateTypeEnum.IMPORT)
+    @PreAuthorize("hasAuthority('system:vehicle:import')")
+    public Result<String> importGysWithPictures(@RequestBody TVehicleVO vo) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        if (vo.getImageUrl().isEmpty()) {
+            return Result.error("请选择需要上传的文件");
+        }
+        tVehicleService.importGysWithPictures(vo.getImageUrl(),vo.getSupplierId(), vo.getSupplierName());
+
+        return Result.ok();
+    }
+
 }

@@ -76,4 +76,11 @@ public interface TVehicleService extends BaseService<TVehicleEntity> {
       * @return
       */
     void importByExcelWithPictures(String imageUrl, Long siteId) throws NoSuchAlgorithmException, KeyManagementException, IOException;
+
+    /**
+      * @author Mryang
+      * @description 供应商车辆管理导入功能
+      * @date 10:00 2024/6/6
+      */
+    void importGysWithPictures(String imageUrl, Long supplierId, String supplierName) throws NoSuchAlgorithmException, KeyManagementException, IOException;
 }
