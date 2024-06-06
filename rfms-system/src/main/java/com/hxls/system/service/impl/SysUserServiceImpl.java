@@ -1205,10 +1205,13 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
                             tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
                             tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
-                            tVehicleEntity.setCarType(sysUserEntity.getCarType());
+                            // 设置供应商人员导入的车辆，默认是小客车
+                            tVehicleEntity.setCarType("1");
                             tVehicleEntity.setDriverId(oldusermobile.getId());
                             tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
                             tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+                            tVehicleEntity.setSupplierId(orgId);
+                            tVehicleEntity.setSupplierName(byId.getName());
                             saveCarLists.add(tVehicleEntity);
                         }else {
                             sysUserEntity.setUserType("2");
@@ -1225,10 +1228,13 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             tVehicleEntity.setLicensePlate(sysUserEntity.getLicensePlate());
                             tVehicleEntity.setImageUrl(sysUserEntity.getImageUrl());
                             tVehicleEntity.setEmissionStandard(sysUserEntity.getEmissionStandard());
-                            tVehicleEntity.setCarType(sysUserEntity.getCarType());
+                            // 设置供应商人员导入的车辆，默认是小客车
+                            tVehicleEntity.setCarType("1");
                             tVehicleEntity.setDriverId(9999L);
                             tVehicleEntity.setDriverMobile(sysUserEntity.getMobile());
                             tVehicleEntity.setDriverName(sysUserEntity.getRealName());
+                            tVehicleEntity.setSupplierId(orgId);
+                            tVehicleEntity.setSupplierName(byId.getName());
                             saveCarLists.add(tVehicleEntity);
                         }
 
