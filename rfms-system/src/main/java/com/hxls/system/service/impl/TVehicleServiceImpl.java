@@ -49,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -443,12 +444,6 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
 
-
-
-
-
-
-
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
                     if (StrUtil.isNotEmpty(driverMobile)){
@@ -510,6 +505,23 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 //                        System.out.println("车牌号长度符合要求。");
         } else {
             throw new ServerException("车辆"+tVehicle.getLicensePlate()+"车牌号不符合长度，不能添加");
+        }
+
+        // 车辆类型只能是 2 3 大车
+        if (!"2".equals(tVehicle.getCarType()) && !"3".equals(tVehicle.getCarType())){
+            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"车辆类型只能是[货车]或者[罐车]");
+        }
+
+        try {
+            // 尝试将字符串转换为BigDecimal
+            BigDecimal maxCapacity = new BigDecimal(tVehicle.getMaxCapacity());
+            // 如果转换成功，则表示字符串是数字类型的
+            // 在这里你可以继续使用maxCapacity进行其他操作
+        } catch (NumberFormatException e) {
+            // 如果转换失败，说明字符串不是数字类型的
+            // 在这里你可以处理该情况，例如给出一个错误提示或采取其他适当的措施
+            System.out.println("最大容量不是一个有效的数字。");
+            throw new ServerException("车辆"+tVehicle.getLicensePlate()+"最大容量不是一个有效的数字。");
         }
     }
 

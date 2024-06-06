@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.io.Serializable;
 import com.hxls.framework.common.utils.DateUtils;
+
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -109,5 +111,12 @@ public class TVehicleVO implements Serializable {
 
 	@Schema(description = "供应商名字")
 	private String supplierName;
+
+	@Schema(description = "运输量")
+	private BigDecimal transportVolume;
+
+	@Schema(description = "运输货物")
+	private String transportGoods;
+
 
 }

@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.baomidou.mybatisplus.annotation.*;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.hxls.framework.mybatis.entity.BaseEntity;
 
@@ -127,6 +129,17 @@ public class TVehicleEntity extends BaseEntity {
 	 * 供应商名字
 	 */
 	private String supplierName;
+
+	/**
+	 * 运输量
+	 * */
+	private BigDecimal transportVolume;
+
+	/**
+	 * 运输货物
+	 * */
+	private String transportGoods;
+
 
 	@TableField(exist = false)
 	private Long stationId;
