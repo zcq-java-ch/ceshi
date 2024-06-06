@@ -143,28 +143,30 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         if (ObjectUtil.isNull(byId)){
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
-
-        //原厂站的id
-        Long siteId = byId.getSiteId();
-
         updateById(entity);
 
-        if (!siteId.equals(vo.getSiteId())){
-            //删除原厂站的信息
+        // 为空的情况是，外部人员私家车，和外部人员大车
+        if (ObjectUtils.isNotEmpty(entity.getSiteId())) {
+            //原厂站的id
+            Long siteId = byId.getSiteId();
+
+            if (!siteId.equals(vo.getSiteId())){
+                //删除原厂站的信息
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType","2");
+                entity.setStationId(entity.getSiteId());
+                vehicle.set("data" , JSONUtil.toJsonStr(entity));
+                vehicle.set("DELETE","DELETE");
+                appointmentFeign.issuedPeople(vehicle);
+            }
+
+
             JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType","2");
+            vehicle.set("sendType", "2");
             entity.setStationId(entity.getSiteId());
-            vehicle.set("data" , JSONUtil.toJsonStr(entity));
-            vehicle.set("DELETE","DELETE");
+            vehicle.set("data", JSONUtil.toJsonStr(entity));
             appointmentFeign.issuedPeople(vehicle);
         }
-
-
-        JSONObject vehicle = new JSONObject();
-        vehicle.set("sendType","2");
-        entity.setStationId(entity.getSiteId());
-        vehicle.set("data" , JSONUtil.toJsonStr(entity));
-        appointmentFeign.issuedPeople(vehicle);
 
     }
 
