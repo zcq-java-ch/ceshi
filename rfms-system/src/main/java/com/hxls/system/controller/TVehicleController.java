@@ -63,7 +63,7 @@ public class TVehicleController {
             }
 
             SysOrgEntity supplierOrgEntity = sysOrgService.getById(tVehicleVO.getSupplierId());
-            if(sysOrgEntity != null){
+            if(supplierOrgEntity != null){
                 tVehicleVO.setSupplierName(supplierOrgEntity.getName());
             }
         }
