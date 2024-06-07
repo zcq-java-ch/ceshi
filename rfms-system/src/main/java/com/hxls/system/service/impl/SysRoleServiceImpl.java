@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.user.SecurityUser;
@@ -12,6 +13,7 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysRoleConvert;
 import com.hxls.system.dao.SysRoleDao;
 import com.hxls.system.entity.SysRoleEntity;
+import com.hxls.system.entity.SysUserRoleEntity;
 import com.hxls.system.enums.DataScopeEnum;
 import com.hxls.system.query.SysRoleQuery;
 import com.hxls.system.service.*;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 角色
@@ -143,6 +146,15 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
             }
             // 更新实体
             this.updateById(entity);
+            //修改用户角色关联表的状态
+            Long id = vo.getId();
+            List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleService.list(new LambdaQueryWrapper<SysUserRoleEntity>().eq(SysUserRoleEntity::getRoleId , id));
+            if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)){
+                for (SysUserRoleEntity sysUserRoleEntity : sysUserRoleEntityList) {
+                    sysUserRoleEntity.setDeleted(Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE:Constant.DISABLE);
+                }
+                sysUserRoleService.updateBatchById(sysUserRoleEntityList);
+            }
         }
     }
 
