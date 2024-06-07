@@ -641,10 +641,20 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 List<TAppointmentPersonnel> personnelList = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
                         .eq(TAppointmentPersonnel::getAppointmentId, id));
                 //审核通过之后,如果有修改，需要先删除之前的
-               // deleteInfo(list, personnelList, byId.getSiteId());
+                deleteInfo(list, personnelList, byId.getSiteId());
 
                 if (CollectionUtils.isNotEmpty(personnelList)) {
                     String domain = properties.getConfig().getDomain();
+                    //判断是否 透传厂站 -- 传递到设备保存的厂站。
+                    List<com.alibaba.fastjson.JSONObject> allDictByType = appointmentDao.getAllDictByType(35);
+                    for (com.alibaba.fastjson.JSONObject jsonObject : allDictByType) {
+                        String string = jsonObject.getString("dict_value");
+                        if (string.contains(byId.getSiteId().toString()) &&  string.split("_")[0].equals(byId.getSiteId().toString()) ){
+                            String[] split = string.split("_");
+                            byId.setSiteId(Long.parseLong(split[1]));
+                        }
+                    }
+
                     String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                     List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
                     for (String device : strings) {
@@ -891,11 +901,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     }
                 }
                 if (CollectionUtils.isNotEmpty(jsonObjects)) {
-
                     //按照厂站分组
-                    Map<String, List<com.alibaba.fastjson.JSONObject>> listMap = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("siteCode")));
-                    for (String siteCode : listMap.keySet()) {
-                        List<com.alibaba.fastjson.JSONObject> devices = listMap.get(siteCode);
+                    Map<String, List<com.alibaba.fastjson.JSONObject>> listMap = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
+                    for (String master : listMap.keySet()) {
+                        List<com.alibaba.fastjson.JSONObject> devices = listMap.get(master);
                         //按照设备类型分组
                         Map<String, List<com.alibaba.fastjson.JSONObject>> types = devices.stream().collect(Collectors.groupingBy(item -> item.getString("type")));
                         for (String type : types.keySet()) {
@@ -912,7 +921,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             sendData.set("password", typeList.get(0).getString("password"));
                             sendData.set("DELETE", data.getStr("DELETE"));
                             log.info("发送的消息：" + sendData);
-                            rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
+                            rabbitMQTemplate.convertAndSend(devices.get(0).getString("siteCode") + Constant.EXCHANGE, devices.get(0).getString("siteCode") + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
                         }
                     }
                 }
