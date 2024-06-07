@@ -1219,6 +1219,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             tVehicleEntity.setDriverName(sysUserEntity.getRealName());
                             tVehicleEntity.setSupplierId(orgId);
                             tVehicleEntity.setSupplierName(byId.getName());
+                            tVehicleEntity.setCarClass("3");
                             saveCarLists.add(tVehicleEntity);
                         }else {
                             sysUserEntity.setUserType("2");
@@ -1242,6 +1243,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             tVehicleEntity.setDriverName(sysUserEntity.getRealName());
                             tVehicleEntity.setSupplierId(orgId);
                             tVehicleEntity.setSupplierName(byId.getName());
+                            tVehicleEntity.setCarClass("3");
                             saveCarLists.add(tVehicleEntity);
                         }
 

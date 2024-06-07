@@ -537,7 +537,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     }
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
-
+                    tVehicle.setCarClass("4");
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
                     if (StrUtil.isNotEmpty(driverMobile)) {
@@ -899,7 +899,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     tVehicle.setSupplierId(supplierId);
                     tVehicle.setSupplierName(supplierName);
                     tVehicle.setStatus(1);
-
+                    tVehicle.setCarClass("4");
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
                     if (StrUtil.isNotEmpty(driverMobile)) {
