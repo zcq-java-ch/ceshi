@@ -41,8 +41,8 @@ public class SynMessageDataContorller {
      *
      * 目前接收的是：华安视讯  凌智恒
      * */
-    @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
+//    @RabbitHandler
+//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicFaceQueueNameFromCloud}")
     public void receiveFaceDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 
@@ -172,8 +172,8 @@ public class SynMessageDataContorller {
     /**
      * 接收客户端传来的车辆道闸记录
      * */
-    @RabbitHandler
-    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
+//    @RabbitHandler
+//    @RabbitListener(queues = "#{dynamicQueueNameProvider.getDynamicCarQueueNameFromCloud}")
     public void receiveCarDataFromTheClient(Message message, Channel c, String s) throws IOException, ClassNotFoundException {
         MessageProperties properties = message.getMessageProperties();
 

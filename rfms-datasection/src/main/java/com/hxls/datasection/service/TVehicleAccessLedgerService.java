@@ -24,4 +24,6 @@ public interface TVehicleAccessLedgerService extends BaseService<TVehicleAccessL
     void update(TVehicleAccessLedgerVO vo);
 
     void delete(List<Long> idList);
+
+    PageResult<TVehicleAccessLedgerVO> makeImages(PageResult<TVehicleAccessLedgerVO> page);
 }

@@ -1,6 +1,11 @@
 package com.hxls.datasection.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.hxls.api.feign.system.VehicleFeign;
+import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +16,14 @@ import com.hxls.framework.common.utils.Result;
 import com.hxls.datasection.service.TVehicleAccessLedgerService;
 import com.hxls.datasection.query.TVehicleAccessLedgerQuery;
 import com.hxls.datasection.vo.TVehicleAccessLedgerVO;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -31,6 +40,8 @@ import java.util.stream.Collectors;
 public class TVehicleAccessLedgerController extends BaseController {
     private final TVehicleAccessLedgerService tVehicleAccessLedgerService;
 
+    private final VehicleFeign vehicleFeign;
+    public StorageImagesProperties properties;
     /**
       * @author: Mryang
       * @Description: PC端-记录查询-车辆进出展示台账
@@ -42,9 +53,13 @@ public class TVehicleAccessLedgerController extends BaseController {
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:ledger:page')")
     public Result<PageResult<TVehicleAccessLedgerVO>> page(@RequestBody TVehicleAccessLedgerQuery query, @ModelAttribute("baseUser") UserDetail baseUser){
+        String domain = properties.getConfig().getDomain();
         PageResult<TVehicleAccessLedgerVO> page = tVehicleAccessLedgerService.page(query, baseUser);
 
-        return Result.ok(page);
+        // 处理图片
+        PageResult<TVehicleAccessLedgerVO> resultPage = tVehicleAccessLedgerService.makeImages(page);
+
+        return Result.ok(resultPage);
     }
 
     /**

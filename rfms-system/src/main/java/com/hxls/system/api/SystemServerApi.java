@@ -18,10 +18,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -722,6 +719,36 @@ public class SystemServerApi {
             entries.put("busis", sysUserEntity.getBusis());
             entries.put("personName", sysUserEntity.getRealName());
             entries.put("stationId", sysUserEntity.getStationId());
+        }
+        return entries;
+    }
+
+    /**
+     * @author Mryang
+     * @description 查询车牌列表关联的车的 随车清单，行驶证等图片
+     * @date 10:52 2024/6/11
+     * @param
+     * @return
+     */
+    @PostMapping(value = "/queryVehiclePhotosThroughLicensePlateList")
+    public JSONArray queryVehiclePhotosThroughLicensePlateList(@RequestBody JSONObject plateNumberList) {
+        JSONArray jsonArray = plateNumberList.getJSONArray("plateNumberList");
+
+        JSONArray entries = new JSONArray();
+        LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
+        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
+        tVehicleEntityLambdaQueryWrapper.in(TVehicleEntity::getLicensePlate, jsonArray);
+        List<TVehicleEntity> vehicleEntityList = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(vehicleEntityList)){
+            for (int i = 0; i < vehicleEntityList.size(); i++) {
+                JSONObject jsonObject = new JSONObject();
+                TVehicleEntity tVehicleEntity = vehicleEntityList.get(i);
+                jsonObject.put("plateNumber", tVehicleEntity.getLicensePlate());
+                jsonObject.put("licenseImage", tVehicleEntity.getLicenseImage());
+                jsonObject.put("images", tVehicleEntity.getImages());
+                entries.add(jsonObject);
+            }
         }
         return entries;
     }

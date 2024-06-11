@@ -2,10 +2,13 @@ package com.hxls.datasection.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.hxls.api.feign.system.VehicleFeign;
 import com.hxls.datasection.config.StorageImagesProperties;
 import com.hxls.datasection.entity.TPersonAccessRecordsEntity;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 车辆进出厂展示台账
@@ -37,6 +41,7 @@ import java.util.List;
 public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAccessLedgerDao, TVehicleAccessLedgerEntity> implements TVehicleAccessLedgerService {
 
     public StorageImagesProperties properties;
+    private VehicleFeign vehicleFeign;
 
     @Override
     public PageResult<TVehicleAccessLedgerVO> page(TVehicleAccessLedgerQuery query, UserDetail baseUser) {
@@ -144,4 +149,63 @@ public class TVehicleAccessLedgerServiceImpl extends BaseServiceImpl<TVehicleAcc
         removeByIds(idList);
     }
 
+    @Override
+    public PageResult<TVehicleAccessLedgerVO> makeImages(PageResult<TVehicleAccessLedgerVO> page) {
+        String domain = properties.getConfig().getDomain();
+        List<TVehicleAccessLedgerVO> tVehicleAccessLedgerVOList = page.getList();
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tVehicleAccessLedgerVOList)){
+            List<String> plateNumberList = tVehicleAccessLedgerVOList.stream()
+                    .map(TVehicleAccessLedgerVO::getPlateNumber)
+                    .collect(Collectors.toList());
+
+            if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(plateNumberList)){
+                // 调用微服务方法，查询这些车牌的所有图片信息，【行驶证】【随车清单】
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("plateNumberList", plateNumberList);
+                JSONArray vehiclePhotosThroughLicensePlateList = vehicleFeign.queryVehiclePhotosThroughLicensePlateList(jsonObject);
+
+                for (int i = 0; i < tVehicleAccessLedgerVOList.size(); i++) {
+                    TVehicleAccessLedgerVO tVehicleAccessLedgerVO = tVehicleAccessLedgerVOList.get(i);
+                    String plateNumber = tVehicleAccessLedgerVO.getPlateNumber();
+                    // 查询该车牌在vehiclePhotosThroughLicensePlateList 中的车辆图片数据
+                    JSONObject imagesMap = getPlateNumberByList(plateNumber, vehiclePhotosThroughLicensePlateList);
+                    if (ObjectUtil.isNotEmpty(imagesMap)){
+                        String licenseImage = imagesMap.getString("licenseImage");
+                        String images = imagesMap.getString("images");
+                        boolean isHttplicenseImage = licenseImage.startsWith("http");
+                        if (isHttplicenseImage){
+                            // 是http开头 不处理
+                            tVehicleAccessLedgerVO.setLicenseImage(licenseImage);
+                        }else {
+                            String newCarUrl = domain + licenseImage;
+                            tVehicleAccessLedgerVO.setLicenseImage(newCarUrl);
+                        }
+
+                        boolean isHttpenvirList = images.startsWith("http");
+                        if (isHttpenvirList){
+                            // 是http开头 不处理
+                            tVehicleAccessLedgerVO.setEnvirList(images);
+                        }else {
+                            String newenvirList = domain + images;
+                            tVehicleAccessLedgerVO.setEnvirList(newenvirList);
+                        }
+                    }
+                }
+            }
+        }
+        return page;
+    }
+
+    private JSONObject getPlateNumberByList(String plateNumber, JSONArray vehiclePhotosThroughLicensePlateList) {
+        JSONObject objectObjectHashMap = new JSONObject();
+        for (int i = 0; i < vehiclePhotosThroughLicensePlateList.size(); i++) {
+            JSONObject carEntity = vehiclePhotosThroughLicensePlateList.getJSONObject(i);
+            String carPlateNumber = carEntity.getString("plateNumber");
+            if (plateNumber.equals(carPlateNumber)){
+                objectObjectHashMap.put("licenseImage", carEntity.getString("licenseImage"));
+                objectObjectHashMap.put("images", carEntity.getString("images"));
+            }
+        }
+        return objectObjectHashMap;
+    }
 }
