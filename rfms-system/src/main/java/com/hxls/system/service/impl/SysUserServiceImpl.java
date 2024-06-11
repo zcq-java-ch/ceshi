@@ -335,6 +335,14 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         //TODO 修改需要更改方式
         //判断是否更换区域,删除之前得老区域，下发新站点和区域
+        //更换新得删除下发方式 --- 2024-06-07
+        String oldAreaList = byId.getAreaList();
+        String newAreaList = vo.getAreaList();
+
+        compareDeleteSite(oldAreaList , newAreaList);
+
+
+
         if (StringUtils.isNotEmpty(byId.getAreaList())&& StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())){
             String areaList = byId.getAreaList();
             List<String> areas = JSONUtil.toList(areaList, String.class);
@@ -470,6 +478,19 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
         // 更新用户缓存权限
         sysUserTokenService.updateCacheAuthByUserId(entity.getId());
+    }
+
+    /**
+     * 比较该删除的权区域
+     * @param oldAreaList 老权限区域
+     * @param newAreaList 新权限区域
+     */
+    private void compareDeleteSite(String oldAreaList, String newAreaList) {
+
+
+
+
+
     }
 
     private void deleteInfoToAgent(SysUserEntity byId, SysUserEntity entity) {

@@ -97,9 +97,12 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         //数据权限判断
         UserDetail user = SecurityUser.getUser();
         // 如果是超级管理员，则不进行数据过滤
-        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
-            wrapper.in(TVehicleEntity::getSiteId, CollectionUtils.isEmpty(user.getDataScopeList()) ? List.of(Constant.EMPTY) : user.getDataScopeList());
+        if (query.getSupplierId() ==null){
+            if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+                wrapper.in(TVehicleEntity::getSiteId, CollectionUtils.isEmpty(user.getDataScopeList()) ? List.of(Constant.EMPTY) : user.getDataScopeList());
+            }
         }
+
 
         return wrapper;
     }

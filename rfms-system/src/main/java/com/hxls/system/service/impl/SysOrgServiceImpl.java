@@ -21,11 +21,14 @@ import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.dao.SysOrgDao;
+import com.hxls.system.dao.SysRoleDataScopeDao;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.entity.SysOrgEntity;
+import com.hxls.system.entity.SysRoleDataScopeEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.query.SysOrgQuery;
 import com.hxls.system.service.SysOrgService;
+import com.hxls.system.service.SysRoleDataScopeService;
 import com.hxls.system.service.SysUserService;
 import com.hxls.system.vo.MainPostVO;
 import com.hxls.system.vo.OrganizationVO;
@@ -48,6 +51,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> implements SysOrgService {
     private final SysUserDao sysUserDao;
+    private final SysRoleDataScopeDao sysRoleDataScopeDao;
 
     @Override
     public PageResult<SysOrgVO> page(SysOrgQuery query) {
@@ -154,11 +158,34 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             updateById(entity);
         }
 
+        //新增完组织之后，数据权限应该自动添加
+        String pcode = vo.getPcode();
+        SysOrgEntity byCode = getByCode(pcode);
+        Long pId = byCode.getId();
+
+        List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,pId));
+        if (CollectionUtils.isNotEmpty(list)){
+            List<Long> result = list.stream().map(SysRoleDataScopeEntity::getRoleId).distinct().collect(Collectors.toList());
+            for (Long roleId : result) {
+                SysRoleDataScopeEntity add =new SysRoleDataScopeEntity();
+                add.setRoleId(roleId);
+                add.setOrgId(entity.getId());
+                sysRoleDataScopeDao.insert(add);
+            }
+        }
+
+
+
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(SysOrgVO vo) {
+
+        //原有组织
+        SysOrgEntity byId = getById(vo.getId());
+
+        //修改组织
         SysOrgEntity entity = SysOrgConvert.INSTANCE.convert(vo);
 
         // 上级机构不能为自身
@@ -183,6 +210,27 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             }
         }
 
+        //如果原有组织和现有组织的父级不一样，则需要修改数据权限
+        if (!byId.getPcode().equals(vo.getPcode())){
+            //修改完之后，需要删除之前的数据权限，将新的组织添加的新的数据权限下边
+            Long id = vo.getId();
+            sysRoleDataScopeDao.delete(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,id));
+
+            String pcode = vo.getPcode();
+            SysOrgEntity byCode = getByCode(pcode);
+            Long pId = byCode.getId();
+
+            List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,pId));
+            if (CollectionUtils.isNotEmpty(list)){
+                List<Long> result = list.stream().map(SysRoleDataScopeEntity::getRoleId).distinct().collect(Collectors.toList());
+                for (Long roleId : result) {
+                    SysRoleDataScopeEntity add =new SysRoleDataScopeEntity();
+                    add.setRoleId(roleId);
+                    add.setOrgId(entity.getId());
+                    sysRoleDataScopeDao.insert(add);
+                }
+            }
+        }
     }
 
     @Override
