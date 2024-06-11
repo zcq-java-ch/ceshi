@@ -118,7 +118,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         TVehicleEntity byId = getById(id);
 
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
-
+        entity.setUserId(entity.getDriverId());
         baseMapper.insert(entity);
 
         // 为空的情况是，外部人员私家车，和外部人员大车
