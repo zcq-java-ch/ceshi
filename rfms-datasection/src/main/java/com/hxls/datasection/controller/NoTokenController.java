@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @RestController
@@ -56,17 +60,42 @@ public class NoTokenController {
             objectQueryWrapper.orderByDesc(true, TVehicleAccessRecordsEntity::getRecordTime);
             objectQueryWrapper.last("LIMIT 1");
             TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = tVehicleAccessRecordsService.getOne(objectQueryWrapper);
-            Date recordTime1 = tVehicleAccessRecordsEntity.getRecordTime();
+            Date recordTime1 = new Date();
+            if (ObjectUtils.isNotEmpty(tVehicleAccessRecordsEntity)){
+                recordTime1 = tVehicleAccessRecordsEntity.getRecordTime();
+            }else {
+                // 获取当前日期
+                LocalDate today = LocalDate.now();
+                // 计算三天前的日期
+                LocalDate threeDaysAgo = today.minusDays(3);
+                // 设置时间为一天的开始时间（00:00:00）
+                LocalDateTime startOfDay = LocalDateTime.of(threeDaysAgo, LocalTime.MIN);
+                // 将LocalDateTime转换为Date
+                recordTime1 = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+            }
             jsonObject1.put("tvehicleTime", sdf.format(recordTime1));
 
             LambdaQueryWrapper<TPersonAccessRecordsEntity> personAccessRecordsEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
             personAccessRecordsEntityLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getStatus, "1");
             personAccessRecordsEntityLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getDeleted, "0");
             personAccessRecordsEntityLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getSiteId, siteId);
+            personAccessRecordsEntityLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getCreateType, "1");
             personAccessRecordsEntityLambdaQueryWrapper.orderByDesc(true, TPersonAccessRecordsEntity::getRecordTime);
             personAccessRecordsEntityLambdaQueryWrapper.last("LIMIT 1");
             TPersonAccessRecordsEntity tPersonAccessRecordsEntity = tPersonAccessRecordsService.getOne(personAccessRecordsEntityLambdaQueryWrapper);
-            Date recordTime = tPersonAccessRecordsEntity.getRecordTime();
+            Date recordTime = new Date();
+            if (ObjectUtils.isNotEmpty(tPersonAccessRecordsEntity)){
+                recordTime = tPersonAccessRecordsEntity.getRecordTime();
+            }else {
+                // 获取当前日期
+                LocalDate today = LocalDate.now();
+                // 计算三天前的日期
+                LocalDate threeDaysAgo = today.minusDays(3);
+                // 设置时间为一天的开始时间（00:00:00）
+                LocalDateTime startOfDay = LocalDateTime.of(threeDaysAgo, LocalTime.MIN);
+                // 将LocalDateTime转换为Date
+                recordTime = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+            }
             jsonObject1.put("personTime", sdf.format(recordTime));
         }
         return Result.ok(jsonObject1);
