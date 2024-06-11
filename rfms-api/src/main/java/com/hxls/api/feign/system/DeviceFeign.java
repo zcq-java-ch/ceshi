@@ -22,4 +22,7 @@ public interface DeviceFeign {
     @PostMapping(value = "api/system/useTheIpaddressToQueryDeviceInformation")
     public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress);
 
+    @PostMapping(value = "api/system/queryTheSiteIDBySiteIP")
+    public JSONObject queryTheSiteIDBySiteIP(@RequestParam("ipAddress") String ipAddress);
+
 }

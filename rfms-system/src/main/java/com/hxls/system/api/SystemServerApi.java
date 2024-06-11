@@ -753,5 +753,29 @@ public class SystemServerApi {
         return entries;
     }
 
+    /**
+      * @author Mryang
+      * @description 通过站点IP查询站点ID
+      * @date 14:00 2024/6/11
+      * @param
+      * @return
+      */
+    @PostMapping(value = "/queryTheSiteIDBySiteIP")
+    public JSONObject queryTheSiteIDBySiteIP(@RequestParam("ipAddress") String ipAddress){
+        LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getMasterIp, ipAddress);
+        List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
+        JSONObject entries = new JSONObject();
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+            TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
+            entries.put("siteId", tDeviceManagementEntity.getSiteId());
+            entries.put("siteName", tDeviceManagementEntity.getSiteName());
+        }
+        return entries;
+    }
+
+
 
 }
