@@ -2,6 +2,7 @@ package com.hxls.system.api;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -352,28 +353,37 @@ public class SystemServerApi {
 
     /**
      * @author: Mryang
-     * @Description: 用于查询 通用车辆管理表中，指定站点的车辆管理的车辆数量以及用户中该站点有车的数量
+     * @Description: 用于查询该站点的内部人员中，关联的车辆总数
      * @Date: 2024/4/21 22:53
      * @param siteId
      * @return: JSONObject
      */
     @PostMapping(value = "/checkTheTotalNumberOfRegisteredVehicles")
     public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId){
-        LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
-        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
-        tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getSiteId, siteId);
-        List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        Integer totalCar = 0;
-        totalCar += tVehicleEntities.size();
-//        LambdaQueryWrapper<SysUserEntity> userEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
-//        userEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
-//        userEntityLambdaQueryWrapper.isNotNull(SysUserEntity::getLicensePlate);
-//        List<SysUserEntity> list = sysUserService.list(userEntityLambdaQueryWrapper);
-//        totalCar += list.size();
+        int totalCar = 0;
+
+        LambdaQueryWrapper<SysUserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ObjectUtil.isNotEmpty(siteId), SysUserEntity::getStationId, siteId);
+        wrapper.eq(SysUserEntity::getUserType, 1);
+        wrapper.eq(SysUserEntity::getStatus, "1");
+        wrapper.eq(SysUserEntity::getDeleted, "0");
+        List<SysUserEntity> userEntityList = sysUserService.list(wrapper);
+        if (CollectionUtils.isNotEmpty(userEntityList)){
+            List<Long> userIds = userEntityList.stream()
+                    .map(SysUserEntity::getId)
+                    .collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(userIds)){
+                LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
+                tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
+                tVehicleEntityLambdaQueryWrapper.in(TVehicleEntity::getDriverId, userIds);
+                long count = tVehicleService.count(tVehicleEntityLambdaQueryWrapper);
+                totalCar += (int) count;
+            }
+        }
+
         entries.put("siteCarNumberTotal", totalCar);
 
         return entries;
