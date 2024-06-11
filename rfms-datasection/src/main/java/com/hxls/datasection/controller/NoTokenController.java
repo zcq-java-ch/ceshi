@@ -16,10 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -168,6 +165,10 @@ public class NoTokenController {
 //                    tVehicleAccessRecordsService.saveLedger(tVehicleAccessRecordsEntity);
 
                 }
+            }
+            // 如果插入数量不为空，那么就需要更新下精城车辆通行台账
+            if (insterCount > 0){
+                tVehicleAccessRecordsService.updateVehicleLedger("928");
             }
             return Result.ok("插入完成总条数为："+insterCount);
         }

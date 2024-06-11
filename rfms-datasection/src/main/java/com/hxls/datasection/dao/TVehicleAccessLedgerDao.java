@@ -3,6 +3,7 @@ package com.hxls.datasection.dao;
 import com.hxls.framework.mybatis.dao.BaseDao;
 import com.hxls.datasection.entity.TVehicleAccessLedgerEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * 车辆进出厂展示台账
@@ -12,5 +13,6 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface TVehicleAccessLedgerDao extends BaseDao<TVehicleAccessLedgerEntity> {
-	
+
+    void deleletBySiteId(@Param("siteId") String siteId);
 }

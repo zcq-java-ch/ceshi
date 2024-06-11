@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.print.DocFlavor;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -660,4 +661,20 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
             baseMapper.updateById(tVehicleAccessRecordsEntity);
         }
     }
+
+    /**
+      * @author Mryang
+      * @description 更新精城的台账 先删除所有数据，然后在生成
+      * @date 16:45 2024/6/11
+      * @param
+      * @return
+      */
+    @Override
+    public void updateVehicleLedger(String siteId) {
+        // 1.先删除
+        tVehicleAccessLedgerDao.deleletBySiteId(siteId);
+        // 2.再生成
+        jingchengMakeTaz(siteId);
+    }
+
 }

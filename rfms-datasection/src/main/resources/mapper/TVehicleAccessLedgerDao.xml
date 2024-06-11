@@ -29,4 +29,10 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
+    <delete id="deleletBySiteId" parameterType="java.lang.String">
+        DELETE FROM  t_vehicle_access_ledger
+        WHERE site_id = #{siteId}
+    </delete>
+
+
 </mapper>

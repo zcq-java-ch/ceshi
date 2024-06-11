@@ -40,4 +40,7 @@ public interface TVehicleAccessRecordsService extends BaseService<TVehicleAccess
     void retinuegenerateRecords(TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity);
 
     void supplementAndRecordVehicleInformation(String siteId, String startDateTime, String endDateTime);
+
+    void updateVehicleLedger(String siteId);
+
 }
