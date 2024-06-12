@@ -249,6 +249,24 @@ public class LeadingEnterpriseController {
                     }
                 }
             }
+
+            //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
+             start = LocalDateTime.of(2024, 3, 4, 0, 0,0);
+             end = LocalDateTime.of(2024, 4, 24, 11, 59,59);
+            for (recordInfo recordInfo : recordInfos1) {
+                if (recordInfo.getCarNum().equals("电A00001")) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                        Random random = new Random();
+                        int randomSeconds = random.nextInt(480 - 300 + 1) + 300;
+                        LocalDateTime localDateTime = firstTime.minusSeconds(randomSeconds);
+                        recordInfo.setSecondTime(localDateTime.format(formatter));
+                    }
+                }
+            }
+
         }
 
 
