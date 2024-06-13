@@ -117,9 +117,6 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             throw new ServerException("当前车牌号已存在，不能重复添加");
         }
 
-        Long id = vo.getId();
-        TVehicleEntity byId = getById(id);
-
         TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
         entity.setUserId(entity.getDriverId());
         baseMapper.insert(entity);
@@ -139,17 +136,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             if (StringUtils.isNotEmpty(vo.getAreaList())) {
                 String areaList = vo.getAreaList();
                 List<String> areas = JSONUtil.toList(areaList, String.class);
-                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                List<Long> result = areas.stream().filter(item -> item.contains("A")).map(item -> {
                     return Long.parseLong(item.substring(1));
                 }).toList();
-                //删除老站点ID
-                if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
-                    JSONObject vehicle = new JSONObject();
-                    vehicle.set("sendType", "2");
-                    vehicle.set("data", JSONUtil.toJsonStr(byId));
-                    vehicle.set("DELETE", "DELETE");
-                    appointmentFeign.issuedPeople(vehicle);
-                }
 
                 //下发
                 List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
@@ -158,8 +147,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     //获取到设备编码
                     List<String> deviceIds = new ArrayList<>();
                     for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
-                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
-                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarIntCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarOutCode());
                     }
                     List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
                     if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
@@ -197,34 +186,34 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
         updateById(entity);
 
         // 为空的情况是，外部人员私家车，和外部人员大车
-        if (ObjectUtils.isNotEmpty(entity.getSiteId())) {
-            //原厂站的id
-            Long siteId = byId.getSiteId();
-
-            if (!siteId.equals(vo.getSiteId())) {
-                //删除原厂站的信息
-                JSONObject vehicle = new JSONObject();
-                vehicle.set("sendType", "2");
-                entity.setStationId(entity.getSiteId());
-                vehicle.set("data", JSONUtil.toJsonStr(entity));
-                vehicle.set("DELETE", "DELETE");
-                appointmentFeign.issuedPeople(vehicle);
-            }
-
-
-            JSONObject vehicle = new JSONObject();
-            vehicle.set("sendType", "2");
-            entity.setStationId(entity.getSiteId());
-            vehicle.set("data", JSONUtil.toJsonStr(entity));
-            appointmentFeign.issuedPeople(vehicle);
-        }
+//        if (ObjectUtils.isNotEmpty(entity.getSiteId())) {
+//            //原厂站的id
+//            Long siteId = byId.getSiteId();
+//
+//            if (!siteId.equals(vo.getSiteId())) {
+//                //删除原厂站的信息
+//                JSONObject vehicle = new JSONObject();
+//                vehicle.set("sendType", "2");
+//                entity.setStationId(entity.getSiteId());
+//                vehicle.set("data", JSONUtil.toJsonStr(entity));
+//                vehicle.set("DELETE", "DELETE");
+//                appointmentFeign.issuedPeople(vehicle);
+//            }
+//
+//
+//            JSONObject vehicle = new JSONObject();
+//            vehicle.set("sendType", "2");
+//            entity.setStationId(entity.getSiteId());
+//            vehicle.set("data", JSONUtil.toJsonStr(entity));
+//            appointmentFeign.issuedPeople(vehicle);
+//        }
 
         // TODO 当单独修改的车辆数据为供应商车辆管理的时候，需要处理权限区域问题
         if ("4".equals(entity.getCarClass())) {
             if (StringUtils.isNotEmpty(vo.getAreaList())) {
                 String areaList = vo.getAreaList();
                 List<String> areas = JSONUtil.toList(areaList, String.class);
-                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                List<Long> result = areas.stream().filter(item -> item.contains("A")).map(item -> {
                     return Long.parseLong(item.substring(1));
                 }).toList();
                 //删除老站点ID
@@ -243,8 +232,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     //获取到设备编码
                     List<String> deviceIds = new ArrayList<>();
                     for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
-                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
-                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarIntCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarOutCode());
                     }
                     List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
                     if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
@@ -939,17 +928,29 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             //查询车辆详情
             TVehicleEntity byId = getById(id);
             //判断是否更换区域,删除之前得老区域，下发新站点和区域
-            if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
-                JSONObject vehicle = new JSONObject();
-                vehicle.set("sendType", "2");
-                vehicle.set("data", JSONUtil.toJsonStr(byId));
-                vehicle.set("DELETE", "DELETE");
-                appointmentFeign.issuedPeople(vehicle);
+
+            if (StringUtils.isNotEmpty(byId.getAreaList())&&StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())){
+                String areaList = byId.getAreaList();
+                List<String> areas = JSONUtil.toList(areaList, String.class);
+                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                    return Long.parseLong(item.substring(1));
+                }).toList();
+                if (CollectionUtils.isNotEmpty(result)){
+                    for (Long stationId : result) {
+                        //删除老站点ID
+                        byId.setStationId(stationId);
+                        JSONObject vehicle = new JSONObject();
+                        vehicle.set("sendType", "2");
+                        vehicle.set("data", JSONUtil.toJsonStr(byId));
+                        vehicle.set("DELETE", "DELETE");
+                        appointmentFeign.issuedPeople(vehicle);
+                    }
+                }
             }
             // 更新实体
             this.updateById(entity);
 
-            if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotEmpty(vo.getAreaList())) {
+            if (StringUtils.isNotEmpty(vo.getAreaList())) {
                 String areaList = vo.getAreaList();
                 List<String> areas = JSONUtil.toList(areaList, String.class);
                 List<Long> result = areas.stream().filter(item -> item.contains("A")).map(item -> {
@@ -960,13 +961,13 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     throw new ServerException("所选厂站下没有划分区域");
                 }
                 List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
-                //获取到人脸设备
+                //获取到车辆设备
                 if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysSiteAreaEntities)) {
                     //获取到设备编码
                     List<String> deviceIds = new ArrayList<>();
                     for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
-                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
-                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarIntCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarOutCode());
                     }
                     List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
                     if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {

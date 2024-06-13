@@ -1046,17 +1046,19 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             SysUserEntity byId = getById(vo.getId());
 
             //判断是否更换区域,删除之前得老区域，下发新站点和区域
-            if (StringUtils.isNotEmpty(byId.getAreaList())&& StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())){
+            if (StringUtils.isNotEmpty(byId.getAreaList())){
                  String areaList = byId.getAreaList();
                  List<String> areas = JSONUtil.toList(areaList, String.class);
                  List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
                      return Long.parseLong(item.substring(1));
                  }).toList();
-                for (Long stationId : result) {
-                    //删除老站点ID
-                    byId.setStationId(stationId);
-                    deleteInfoToAgent(byId, byId);
-                }
+                 if (CollectionUtils.isNotEmpty(result)){
+                     for (Long stationId : result) {
+                         //删除老站点ID
+                         byId.setStationId(stationId);
+                         deleteInfoToAgent(byId, byId);
+                     }
+                 }
             }
             // 更新实体
             this.updateById(entity);
@@ -1081,9 +1083,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
                             deviceIds.add(sysSiteAreaEntity.getFaceInCode());
                             deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                            deviceIds.add(sysSiteAreaEntity.getCarIntCode());
+                            deviceIds.add(sysSiteAreaEntity.getCarOutCode());
                         }
                         //通过中间表获取设备id
                         List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
+
                         if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
                             List<Long> ids = areacodeDeviceEntities.stream().map(SysAreacodeDeviceEntity::getDeviceId).toList();
 //                        List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.listByIds(ids);
@@ -1111,9 +1116,6 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
     }
 
-    private void sendInfoToAgent(JSONObject data) {
-        appointmentFeign.issuedPeople(data);
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
