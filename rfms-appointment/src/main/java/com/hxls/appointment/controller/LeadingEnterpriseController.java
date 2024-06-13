@@ -185,7 +185,7 @@ public class LeadingEnterpriseController {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             Date inputDate = dateFormat.parse(secondTime);
-            Date comparisonDate = dateFormat.parse("2024-04-01 00:00:00"); // 注意这里也包含了时分秒
+            Date comparisonDate = dateFormat.parse("2024-04-11 00:00:00"); // 注意这里也包含了时分秒
 
             return inputDate.after(comparisonDate);
         } catch (ParseException e) {
@@ -530,6 +530,40 @@ public class LeadingEnterpriseController {
                     recordInfo.setFirstTime(firstTime);
                 }
 //                recordInfo.setSecondTime(secondTime == null ? "" : secondTime);
+            }
+
+        }
+
+        if (data.getReceiveStation().equals("精城站")){
+            //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
+            LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0,0);
+            LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0,0);
+            for (recordInfo recordInfo : recordInfos) {
+                if (recordInfo.getCarNum().equals("川ACT602")) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                        recordInfo.setCarNum("川ACV281");
+                    }
+                }
+            }
+
+            //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
+            start = LocalDateTime.of(2024, 3, 4, 0, 0,0);
+            end = LocalDateTime.of(2024, 4, 24, 11, 59,59);
+            for (recordInfo recordInfo : recordInfos) {
+                if (recordInfo.getCarNum().equals("电A00001")) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                        Random random = new Random();
+                        int randomSeconds = random.nextInt(180) + 300;
+                        LocalDateTime localDateTime = firstTime.plusSeconds(randomSeconds);
+                        recordInfo.setSecondTime(localDateTime.format(formatter));
+                    }
+                }
             }
         }
 

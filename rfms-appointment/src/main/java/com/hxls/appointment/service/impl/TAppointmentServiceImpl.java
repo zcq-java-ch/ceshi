@@ -746,7 +746,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 }
                                 entries.set("carNumber", tAppointmentVehicle.getPlateNumber());
                                 entries.set("status", "add");
-                                entries.set("masterIp", jsonObject.get("master_ip"));
+                                entries.set("masterIp", jsonObject.get("master"));
                                 entries.set("databaseName", jsonObject.get("master_sn"));
                                 entries.set("username", jsonObject.get("master_account"));
                                 entries.set("password", jsonObject.get("master_password"));
