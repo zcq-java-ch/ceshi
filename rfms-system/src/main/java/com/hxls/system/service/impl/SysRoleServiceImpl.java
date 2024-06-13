@@ -91,9 +91,7 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         // 更新角色
         updateById(entity);
         Long id = vo.getId();
-
         List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleDao.selectByStatus(id ,Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE : Constant.DISABLE );
-
 
         if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)) {
             for (SysUserRoleEntity sysUserRoleEntity : sysUserRoleEntityList) {
@@ -101,7 +99,6 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
                 sysUserRoleDao.updateByStatue(sysUserRoleEntity.getId() ,sysUserRoleEntity.getDeleted() );
             }
         }
-
 
         // 更新角色菜单关系
         sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(), 1);
@@ -164,12 +161,13 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
             this.updateById(entity);
             //修改用户角色关联表的状态
             Long id = vo.getId();
-            List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleService.list(new LambdaQueryWrapper<SysUserRoleEntity>().eq(SysUserRoleEntity::getRoleId, id));
+            List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleDao.selectByStatus(id ,Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE : Constant.DISABLE );
+
             if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)) {
                 for (SysUserRoleEntity sysUserRoleEntity : sysUserRoleEntityList) {
                     sysUserRoleEntity.setDeleted(Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.DISABLE : Constant.ENABLE);
+                    sysUserRoleDao.updateByStatue(sysUserRoleEntity.getId() ,sysUserRoleEntity.getDeleted() );
                 }
-                sysUserRoleService.updateBatchById(sysUserRoleEntityList);
             }
         }
     }
