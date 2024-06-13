@@ -24,10 +24,12 @@ import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
+import com.hxls.appointment.pojo.entity.TIssueEigenvalue;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.*;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.appointment.service.TIssueEigenvalueService;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
@@ -88,8 +90,20 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      */
     private final UserFeign userFeign;
 
+    /*
+     * 配置文件
+     */
     private final StorageImagesProperties properties;
+
+    /*
+     *数据记录feign
+     */
     private final DatasectionFeign datasectionFeign;
+
+    /*
+     * 下发特质值表
+     */
+    private final TIssueEigenvalueService issueEigenvalueService;
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
@@ -333,6 +347,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("masterIp", masterIp);
                                 entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                                 entries.set("password", jsonObjects.get(0).get("password"));
+
+                               // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()).setStationId(entity.getSiteId()));
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
 
                                 //查看人员表中是否带有车辆信息
@@ -386,6 +402,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("databaseName", jsonObject.get("master_sn"));
                                 entries.set("username", jsonObject.get("master_account"));
                                 entries.set("password", jsonObject.get("master_password"));
+                               // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()).setStationId(entity.getSiteId()));
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                             }
                             //如果是科飞达智设备,就不需要循环
@@ -672,6 +689,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("masterIp", masterIp);
                                 entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                                 entries.set("password", jsonObjects.get(0).get("password"));
+                               // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()).setStationId(entity.getSiteId()));
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_FACE_TOAGENT, entries);
 
                                 //查看人员表中是否带有车辆信息
@@ -688,6 +706,17 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
 
 
                 if (CollectionUtils.isNotEmpty(list)) {
+
+                    //判断是否 透传厂站 -- 传递到设备保存的厂站。
+                    List<com.alibaba.fastjson.JSONObject> allDictByType = appointmentDao.getAllDictByType(35);
+                    for (com.alibaba.fastjson.JSONObject jsonObject : allDictByType) {
+                        String string = jsonObject.getString("dict_value");
+                        if (string.contains(byId.getSiteId().toString()) &&  string.split("_")[0].equals(byId.getSiteId().toString()) ){
+                            String[] split = string.split("_");
+                            byId.setSiteId(Long.parseLong(split[1]));
+                        }
+                    }
+
                     String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                     List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(byId.getSiteId(), "2");
                     //主机分组
@@ -721,6 +750,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("databaseName", jsonObject.get("master_sn"));
                                 entries.set("username", jsonObject.get("master_account"));
                                 entries.set("password", jsonObject.get("master_password"));
+                               // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()).setStationId(entity.getSiteId()));
                                 rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, entries);
                             }
                             //如果是科飞达智设备,就不需要循环
@@ -920,8 +950,9 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             sendData.set("deviceInfos", JSONUtil.toJsonStr(typeList));
                             sendData.set("password", typeList.get(0).getString("password"));
                             sendData.set("DELETE", data.getStr("DELETE"));
-                            log.info("发送的消息：" + sendData);
+                           // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()));
                             rabbitMQTemplate.convertAndSend(devices.get(0).getString("siteCode") + Constant.EXCHANGE, devices.get(0).getString("siteCode") + Constant.SITE_ROUTING_FACE_TOAGENT, sendData);
+                            log.info("发送交换机：{} , 和消息:{}" ,devices.get(0).getString("siteCode"), sendData);
                         }
                     }
                 }
@@ -938,8 +969,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     licensePlate = entries.getStr("plateNumber");
                 }
                 //场站关联编码
-                String siteCode = appointmentDao.selectSiteCodeById(Long.parseLong(stationId));
-                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(Long.parseLong(stationId), sendType);
+                List<com.alibaba.fastjson.JSONObject> jsonObjects = appointmentDao.selectDevices(stationId==null? -1 : Long.parseLong(stationId), sendType);
 
                 if(StringUtils.isNotEmpty(data.getStr("ids"))){
                     String ids = data.getStr("ids");
@@ -948,37 +978,43 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         jsonObjects = appointmentDao.selectNewByIds(list, sendType);
                     }
                 }
-                //主机分组
-                Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
-                //遍历
-                for (String key : master.keySet()) {
-                    //主机下面带的设备
-                    Set<String> name = new HashSet<>();
-                    for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
-                        if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
-                            if (!name.isEmpty()){
-                                continue;
+
+                if (CollectionUtils.isNotEmpty(jsonObjects)){
+                    //主机分组
+                    Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
+                    //遍历
+                    for (String key : master.keySet()) {
+                        //主机下面带的设备
+                        Set<String> name = new HashSet<>();
+                        for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
+                            if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
+                                if (!name.isEmpty()){
+                                    continue;
+                                }
                             }
-                        }
-                        JSONObject sendData = new JSONObject();
-                        sendData.set("type", jsonObject.getString("type"));
-                        sendData.set("startTime", "2024-04-01 00:00:00");
-                        sendData.set("deadline", "2034-04-01 00:00:00");
-                        sendData.set("carNumber", licensePlate);
-                        sendData.set("status", data.getStr("DELETE") == null ? "add" : "delete");
-                        sendData.set("masterIp", jsonObject.get("master"));
-                        sendData.set("databaseName", jsonObject.get("master_sn"));
-                        sendData.set("username", jsonObject.get("master_account"));
-                        sendData.set("password", jsonObject.get("master_password"));
-                        sendData.set("DELETE", data.getStr("DELETE"));
-                        log.info("发送的消息：" + sendData);
-                        rabbitMQTemplate.convertAndSend(siteCode + Constant.EXCHANGE, siteCode + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
-                        //如果是科飞达智设备,就不需要循环
-                        if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
-                            name.add(Constant.KFDZ);
+                            JSONObject sendData = new JSONObject();
+                            sendData.set("type", jsonObject.getString("type"));
+                            sendData.set("startTime", "2024-04-01 00:00:00");
+                            sendData.set("deadline", "2034-04-01 00:00:00");
+                            sendData.set("carNumber", licensePlate);
+                            sendData.set("status", data.getStr("DELETE") == null ? "add" : "delete");
+                            sendData.set("masterIp", jsonObject.get("master"));
+                            sendData.set("databaseName", jsonObject.get("master_sn"));
+                            sendData.set("username", jsonObject.get("master_account"));
+                            sendData.set("password", jsonObject.get("master_password"));
+                            sendData.set("DELETE", data.getStr("DELETE"));
+                           // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()));
+                            rabbitMQTemplate.convertAndSend(jsonObject.getString("siteCode") + Constant.EXCHANGE, jsonObject.getString("siteCode") + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
+                            log.info("发送交换机：{} , 和消息:{}" ,jsonObject.getString("siteCode"), sendData);
+
+                            //如果是科飞达智设备,就不需要循环
+                            if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
+                                name.add(Constant.KFDZ);
+                            }
                         }
                     }
                 }
+
             }
         }
     }
