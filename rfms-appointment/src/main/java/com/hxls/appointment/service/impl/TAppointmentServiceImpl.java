@@ -978,20 +978,13 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                         jsonObjects = appointmentDao.selectNewByIds(list, sendType);
                     }
                 }
-
                 if (CollectionUtils.isNotEmpty(jsonObjects)){
                     //主机分组
                     Map<String, List<com.alibaba.fastjson.JSONObject>> master = jsonObjects.stream().collect(Collectors.groupingBy(item -> item.getString("master")));
                     //遍历
                     for (String key : master.keySet()) {
                         //主机下面带的设备
-                        Set<String> name = new HashSet<>();
                         for (com.alibaba.fastjson.JSONObject jsonObject : master.get(key)) {
-                            if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1")  ) {
-                                if (!name.isEmpty()){
-                                    continue;
-                                }
-                            }
                             JSONObject sendData = new JSONObject();
                             sendData.set("type", jsonObject.getString("type"));
                             sendData.set("startTime", "2024-04-01 00:00:00");
@@ -1006,15 +999,13 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                            // issueEigenvalueService.save(new TIssueEigenvalue().setType(1).setData(entries.toString()));
                             rabbitMQTemplate.convertAndSend(jsonObject.getString("siteCode") + Constant.EXCHANGE, jsonObject.getString("siteCode") + Constant.SITE_ROUTING_CAR_TOAGENT, sendData);
                             log.info("发送交换机：{} , 和消息:{}" ,jsonObject.getString("siteCode"), sendData);
-
                             //如果是科飞达智设备,就不需要循环
                             if (jsonObject.getString("type").equals(Constant.KFDZ) || jsonObject.getString("type").equals("1") ) {
-                                name.add(Constant.KFDZ);
+                              break;
                             }
                         }
                     }
                 }
-
             }
         }
     }

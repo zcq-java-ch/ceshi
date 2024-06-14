@@ -52,7 +52,7 @@ public class LeadingEnterpriseController {
         responseBody bean = JSONUtil.toBean(post, responseBody.class);
 
         //获取到token
-        return  bean.getData().getStr("accessToken");
+        return bean.getData().getStr("accessToken");
 
     }
 
@@ -87,7 +87,7 @@ public class LeadingEnterpriseController {
                 return Result.error(505, bean.getCodeMsg());
             }
 
-            List<recordInfo> recordInfoList = selectOutByTime(data.getStartTime(), data.getEndTime(),data.getReceiveStation());
+            List<recordInfo> recordInfoList = selectOutByTime(data.getStartTime(), data.getEndTime(), data.getReceiveStation());
             for (recordInfo datum : bean.getData()) {
                 datum.setFreightVolume(new BigDecimal(datum.getFirstWeight()).subtract(new BigDecimal(datum.getSecondWeight())));
                 datum.setUnit("t");
@@ -131,24 +131,24 @@ public class LeadingEnterpriseController {
             }
 
 
-            if (data.getReceiveStation().equals("精城站")){
+            if (data.getReceiveStation().equals("精城站")) {
                 //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
-                LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0,0);
-                LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0,0);
+                LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0, 0);
+                LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0, 0);
                 for (recordInfo recordInfo : recordInfos1) {
                     if (recordInfo.getCarNum().equals("川ACT602")) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
                         LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
                         if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
-                                recordInfo.setCarNum("川ACV281");
+                            recordInfo.setCarNum("川ACV281");
                         }
                     }
                 }
 
                 //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
-                start = LocalDateTime.of(2024, 3, 4, 0, 0,0);
-                end = LocalDateTime.of(2024, 4, 24, 11, 59,59);
+                start = LocalDateTime.of(2024, 3, 4, 0, 0, 0);
+                end = LocalDateTime.of(2024, 4, 24, 11, 59, 59);
                 for (recordInfo recordInfo : recordInfos1) {
                     if (recordInfo.getCarNum().equals("电A00001")) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -251,7 +251,7 @@ public class LeadingEnterpriseController {
         }
 
 
-        if (data.getReceiveStation().equals("精城站")){
+        if (data.getReceiveStation().equals("精城站")) {
             //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
             LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0);
             LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0);
@@ -267,8 +267,8 @@ public class LeadingEnterpriseController {
             }
 
             //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
-             start = LocalDateTime.of(2024, 3, 4, 0, 0,0);
-             end = LocalDateTime.of(2024, 4, 24, 11, 59,59);
+            start = LocalDateTime.of(2024, 3, 4, 0, 0, 0);
+            end = LocalDateTime.of(2024, 4, 24, 11, 59, 59);
             for (recordInfo recordInfo : recordInfos1) {
                 if (recordInfo.getCarNum().equals("电A00001")) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -398,7 +398,7 @@ public class LeadingEnterpriseController {
         params.setEndTime(endTime);
         params.setStationName(receiveStation);
 
-        if (receiveStation.equals("精城站")){
+        if (receiveStation.equals("精城站")) {
             params.setStationCode("HJ03");
         }
         map.put("params", JSONUtil.toJsonStr(params));
@@ -410,19 +410,19 @@ public class LeadingEnterpriseController {
         for (recordOutInfo datum : bean.getData()) {
             recordInfo recordInfo = new recordInfo();
             recordInfo.setCarNum(datum.getCarNo());
-            if (checkDate(datum.getProTime(), startTime)   || checkDate(endTime , datum.getProTime() )) {
+            if (checkDate(datum.getProTime(), startTime) || checkDate(endTime, datum.getProTime())) {
                 continue;
             }
             //手动默认厂时间
             recordInfo.setFirstTime(datum.getProTime());
             if (!checkTime(datum.getProTime())) {
                 //系统默认随机生成一个几小时之前的时间字符串
-              String randomTime =   getRandomPastTime(datum.getProTime());
-              if (StrUtil.isNotEmpty(randomTime)){
-                  recordInfo.setFirstTime(randomTime);
-              }
+                String randomTime = getRandomPastTime(datum.getProTime());
+                if (StrUtil.isNotEmpty(randomTime)) {
+                    recordInfo.setFirstTime(randomTime);
+                }
             }
-            recordInfo.setSecondTime( datum.getProTime() );
+            recordInfo.setSecondTime(datum.getProTime());
             recordInfo.setRepertory(datum.getProductName());
             recordInfo.setFreightVolume(new BigDecimal(datum.getSignNum()));
             recordInfo.setUnit("m³");
@@ -534,38 +534,38 @@ public class LeadingEnterpriseController {
 
         }
 
-        if (data.getReceiveStation().equals("精城站")){
-            //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
-            LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0,0);
-            LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0,0);
-            for (recordInfo recordInfo : recordInfos) {
-                if (recordInfo.getCarNum().equals("川ACT602")) {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
-                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
-                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
-                        recordInfo.setCarNum("川ACV281");
-                    }
-                }
-            }
 
-            //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
-            start = LocalDateTime.of(2024, 3, 4, 0, 0,0);
-            end = LocalDateTime.of(2024, 4, 24, 11, 59,59);
-            for (recordInfo recordInfo : recordInfos) {
-                if (recordInfo.getCarNum().equals("电A00001")) {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
-                    LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
-                    if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
-                        Random random = new Random();
-                        int randomSeconds = random.nextInt(180) + 300;
-                        LocalDateTime localDateTime = firstTime.plusSeconds(randomSeconds);
-                        recordInfo.setSecondTime(localDateTime.format(formatter));
-                    }
+        //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
+        LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 6, 4, 9, 0, 0);
+        for (recordInfo recordInfo : recordInfos) {
+            if (recordInfo.getCarNum().equals("川ACT602")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                    recordInfo.setCarNum("川ACV281");
                 }
             }
         }
+
+        //要求：把3月4日-4月24日电子台账中，电A00001的进场时间不变，出场时间更改为进场时间的基础上加6-8分钟不等。
+        start = LocalDateTime.of(2024, 3, 4, 0, 0, 0);
+        end = LocalDateTime.of(2024, 4, 24, 11, 59, 59);
+        for (recordInfo recordInfo : recordInfos) {
+            if (recordInfo.getCarNum().equals("电A00001")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime firstTime = LocalDateTime.parse(recordInfo.getFirstTime(), formatter);
+                LocalDateTime secondTime = LocalDateTime.parse(recordInfo.getSecondTime(), formatter);
+                if (firstTime.isAfter(start) && secondTime.isBefore(end)) {
+                    Random random = new Random();
+                    int randomSeconds = random.nextInt(180) + 300;
+                    LocalDateTime localDateTime = firstTime.plusSeconds(randomSeconds);
+                    recordInfo.setSecondTime(localDateTime.format(formatter));
+                }
+            }
+        }
+
 
         // ExcelUtils.excelExport(TPersonAccessRecordsVO.class, "运输电子台账" + DateUtils.format(new Date()),null,recordInfoList);
         ExcelUtils.excelExport(recordInfo.class, "运输电子台账" + DateUtils.format(new Date()), null, recordInfos);

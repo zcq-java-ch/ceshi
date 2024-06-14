@@ -25,8 +25,8 @@ public class RabbitMqManager {
         rabbitAdmin.declareExchange(exchange);
 
         Map<String, Object> args = new HashMap<>();
-        // 60 seconds //60s删除
-        args.put("x-message-ttl", 60000);
+        // 60 *10 seconds //10分钟删除
+        args.put("x-message-ttl", 60000*10);
         // 声明队列
         Queue queue1 = new Queue(appointmentDTO.getCarToAgentQueueName(), true, false, false,args);
         Queue queue2 = new Queue(appointmentDTO.getCarToCloudQueueName(), true, false, false,args);
