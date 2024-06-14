@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.system.entity.*;
@@ -74,6 +75,9 @@ public class SystemServerApi {
 
     @Resource
     private RedisCache redisCache;
+
+    @Autowired
+    private AppointmentFeign appointmentFeign;
     /**
      * javadoc
      * */
@@ -306,12 +310,22 @@ public class SystemServerApi {
         LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
+        // 只查看内部员工数据
+        sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getUserType, 1);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
         List<SysUserEntity> sysUserEntities = sysUserService.list(sysUserEntityLambdaQueryWrapper);
+        int size = sysUserEntities.size();
+        // 查看当前时间内的 预约类型的是，人员派驻申请的 所有人员数量
+        JSONObject jsonObject = appointmentFeign.queryTheNumberOfResidencies(siteId);
+        Integer pzNum = 0;
+        pzNum += jsonObject.getInteger("pzNum");
+
+        int all = size + pzNum;
+
         JSONObject entries = new JSONObject();
         if (CollectionUtil.isNotEmpty(sysUserEntities)){
             // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
-            entries.put("numberOfPeopleRegistered", sysUserEntities.size());
+            entries.put("numberOfPeopleRegistered", all);
 
             // 获取在册人员所有id
             List<Long> collect = sysUserEntities.stream().map(SysUserEntity::getId).collect(Collectors.toList());
