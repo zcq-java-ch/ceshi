@@ -102,11 +102,11 @@ public class TPersonAccessRecordsVO implements Serializable, TransPojo {
 	private String companyName;
 
 	@ExcelIgnore
-	@Schema(description = "带班负责人id")
+	@Schema(description = "代班负责人id")
 	private Long supervisorId;
 
-	@ExcelProperty("带班负责人")
-	@Schema(description = "带班负责人名字")
+	@ExcelProperty("代班负责人")
+	@Schema(description = "代班负责人名字")
 	private String supervisorName;
 
 	@ExcelProperty("身份证号码")
