@@ -78,7 +78,6 @@ public interface SysUserService extends BaseService<SysUserEntity> {
     * @Description 下拉获取主数据员工数据
     * @Date 16:35 2024/3/29
     **/
-
     List<MainUserVO> queryByMainUsers();
 
     void updateStatus(List<SysUserVO> list);

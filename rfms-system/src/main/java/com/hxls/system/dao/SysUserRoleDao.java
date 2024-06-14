@@ -23,4 +23,8 @@ public interface SysUserRoleDao extends BaseDao<SysUserRoleEntity> {
      * @return  返回角色ID列表
      */
     List<Long> getRoleIdList(@Param("userId") Long userId);
+
+    void updateByStatue(@Param("id")Long id,@Param("deleted")Integer deleted);
+
+    List<SysUserRoleEntity> selectByStatus(@Param("id")Long id, @Param("deleted")Integer deleted);
 }

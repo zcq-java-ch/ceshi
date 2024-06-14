@@ -2,9 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.hxls.system.dao.SysUserRoleDao">
+    <update id="updateByStatue">
+
+        UPDATE sys_user_role SET deleted = #{deleted}  WHERE id= #{id}
+
+    </update>
 
     <select id="getRoleIdList" resultType="long">
         select role_id from sys_user_role where user_id = #{userId} and deleted = 0
+    </select>
+    <select id="selectByStatus" resultType="com.hxls.system.entity.SysUserRoleEntity">
+        SELECT id,role_id,user_id,creator,create_time,updater,update_time,version,deleted FROM sys_user_role WHERE role_id = #{id} AND deleted = #{deleted}
+
     </select>
 
 </mapper>

@@ -3,6 +3,7 @@ package com.hxls.system.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.framework.common.constant.Constant;
@@ -12,6 +13,7 @@ import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.convert.SysRoleConvert;
 import com.hxls.system.dao.SysRoleDao;
+import com.hxls.system.dao.SysUserRoleDao;
 import com.hxls.system.entity.SysRoleEntity;
 import com.hxls.system.entity.SysUserRoleEntity;
 import com.hxls.system.enums.DataScopeEnum;
@@ -31,7 +33,6 @@ import java.util.Objects;
  * 角色
  *
  * @author
- *
  */
 @Service
 @AllArgsConstructor
@@ -39,6 +40,7 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
     private final SysRoleMenuService sysRoleMenuService;
     private final SysRoleDataScopeService sysRoleDataScopeService;
     private final SysUserRoleService sysUserRoleService;
+    private final SysUserRoleDao sysUserRoleDao;
     private final SysUserTokenService sysUserTokenService;
 
     @Override
@@ -69,14 +71,16 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
     @Transactional(rollbackFor = Exception.class)
     public void save(SysRoleVO vo) {
         SysRoleEntity entity = SysRoleConvert.INSTANCE.convert(vo);
+
         // 保存角色
         entity.setDataScope(DataScopeEnum.SELF.getValue());
+
         baseMapper.insert(entity);
         // 保存角色菜单关系(pc端)
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(),1);
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(), 1);
 
         // 保存角色菜单关系（移动端）
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(),2);
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(), 2);
     }
 
     @Override
@@ -86,12 +90,21 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
 
         // 更新角色
         updateById(entity);
+        Long id = vo.getId();
+        List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleDao.selectByStatus(id ,Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE : Constant.DISABLE );
+
+        if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)) {
+            for (SysUserRoleEntity sysUserRoleEntity : sysUserRoleEntityList) {
+                sysUserRoleEntity.setDeleted(Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.DISABLE : Constant.ENABLE);
+                sysUserRoleDao.updateByStatue(sysUserRoleEntity.getId() ,sysUserRoleEntity.getDeleted() );
+            }
+        }
 
         // 更新角色菜单关系
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(),1);
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getMenuIdList(), 1);
 
         // 更新角色菜单关系
-        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(),2);
+        sysRoleMenuService.saveOrUpdate(entity.getId(), vo.getAppMenuIdList(), 2);
 
         // 更新角色对应用户的缓存权限
         sysUserTokenService.updateCacheAuthByRoleId(entity.getId());
@@ -141,19 +154,20 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         for (SysRoleVO vo : list) {
             SysRoleEntity entity = new SysRoleEntity();
             entity.setId(vo.getId());
-            if(vo.getStatus() != null ){
+            if (vo.getStatus() != null) {
                 entity.setStatus(vo.getStatus());
             }
             // 更新实体
             this.updateById(entity);
             //修改用户角色关联表的状态
             Long id = vo.getId();
-            List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleService.list(new LambdaQueryWrapper<SysUserRoleEntity>().eq(SysUserRoleEntity::getRoleId , id));
-            if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)){
+            List<SysUserRoleEntity> sysUserRoleEntityList = sysUserRoleDao.selectByStatus(id ,Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE : Constant.DISABLE );
+
+            if (CollectionUtils.isNotEmpty(sysUserRoleEntityList)) {
                 for (SysUserRoleEntity sysUserRoleEntity : sysUserRoleEntityList) {
-                    sysUserRoleEntity.setDeleted(Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.ENABLE:Constant.DISABLE);
+                    sysUserRoleEntity.setDeleted(Objects.equals(vo.getStatus(), Constant.ENABLE) ? Constant.DISABLE : Constant.ENABLE);
+                    sysUserRoleDao.updateByStatue(sysUserRoleEntity.getId() ,sysUserRoleEntity.getDeleted() );
                 }
-                sysUserRoleService.updateBatchById(sysUserRoleEntityList);
             }
         }
     }
