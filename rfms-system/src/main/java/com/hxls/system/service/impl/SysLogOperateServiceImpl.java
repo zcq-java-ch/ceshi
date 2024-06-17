@@ -61,23 +61,23 @@ public class SysLogOperateServiceImpl extends BaseServiceImpl<SysLogOperateDao, 
         ScheduledExecutorService scheduledService = ThreadUtil.createScheduledExecutor(1);
 
         // 每隔10秒钟，执行一次
-//        scheduledService.scheduleWithFixedDelay(() -> {
-//            try {
-//                String key = RedisKeys.getLogKey();
-//                // 每次插入10条
-//                int count = 10;
-//                for (int i = 0; i < count; i++) {
-//                    OperateLogDTO log = (OperateLogDTO) redisCache.rightPop(key);
-//                    if (log == null) {
-//                        return;
-//                    }
-//
-//                    SysLogOperateEntity entity = BeanUtil.copyProperties(log, SysLogOperateEntity.class);
-//                    baseMapper.insert(entity);
-//                }
-//            } catch (Exception e) {
-//                log.error("SysLogOperateServiceImpl.saveLog Error：" + ExceptionUtils.getExceptionMessage(e));
-//            }
-//        }, 1, 10, TimeUnit.SECONDS);
+        scheduledService.scheduleWithFixedDelay(() -> {
+            try {
+                String key = RedisKeys.getLogKey();
+                // 每次插入10条
+                int count = 10;
+                for (int i = 0; i < count; i++) {
+                    OperateLogDTO log = (OperateLogDTO) redisCache.rightPop(key);
+                    if (log == null) {
+                        return;
+                    }
+
+                    SysLogOperateEntity entity = BeanUtil.copyProperties(log, SysLogOperateEntity.class);
+                    baseMapper.insert(entity);
+                }
+            } catch (Exception e) {
+                log.error("SysLogOperateServiceImpl.saveLog Error：" + ExceptionUtils.getExceptionMessage(e));
+            }
+        }, 1, 10, TimeUnit.SECONDS);
     }
 }
