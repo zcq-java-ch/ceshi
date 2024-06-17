@@ -88,7 +88,7 @@ public class SynMessageDataContorller {
                  * 2. 如果预约单里面没有的话，那就去人员管理里面找， 看他是那个站点的， 在设置对应的站点
                  * 3. 如果人员管理中没有该用户，或者有该用户但是没有站点，或者，有站点，但是站点不是崇州这两个站的情况，都设置为当前设备站点
                  * */
-                Long czzps = 1481L;
+                Long czzps = 779L;
                 Long czjbz = 1440L;
 
                 if (czzps.equals(siteId) || czjbz.equals(siteId)) {
