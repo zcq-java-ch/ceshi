@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1095,9 +1096,41 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(TAppointmentEntity::getStatus, 1);
         wrapper.eq(TAppointmentEntity::getDeleted, 0);
         wrapper.in(TAppointmentEntity::getAppointmentType, list);
+
+        String format = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat timeformat = new SimpleDateFormat(format);
+        // 获取当前时间
+        Date now = new Date();
+        String nowFormatted = timeformat.format(now);
+
+        // 设置startTime小于等于当前时间
+        wrapper.ge(TAppointmentEntity::getStartTime, nowFormatted);
+        // 设置endTime大于等于当前时间
+        wrapper.le(TAppointmentEntity::getEndTime, nowFormatted);
+
+        wrapper.eq(TAppointmentEntity::getSiteId, siteId);
         wrapper.eq(TAppointmentEntity::getSiteId, siteId);
         return wrapper;
     }
+
+    private Date getTodayStart() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    private Date getTodayEnd() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTime();
+    }
+
 
     @Override
     public com.alibaba.fastjson.JSONObject queryStatisticsallPeopleReservation() {
