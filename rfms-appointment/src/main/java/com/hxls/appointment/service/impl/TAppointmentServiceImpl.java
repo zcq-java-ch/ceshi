@@ -1104,6 +1104,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         LambdaQueryWrapper<TAppointmentEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(TAppointmentEntity::getDeleted, 0);
+        // 查询已审核的预约单
+        objectLambdaQueryWrapper.eq(TAppointmentEntity::getReviewStatus, 1);
         List<TAppointmentEntity> tAppointmentEntities = baseMapper.selectList(objectLambdaQueryWrapper);
 
         // 筛选出预约类型为派驻类型的
