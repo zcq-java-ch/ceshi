@@ -24,12 +24,10 @@ import com.hxls.appointment.dao.TAppointmentDao;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
-import com.hxls.appointment.pojo.entity.TIssueEigenvalue;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.*;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
-import com.hxls.appointment.service.TIssueEigenvalueService;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
@@ -103,7 +101,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     /*
      * 下发特质值表
      */
-    private final TIssueEigenvalueService issueEigenvalueService;
+//    private final TIssueEigenvalueService issueEigenvalueService;
 
     @Override
     public PageResult<TAppointmentVO> page(TAppointmentQuery query) {
