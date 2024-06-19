@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fhs.trans.service.impl.TransService;
 import com.hxls.api.feign.system.DeviceFeign;
+import com.hxls.api.feign.system.StationFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.datasection.entity.DfWZCallBackDto;
 import com.hxls.datasection.util.BaseImageUtils;
@@ -27,6 +28,7 @@ import com.hxls.datasection.query.TPersonAccessRecordsQuery;
 import com.hxls.datasection.vo.TPersonAccessRecordsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,7 @@ public class TPersonAccessRecordsController extends BaseController {
 
     private final TPersonAccessRecordsService tPersonAccessRecordsService;
 
+    private final StationFeign stationFeign;
     @GetMapping("/pageTpersonAccessRecords")
     @Operation(summary = "分页")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
@@ -66,6 +69,21 @@ public class TPersonAccessRecordsController extends BaseController {
         log.info("获取到token用户信息：{}",baseUser);
         List<Long> dataScopeList = baseUser.getDataScopeList();
         PageResult<TPersonAccessRecordsVO> page = tPersonAccessRecordsService.page(query, baseUser);
+        // 查询站点的名字
+        List<TPersonAccessRecordsVO> accessRecordsVOS = page.getList();
+        if (CollectionUtils.isNotEmpty(accessRecordsVOS)){
+            for (int i = 0; i < accessRecordsVOS.size(); i++) {
+                TPersonAccessRecordsVO tPersonAccessRecordsVO = accessRecordsVOS.get(i);
+                Long siteId = tPersonAccessRecordsVO.getSiteId();
+                // 调用站system服务，查询站点名字和通道
+
+                JSONObject jsonObject = stationFeign.queryStationInfoByStationId(siteId);
+                if (ObjectUtil.isNotEmpty(jsonObject)){
+                    String stationName = jsonObject.getString("stationName");
+                    tPersonAccessRecordsVO.setSiteName(stationName);
+                }
+            }
+        }
         return Result.ok(page);
     }
 

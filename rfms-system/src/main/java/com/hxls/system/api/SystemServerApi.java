@@ -790,6 +790,15 @@ public class SystemServerApi {
         return entries;
     }
 
+    @PostMapping(value = "/queryStationInfoByStationId")
+    public JSONObject queryStationInfoByStationId(@RequestParam("stationId") Long stationId) {
+        JSONObject objects = new JSONObject();
 
+        SysOrgEntity sysOrgEntities = sysOrgService.getById(stationId);
+        if (ObjectUtil.isNotEmpty(sysOrgEntities)){
+            objects.put("stationName", sysOrgEntities.getName());
+        }
+        return objects;
+    }
 
 }

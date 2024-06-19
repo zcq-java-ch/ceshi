@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.ServerNames;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = ServerNames.SYSTEM_SERVER_NAME, contextId = "station")
 public interface StationFeign {
@@ -37,5 +38,8 @@ public interface StationFeign {
 
     @PostMapping(value = "api/system/querySiteCoordinates")
     JSONArray querySiteCoordinates();
+
+    @PostMapping(value = "api/system/queryStationInfoByStationId")
+    JSONObject queryStationInfoByStationId(@RequestParam("stationId") Long stationId);
 
 }
