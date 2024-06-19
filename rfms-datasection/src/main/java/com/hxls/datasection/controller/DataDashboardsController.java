@@ -16,6 +16,8 @@ import lombok.SneakyThrows;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("datasection/dataDashboards")
 @Tag(name = "数据看板")
@@ -54,6 +56,9 @@ public class DataDashboardsController {
         // 5. 外部预约人员明细部分
         JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
         jsonObject.put("breakdownOfExternalAppointments", jsonbreak);
+        // 6. 站点人员明细统计
+        Map<String, Integer> jsonsiteTj = dataDashboardsService.sitePersonnelBreakdownSectionTj(jsonsite);
+        jsonObject.put("sitePersonnelBreakdownSectionTj", jsonsiteTj);
 
         return Result.ok(jsonObject);
     }

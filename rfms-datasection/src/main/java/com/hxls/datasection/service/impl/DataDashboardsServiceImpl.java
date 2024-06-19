@@ -10,14 +10,12 @@ import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 
 /**
@@ -312,5 +310,21 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         JSONObject jsonObjectReturn = new JSONObject();
         jsonObjectReturn.put("sitelocation", siteCoorAfter);
         return jsonObjectReturn;
+    }
+
+    @Override
+    public Map<String, Integer> sitePersonnelBreakdownSectionTj(JSONObject jsonsite) {
+        Map<String, Integer> regionCount = new HashMap<>();
+        JSONArray jsonArray = jsonsite.getJSONArray("sitePersonnelDetails");
+        if (CollectionUtils.isNotEmpty(jsonArray)){
+            // 遍历JSONArray中的每一个JSONObject
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String region = jsonObject.getString("region");
+                // 如果map中已经有这个region，就增加计数，否则初始化计数为1
+                regionCount.put(region, regionCount.getOrDefault(region, 0) + 1);
+            }
+        }
+        return regionCount;
     }
 }

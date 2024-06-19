@@ -4,6 +4,7 @@ package com.hxls.datasection.service;
 import com.alibaba.fastjson.JSONObject;
 
 import java.text.ParseException;
+import java.util.Map;
 
 
 public interface DataDashboardsService{
@@ -23,4 +24,6 @@ public interface DataDashboardsService{
     JSONObject realNameInformationSection();
 
     JSONObject mapSection();
+
+    Map<String, Integer> sitePersonnelBreakdownSectionTj(JSONObject jsonsite);
 }
