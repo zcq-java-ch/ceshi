@@ -254,7 +254,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
         int inNumer = 0;
         if(CollectionUtil.isNotEmpty(allnbNumids)){
-            objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getPersonId, allnbNumids);
+            objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getDevicePersonId, allnbNumids);
             List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities = baseMapper.selectList(objectLambdaQueryWrapper);
             // 按照姓名id进行分组
 //            Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId = tPersonAccessRecordsEntities.stream()
