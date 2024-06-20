@@ -322,8 +322,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(SysUserVO vo) {
-        SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
-        if (entity.getStationId() == null) {
+        SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);         if (entity.getStationId() == null) {
             entity.setStationId(Constant.EMPTY);
         }
         //判断是否需要删除原有厂站的数据
@@ -442,6 +441,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
                         deviceIds.add(sysSiteAreaEntity.getFaceInCode());
                         deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarIntCode());
                     }
                     //通过中间表获取设备id
                     List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));

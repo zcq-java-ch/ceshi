@@ -52,8 +52,6 @@ public class SysFileUploadController {
     }
 
     @PostMapping("httpUpload")
-    @Operation(summary = "agent上传专用")
-    @OperateLog(type = OperateTypeEnum.INSERT)
     public Result<SysFileUploadVO> httpUpload(@RequestParam("file") MultipartFile file, @RequestParam("sitePri") String sitePri) throws Exception {
         if (file.isEmpty()) {
             return Result.error("请选择需要上传的文件");
