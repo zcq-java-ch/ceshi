@@ -55,7 +55,7 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	@Schema(description = "出入类型  1：进场   2：出场")
 	private String accessType;
 
-	@ExcelProperty(value = "单项类型")
+	@ExcelProperty(value = "单向类型")
 	private String accessTypeLabel;
 
 	@ExcelIgnore
@@ -103,11 +103,11 @@ public class TPersonAccessRecordsExportVO implements Serializable, TransPojo {
 	private String companyName;
 
 	@ExcelIgnore
-	@Schema(description = "带班负责人id")
+	@Schema(description = "代班负责人id")
 	private Long supervisorId;
 
-	@ExcelProperty("带班负责人")
-	@Schema(description = "带班负责人名字")
+	@ExcelProperty("代班负责人")
+	@Schema(description = "代班负责人名字")
 	private String supervisorName;
 
 	@ExcelProperty("身份证号码")
