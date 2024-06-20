@@ -11,6 +11,7 @@ import com.hxls.datasection.service.TPersonAccessRecordsService;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -313,8 +314,9 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
     }
 
     @Override
-    public Map<String, Integer> sitePersonnelBreakdownSectionTj(JSONObject jsonsite) {
-        Map<String, Integer> regionCount = new HashMap<>();
+    public JSONObject sitePersonnelBreakdownSectionTj(JSONObject jsonsite) {
+        JSONObject regionCount = new JSONObject();
+        regionCount.put("未设置区域",0);
         JSONArray jsonArray = jsonsite.getJSONArray("sitePersonnelDetails");
         if (CollectionUtils.isNotEmpty(jsonArray)){
             // 遍历JSONArray中的每一个JSONObject
@@ -322,7 +324,20 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String region = jsonObject.getString("region");
                 // 如果map中已经有这个region，就增加计数，否则初始化计数为1
-                regionCount.put(region, regionCount.getOrDefault(region, 0) + 1);
+                if (StringUtils.isNotEmpty(region)){
+                    if (regionCount.containsKey(region)){
+                        Integer integer = regionCount.getInteger(region);
+                        integer += 1;
+                        regionCount.put(region, integer);
+                    }else {
+                        regionCount.put(region, 1);
+                    }
+                }else {
+                    Integer integer = regionCount.getInteger("未设置区域");
+                    integer += 1;
+                    regionCount.put("未设置区域", integer);
+                }
+
             }
         }
         return regionCount;

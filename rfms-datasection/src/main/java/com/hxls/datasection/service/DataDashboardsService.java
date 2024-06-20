@@ -25,5 +25,5 @@ public interface DataDashboardsService{
 
     JSONObject mapSection();
 
-    Map<String, Integer> sitePersonnelBreakdownSectionTj(JSONObject jsonsite);
+    JSONObject sitePersonnelBreakdownSectionTj(JSONObject jsonsite);
 }

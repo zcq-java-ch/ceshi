@@ -57,7 +57,7 @@ public class DataDashboardsController {
         JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
         jsonObject.put("breakdownOfExternalAppointments", jsonbreak);
         // 6. 站点人员明细统计
-        Map<String, Integer> jsonsiteTj = dataDashboardsService.sitePersonnelBreakdownSectionTj(jsonsite);
+        JSONObject jsonsiteTj = dataDashboardsService.sitePersonnelBreakdownSectionTj(jsonsite);
         jsonObject.put("sitePersonnelBreakdownSectionTj", jsonsiteTj);
 
         return Result.ok(jsonObject);
