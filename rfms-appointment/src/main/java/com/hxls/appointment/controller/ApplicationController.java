@@ -55,7 +55,7 @@ public class ApplicationController {
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('supplier:person:info')")
     public Result<TAppointmentVO> get(@PathVariable("id") Long id){
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        TAppointmentVO vo = tAppointmentService.getDetailById(id , 1L);
         return Result.ok(vo);
     }
 

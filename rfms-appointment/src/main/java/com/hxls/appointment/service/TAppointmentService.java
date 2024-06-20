@@ -9,6 +9,7 @@ import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
 import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
+import com.hxls.appointment.pojo.vo.TIssueEigenvalueVO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,7 +56,7 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param id id
      * @return
      */
-    TAppointmentVO getDetailById(Long id);
+    TAppointmentVO getDetailById(Long id, Long type);
 
     /**
      * 查看权限下面的列表
@@ -126,4 +127,17 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
     com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByUserInfo(String personId, String personName);
 
     com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByPlatenumber(String palteNumber);
+
+    /**
+     * 修改的下发记录
+     * @param data
+     */
+    void updateTIssueEigenvalue(TIssueEigenvalueVO data);
+
+    /**
+     * 安保确认下发
+     * @param id
+     */
+    void commit(Long id);
+
 }

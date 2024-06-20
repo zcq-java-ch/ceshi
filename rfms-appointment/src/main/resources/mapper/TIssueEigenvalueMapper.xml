@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.appointment.dao.TIssueEigenvalueMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.appointment.pojo.entity.TIssueEigenvalue">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="stationName" column="station_name" jdbcType="VARCHAR"/>
+            <result property="stationId" column="station_id" jdbcType="BIGINT"/>
+            <result property="areaName" column="area_name" jdbcType="VARCHAR"/>
+            <result property="areaId" column="area_id" jdbcType="BIGINT"/>
+            <result property="deviceName" column="device_name" jdbcType="VARCHAR"/>
+            <result property="deviceId" column="device_id" jdbcType="BIGINT"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="data" column="data" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,station_name,station_id,
+        area_name,area_id,device_name,
+        device_id,type,data,
+        status,version,deleted,
+        creator,create_time,updater,
+        update_time
+    </sql>
+</mapper>

@@ -118,6 +118,11 @@ public class TAppointmentPersonnel extends BaseEntity {
      */
     private String postCode;
 
+    /**
+     * 是否确认(0:否，1：是)
+     */
+    private Integer isCommit;
+
 
     @TableField(exist = false)
     private String stationId;

@@ -3,6 +3,7 @@ package com.hxls.appointment.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.convert.TAppointmentConvert;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
@@ -64,7 +65,7 @@ public class StaffAppointmentController {
     @Operation(summary = "信息")
     @PreAuthorize("hasAuthority('system:appointment:info')")
     public Result<TAppointmentVO> get(@PathVariable("id") Long id){
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        TAppointmentVO vo = tAppointmentService.getDetailById(id,1L);
         return Result.ok(vo);
     }
 
@@ -118,5 +119,16 @@ public class StaffAppointmentController {
         PageResult<TAppointmentVO> page = tAppointmentService.pageByAuthority(query);
         return Result.ok(page);
     }
+
+
+    @GetMapping("/commit")
+    @Operation(summary = "确认下发")
+    @PreAuthorize("hasAuthority('system:appointment:commit')")
+    public Result<Void> commit(@RequestParam Long id) {
+        tAppointmentService.commit(id);
+        return Result.ok();
+    }
+
+
 
 }

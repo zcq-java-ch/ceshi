@@ -250,7 +250,6 @@ public class LeadingEnterpriseController {
             }
         }
 
-
         if (data.getReceiveStation().equals("精城站")) {
             //要求：麻烦将5月25日00：00至6月4日9：00运输电子台账里川ACT602的记录更改为川ACV281
             LocalDateTime start = LocalDateTime.of(2024, 5, 25, 0, 0);
@@ -302,7 +301,7 @@ public class LeadingEnterpriseController {
 
         Map<String, TVehicleVO> map = new HashMap<>();
         data.forEach(item -> map.put(item.getLicensePlate(), item));
-
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         recordInfos.forEach(item -> {
             TVehicleVO tVehicleVO = map.get(item.getCarNum());
             item.setDrivingLicense("");
@@ -316,6 +315,7 @@ public class LeadingEnterpriseController {
                 item.setEmissionStandard(tVehicleVO.getEmissionStandard());
                 item.setCdName(tVehicleVO.getFleetName());
                 item.setFollowInventory(tVehicleVO.getImageUrl());
+                item.setRegistrationDate(tVehicleVO.getRegistrationDate()==null? "" : sdf.format(tVehicleVO.getRegistrationDate()));
                 //判断是否超重
                 BigDecimal freightVolume = item.getFreightVolume();
                 BigDecimal bigDecimal = new BigDecimal(tVehicleVO.getMaxCapacity());

@@ -9,6 +9,7 @@ import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
+import com.hxls.appointment.pojo.vo.TIssueEigenvalueVO;
 import com.hxls.appointment.server.RabbitMqManager;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
@@ -99,7 +100,7 @@ public class AppointmentApiController {
     @GetMapping("{id}")
     @Operation(summary = "信息")
     public Result<TAppointmentVO> get(@PathVariable("id") Long id) {
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        TAppointmentVO vo = tAppointmentService.getDetailById(id,2L);
         return Result.ok(vo);
     }
 
@@ -262,4 +263,12 @@ public class AppointmentApiController {
         return objects;
     }
 
+
+    @PostMapping("/addTIssueEigenvalue")
+    @Operation(summary = "回调操作接口")
+    public void updateTIssueEigenvalue(@RequestBody TIssueEigenvalueVO data){
+
+        tAppointmentService.updateTIssueEigenvalue(data);
+
+    }
 }

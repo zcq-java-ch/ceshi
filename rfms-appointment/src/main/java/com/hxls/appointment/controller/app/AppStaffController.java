@@ -58,7 +58,7 @@ public class AppStaffController {
     @GetMapping("{id}")
     @Operation(summary = "信息")
     public Result<TAppointmentVO> get(@PathVariable("id") Long id){
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        TAppointmentVO vo = tAppointmentService.getDetailById(id,1L);
         return Result.ok(vo);
     }
 

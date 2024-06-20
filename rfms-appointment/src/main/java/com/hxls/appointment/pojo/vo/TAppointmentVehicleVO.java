@@ -18,11 +18,11 @@ public class TAppointmentVehicleVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
-//    /**
-//     * id
-//     */
-//    @Schema(description = "id")
-//    private Long id;
+    /**
+     * id
+     */
+    @Schema(description = "id")
+    private Long id;
     /**
      * 对应预约单
      */

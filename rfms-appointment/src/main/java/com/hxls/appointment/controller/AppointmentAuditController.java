@@ -72,7 +72,7 @@ public class AppointmentAuditController {
     @Operation(summary = "信息")
     //@PreAuthorize("hasAuthority('audit:appointment:info')")
     public Result<TAppointmentVO> getAll(@PathVariable("id") Long id){
-        TAppointmentVO vo = tAppointmentService.getDetailById(id);
+        TAppointmentVO vo = tAppointmentService.getDetailById(id,1L);
         return Result.ok(vo);
     }
 
