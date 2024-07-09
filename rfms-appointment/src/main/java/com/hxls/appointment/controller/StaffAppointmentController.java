@@ -45,9 +45,11 @@ public class StaffAppointmentController {
 
         //配置查询权限
         UserDetail user = SecurityUser.getUser();
+
         if (ObjectUtil.isNull(user)) {
             throw new ServerException(ErrorCode.FORBIDDEN);
         }
+
         if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
             List<Long> dataScopeList = user.getDataScopeList();
             if (CollectionUtils.isNotEmpty(dataScopeList)){
@@ -97,7 +99,6 @@ public class StaffAppointmentController {
     }
 
 
-
     @GetMapping("auditPage")
     @Operation(summary = "主页查询")
     public Result<PageResult<TAppointmentVO>> auditPage(@ParameterObject @Valid TAppointmentQuery query) {
@@ -124,8 +125,8 @@ public class StaffAppointmentController {
     @GetMapping("/commit")
     @Operation(summary = "确认下发")
     @PreAuthorize("hasAuthority('system:appointment:commit')")
-    public Result<Void> commit(@RequestParam Long id) {
-        tAppointmentService.commit(id);
+    public Result<Void> commit(@RequestParam Long id ,@RequestParam String name , @RequestParam String type) {
+        tAppointmentService.commit(id,name ,type);
         return Result.ok();
     }
 

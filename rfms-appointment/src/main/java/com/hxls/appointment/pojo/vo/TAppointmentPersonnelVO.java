@@ -13,11 +13,11 @@ import java.util.Date;
 public class TAppointmentPersonnelVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    /**
-     * id
-     */
-    @Schema(description = "id")
-    private Long id;
+//    /**
+//     * id
+//     */
+//    @Schema(description = "id")
+//    private Long id;
 
     /**
      * 对应预约单
@@ -165,4 +165,6 @@ public class TAppointmentPersonnelVO implements Serializable {
      * 业务资源
      */
     private String busis;
+
+    private Integer isCommit;
 }

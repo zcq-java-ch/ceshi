@@ -31,4 +31,11 @@ public interface SysUserDao extends BaseDao<SysUserEntity> {
 	default SysUserEntity getByMobile(String mobile){
 		return this.selectOne(new QueryWrapper<SysUserEntity>().eq("mobile", mobile).last("LIMIT 1"));
 	}
+
+	/**
+	 * 通过code编码获取岗位名称
+	 * @param peopleCode
+	 * @return
+	 */
+	String getPostByCode(@Param("code") String peopleCode);
 }

@@ -68,32 +68,27 @@ public class AccessRecordsVO {
     public static class TVehicleAccessRecords{
 
         /**
-         * 出入类型  1：进场   2：出场
-         */
-        private String accessType;
-
-        /**
-         * 记录时间
-         */
-        @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
-        private Date recordTime;
-
-        /**
-         * 车牌号
-         */
-        private String plateNumber;
-
-
-        /**
          * 司机姓名
          */
         private String driverName;
-
         /**
          * 司机手机号码
          */
         private String driverPhone;
 
+        /**
+         * 出入类型  1：进场   2：出场
+         */
+        private String accessType;
+        /**
+         * 记录时间
+         */
+        @JsonFormat(pattern = DateUtils.DATE_TIME_PATTERN)
+        private Date recordTime;
+        /**
+         * 车牌号
+         */
+        private String plateNumber;
     }
 
 }

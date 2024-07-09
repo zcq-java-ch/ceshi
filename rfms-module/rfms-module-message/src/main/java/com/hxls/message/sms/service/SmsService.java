@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 短信服务
@@ -42,6 +43,8 @@ public class SmsService {
         return this.send(mobile, MapUtil.newHashMap());
     }
 
+
+
     /**
      * 发送短信
      * @param mobile 手机号
@@ -49,7 +52,7 @@ public class SmsService {
      * @return  是否发送成功
      */
     public boolean send(String mobile, Map<String, String> params){
-        SmsConfig config = roundSmsConfig();;
+        SmsConfig config = roundSmsConfig();
 
         try {
             // 发送短信
@@ -104,5 +107,45 @@ public class SmsService {
 
         return platformList.get((int)round % count);
     }
+
+
+
+    /**
+     * 发送短信
+     * @param mobile 手机号
+     * @param params 参数
+     * @return  是否发送成功
+     */
+    public boolean sendById(List<String> mobiles, Map<String, String> params , Long id){
+        SmsConfig config = roundSmsConfigByCode(id);
+        for (String mobile : mobiles) {
+            try {
+                // 发送短信
+                new SmsContext(config).send(mobile, params);
+                saveLog(config, mobile, params, null);
+            }catch (Exception e) {
+                log.error("短信发送失败，手机号：{}", mobile, e);
+                saveLog(config, mobile, params, e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private SmsConfig roundSmsConfigByCode(Long id) {
+        List<SmsConfig> platformList = smsPlatformService.listByEnable();
+        // 是否有可用的短信平台
+        int count = platformList.size();
+        if(count == 0) {
+            throw new ServerException("没有可用的短信平台，请先添加");
+        }
+        for (SmsConfig smsConfig : platformList) {
+            if (Objects.equals(smsConfig.getId(), id)) {
+                return smsConfig;
+            }
+        }
+        throw new ServerException("没有可用的短信平台，请先添加");
+    }
+
 
 }

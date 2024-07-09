@@ -6,16 +6,12 @@ import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentVehicle;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
-import com.hxls.appointment.pojo.vo.TAppointmentPersonnelVO;
-import com.hxls.appointment.pojo.vo.TAppointmentVO;
-import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
-import com.hxls.appointment.pojo.vo.TIssueEigenvalueVO;
+import com.hxls.appointment.pojo.vo.*;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -102,7 +98,7 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @param id
      * @param type
      */
-    JSONObject appointmentSum(Long id, Long type);
+    JSONObject appointmentSum(String id, Long type);
 
     /**
      * 下发信息
@@ -128,16 +124,20 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
 
     com.alibaba.fastjson.JSONObject queryStationIdFromAppointmentByPlatenumber(String palteNumber);
 
-    /**
-     * 修改的下发记录
-     * @param data
-     */
-    void updateTIssueEigenvalue(TIssueEigenvalueVO data);
 
     /**
      * 安保确认下发
+     *
      * @param id
+     * @param name
+     * @param type
      */
-    void commit(Long id);
+    void commit(Long id, String name, String type);
 
+    /**
+     * 获取此时预约的车牌信息
+     * @param siteId
+     * @return
+     */
+    List<TAppointmentVehicleVO> getAppointmentCar(Long siteId);
 }

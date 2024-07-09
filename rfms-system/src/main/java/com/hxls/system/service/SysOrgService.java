@@ -50,4 +50,12 @@ public interface SysOrgService extends BaseService<SysOrgEntity> {
 	 * @param user
 	 */
 	List<SysOrgVO> getOrgSiteList(UserDetail user);
+
+	/**
+	 * 修改厂站管控
+	 * @param id 站点id
+	 */
+	void setStation(Long id);
+
+	void offStationControl(Long id);
 }

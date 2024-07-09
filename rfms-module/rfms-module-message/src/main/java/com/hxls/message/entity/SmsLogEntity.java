@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.hxls.framework.mybatis.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,12 +19,7 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper=false)
 @TableName("sms_log")
-public class SmsLogEntity {
-	/**
-	* id
-	*/
-	@TableId
-	private Long id;
+public class SmsLogEntity extends BaseEntity {
 
 	/**
 	* 平台ID

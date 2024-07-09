@@ -10,6 +10,7 @@ import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.entity.SysUserEntity;
 import com.hxls.system.entity.TVehicleEntity;
 import com.hxls.system.query.TVehicleQuery;
+import com.hxls.system.service.SysControlCarService;
 import com.hxls.system.service.SysOrgService;
 import com.hxls.system.service.SysUserService;
 import com.hxls.system.service.TVehicleService;
@@ -44,6 +45,9 @@ public class TVehicleController {
     private final TVehicleService tVehicleService;
     private final SysUserService sysUserService;
     private final SysOrgService sysOrgService;
+
+    private final SysControlCarService sysControlCarService;
+
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -173,8 +177,6 @@ public class TVehicleController {
     }
 
 
-
-
     @PostMapping("import")
     @Operation(summary = "导入通用车辆")
     @OperateLog(type = OperateTypeEnum.IMPORT)
@@ -212,5 +214,9 @@ public class TVehicleController {
 
         return Result.ok();
     }
+
+
+
+
 
 }

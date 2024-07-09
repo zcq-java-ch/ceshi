@@ -53,10 +53,13 @@ public class SmsPlatformServiceImpl extends BaseServiceImpl<SmsPlatformDao, SmsP
 
         // 如果缓存没有，则从DB读取，然后保存到缓存里
         if(cacheList == null) {
+
             List<SmsPlatformEntity> list = this.list(new LambdaQueryWrapper<SmsPlatformEntity>().in(SmsPlatformEntity::getStatus, Constant.ENABLE));
 
             cacheList = SmsPlatformConvert.INSTANCE.convertList2(list);
+
             smsPlatformCache.save(cacheList);
+
         }
 
         return cacheList;

@@ -7,6 +7,7 @@ import com.hxls.api.module.message.SmsApi;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +25,11 @@ public class SmsApiImpl implements SmsApi {
     @Override
     public boolean send(String mobile, Map<String, String> params) {
         return smsService.send(mobile, params);
+    }
+
+    @Override
+    public boolean sendById(List<String> mobile, Map<String, String> params, Long id) {
+        return smsService.sendById(mobile , params ,id);
     }
 
     @Override

@@ -26,6 +26,7 @@ import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
 import com.hxls.framework.security.cache.TokenStoreCache;
+import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.framework.security.utils.TokenUtils;
 import com.hxls.storage.properties.StorageProperties;
@@ -147,7 +148,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         //查询车辆多归属
         for (SysUserVO sysUserVO : sysUserVOS) {
             Long id = sysUserVO.getId();
-            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id).in(TVehicleEntity::getCarClass, 1,3));
+            List<TVehicleEntity> result = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id).in(TVehicleEntity::getCarClass, 1, 3));
             if (CollectionUtils.isNotEmpty(result)) {
                 sysUserVO.setTVehicleVOList(TVehicleConvert.INSTANCE.convertList(result));
             }
@@ -204,6 +205,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void save(SysUserVO vo) {
+        UserDetail sysUser = SecurityUser.getUser();
         SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
         entity.setSuperAdmin(SuperAdminEnum.NO.getValue());
 
@@ -254,10 +256,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 tVehicleEntity.setDriverId(entity.getId());
                 tVehicleEntity.setDriverName(vo.getRealName());
                 tVehicleEntity.setDriverMobile(vo.getMobile());
-                if ("1".equals(vo.getUserType())){
+                if ("1".equals(vo.getUserType())) {
                     // 如果是内部员工 设置车辆所属为内部私家车
                     tVehicleEntity.setCarClass("1");
-                }else {
+                } else {
                     // 如果是外部员工  设置车辆所属为外部私家车
                     tVehicleEntity.setCarClass("3");
                     tVehicleEntity.setSupplierId(vo.getOrgId());
@@ -273,12 +275,14 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             JSONObject person = new JSONObject();
             person.set("sendType", "1");
             person.set("data", JSONUtil.toJsonStr(entity));
+            person.set("personId", sysUser.getId());
             appointmentFeign.issuedPeople(person);
             //TODO 添加用户的时候车辆下发 ---判断是否有值
             if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
                 JSONObject vehicle = new JSONObject();
                 vehicle.set("sendType", "2");
                 vehicle.set("data", JSONUtil.toJsonStr(entity));
+                vehicle.set("personId", sysUser.getId());
                 appointmentFeign.issuedPeople(vehicle);
             }
             //下发其他站点
@@ -294,6 +298,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     }
 
     private void sendOtherStation(SysUserEntity entity) {
+        UserDetail sysUser = SecurityUser.getUser();
 
         if (StringUtils.isNotEmpty(entity.getStationIds())) {
             for (String stationId : entity.getStationIds().split(",")) {
@@ -303,6 +308,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 JSONObject person = new JSONObject();
                 entity.setStationId(Long.getLong(stationId));
                 person.set("data", JSONUtil.toJsonStr(entity));
+                person.set("personId", sysUser.getId());
                 appointmentFeign.issuedPeople(person);
                 if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
                     String[] licensePlates = entity.getLicensePlate().split(",");
@@ -311,6 +317,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         vehicle.set("sendType", "2");
                         entity.setLicensePlate(licensePlate);
                         vehicle.set("data", JSONUtil.toJsonStr(entity));
+                        vehicle.set("personId", sysUser.getId());
                         appointmentFeign.issuedPeople(vehicle);
                     }
                 }
@@ -322,9 +329,16 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(SysUserVO vo) {
-        SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);         if (entity.getStationId() == null) {
+
+        Boolean isSend = false;
+
+        UserDetail sysUser = SecurityUser.getUser();
+
+        SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
+        if (entity.getStationId() == null) {
             entity.setStationId(Constant.EMPTY);
         }
+
         //判断是否需要删除原有厂站的数据
         Long id = vo.getId();
         SysUserEntity byId = baseMapper.getById(id);
@@ -332,17 +346,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
 
-        //TODO 修改需要更改方式
-        //判断是否更换区域,删除之前得老区域，下发新站点和区域
-        //更换新得删除下发方式 --- 2024-06-07
-        String oldAreaList = byId.getAreaList();
-        String newAreaList = vo.getAreaList();
-
-        compareDeleteSite(oldAreaList , newAreaList);
-
-
-
-        if (StringUtils.isNotEmpty(byId.getAreaList())&& StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())){
+        if (StringUtils.isNotEmpty(byId.getAreaList()) && StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())) {
             String areaList = byId.getAreaList();
             List<String> areas = JSONUtil.toList(areaList, String.class);
             List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
@@ -353,7 +357,33 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 byId.setStationId(stationId);
                 deleteInfoToAgent(byId, byId);
             }
+            isSend = true;
         }
+        //如果只是车牌的不一样  entity 新车牌 ， byId 老车牌
+        else if (!entity.getLicensePlate().equals(byId.getLicensePlate())) {
+
+//            String[] newLicensePlate = entity.getLicensePlate().split(",");
+//            String[] oldLicensePlate = byId.getLicensePlate().split(",");
+//
+//            //需要新增
+//            List<String> result = checkList(newLicensePlate , oldLicensePlate);
+//            //需要删除
+
+            if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
+                String[] licensePlates = entity.getLicensePlate().split(",");
+                for (String licensePlate : licensePlates) {
+                    JSONObject vehicle = new JSONObject();
+                    vehicle.set("sendType", "2");
+                    entity.setLicensePlate(licensePlate);
+                    vehicle.set("data", JSONUtil.toJsonStr(entity));
+                    vehicle.set("DELETE", "DELETE");
+                    vehicle.set("personId", sysUser.getId());
+                    appointmentFeign.issuedPeople(vehicle);
+                }
+            }
+            isSend = true;
+        }
+
 
         // 判断用户名是否存在
         SysUserEntity user = baseMapper.getByUsername(entity.getUsername());
@@ -380,7 +410,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
         // 判断车牌号是否存在
-        if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(vo.getTVehicleVOList())) {
+        if (CollectionUtils.isNotEmpty(vo.getTVehicleVOList())) {
             for (TVehicleVO tVehicleVO : vo.getTVehicleVOList()) {
                 List<TVehicleEntity> list = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getLicensePlate, tVehicleVO.getLicensePlate()));
                 if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(list)) {
@@ -397,7 +427,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         //更换车辆存储位置
         if (vo.getVehicle()) {
             // 删除这个用户关联的车辆中，内部私家车 外部私家车
-            tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, vo.getId()).in(TVehicleEntity::getCarClass, "1","3"));
+            tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, vo.getId()).in(TVehicleEntity::getCarClass, "1", "3"));
             if (CollectionUtils.isNotEmpty(vo.getTVehicleVOList())) {
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList());
                 for (TVehicleEntity tVehicleEntity : tVehicleEntities) {
@@ -407,10 +437,10 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     tVehicleEntity.setDriverId(vo.getId());
                     tVehicleEntity.setDriverName(vo.getRealName());
                     tVehicleEntity.setDriverMobile(vo.getMobile());
-                    if ("1".equals(vo.getUserType())){
+                    if ("1".equals(vo.getUserType())) {
                         // 如果是内部员工 设置车辆所属为内部私家车
                         tVehicleEntity.setCarClass("1");
-                    }else {
+                    } else {
                         // 如果是外部员工  设置车辆所属为外部私家车
                         tVehicleEntity.setCarClass("3");
                         tVehicleEntity.setSupplierId(vo.getOrgId());
@@ -422,7 +452,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
         //修改下发 TODO
-        if (StringUtils.isNotEmpty(vo.getAreaList())){
+        if (StringUtils.isNotEmpty(vo.getAreaList()) && isSend) {
 
             String areaList = vo.getAreaList();
             List<String> areas = JSONUtil.toList(areaList, String.class);
@@ -453,6 +483,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                         JSONObject person = new JSONObject();
                         person.set("sendType", "1");
                         person.set("data", JSONUtil.toJsonStr(byId));
+                        person.set("personId", sysUser.getId());
                         person.set("ids", JSONUtil.toJsonStr(ids));
                         appointmentFeign.issuedPeople(person);
                         if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
@@ -463,6 +494,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                                 entity.setLicensePlate(licensePlate);
                                 vehicle.set("data", JSONUtil.toJsonStr(entity));
                                 vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                                vehicle.set("personId", sysUser.getId());
                                 appointmentFeign.issuedPeople(vehicle);
                             }
                         }
@@ -482,22 +514,49 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     }
 
     /**
+     * 比较第一个参数中有的 ， 第二个参数没有的
+     *
+     * @param newLicensePlate 第一个参数
+     * @param oldLicensePlate 第二个参数
+     * @return
+     */
+    private List<String> checkList(String[] newLicensePlate, String[] oldLicensePlate) {
+
+        // 将旧车牌数组转换为集合，方便后续比较
+        List<String> oldList = Arrays.asList(oldLicensePlate);
+
+        // 初始化结果集合
+        List<String> result = new ArrayList<>();
+
+        // 遍历新车牌数组，将旧车牌中没有的加入结果集合
+        for (String plate : newLicensePlate) {
+            if (!oldList.contains(plate.trim())) {  // 使用 trim() 去除可能存在的空格
+                result.add(plate.trim());
+            }
+        }
+
+        return result;
+
+
+    }
+
+    /**
      * 比较该删除的权区域
+     *
      * @param oldAreaList 老权限区域
      * @param newAreaList 新权限区域
      */
     private void compareDeleteSite(String oldAreaList, String newAreaList) {
 
 
-
-
-
     }
 
     private void deleteInfoToAgent(SysUserEntity byId, SysUserEntity entity) {
+        UserDetail sysUser = SecurityUser.getUser();
         JSONObject person = new JSONObject();
         person.set("sendType", "1");
         person.set("data", JSONUtil.toJsonStr(byId));
+        person.set("personId", sysUser.getId());
         person.set("DELETE", "DELETE");
         appointmentFeign.issuedPeople(person);
 
@@ -509,6 +568,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 entity.setLicensePlate(licensePlate);
                 vehicle.set("data", JSONUtil.toJsonStr(entity));
                 vehicle.set("DELETE", "DELETE");
+                vehicle.set("personId", sysUser.getId());
                 appointmentFeign.issuedPeople(vehicle);
             }
         }
@@ -534,6 +594,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     public void delete(List<Long> idList) {
+        UserDetail sysUser = SecurityUser.getUser();
 
         List<SysUserEntity> sysUserEntities = listByIds(idList);
         for (SysUserEntity byId : sysUserEntities) {
@@ -541,6 +602,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             person.set("sendType", "1");
             person.set("data", JSONUtil.toJsonStr(byId));
             person.set("DELETE", "DELETE");
+            person.set("personId", sysUser.getId());
             appointmentFeign.issuedPeople(person);
         }
 
@@ -742,6 +804,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     public void updateStatus(List<SysUserVO> list) {
+        UserDetail sysUser = SecurityUser.getUser();
         for (SysUserVO vo : list) {
             SysUserEntity entity = new SysUserEntity();
             entity.setId(vo.getId());
@@ -758,15 +821,17 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             JSONObject person = new JSONObject();
             person.set("sendType", "1");
             person.set("data", JSONUtil.toJsonStr(byId));
+            person.set("personId", sysUser.getId());
             if (!vo.getStatus().equals(Constant.ENABLE)) {
                 log.info("此时发起禁用删除");
                 person.set("DELETE", "DELETE");
             }
             appointmentFeign.issuedPeople(person);
-            if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
+            if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
                 JSONObject vehicle = new JSONObject();
                 vehicle.set("sendType", "2");
                 vehicle.set("data", JSONUtil.toJsonStr(byId));
+                vehicle.set("personId", sysUser.getId());
                 if (!vo.getStatus().equals(Constant.ENABLE)) {
                     log.info("此时发起禁用删除");
                     vehicle.set("DELETE", "DELETE");
@@ -793,6 +858,9 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
     @Override
     public void updateByUser(SysUserVO vo) {
+
+        UserDetail sysUser = SecurityUser.getUser();
+
         SysUserEntity entity = SysUserConvert.INSTANCE.convert(vo);
 
         //判断是否需要删除原有厂站的数据
@@ -802,10 +870,23 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             throw new ServerException(ErrorCode.NOT_FOUND);
         }
 
+        if (StringUtils.isEmpty(vo.getAvatar())){
+            byId.setAreaList(vo.getAvatar());
+        }
+
         if (byId.getStationId() != null && !byId.getStationId().equals(Constant.EMPTY) && !byId.getStationId().equals(entity.getStationId())) {
             System.out.println("开始删除之前的");
             //删除人员信息
-            deleteInfoToAgent(byId, entity);
+            String areaList = byId.getAreaList();
+            List<String> areas = JSONUtil.toList(areaList, String.class);
+            List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                return Long.parseLong(item.substring(1));
+            }).toList();
+            for (Long stationId : result) {
+                //删除老站点ID
+                byId.setStationId(stationId);
+                deleteInfoToAgent(byId, byId);
+            }
         }
 
         // 判断用户名是否存在
@@ -836,7 +917,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         updateById(entity);
 
         //更换车辆存储位置
-        if (vo.getVehicle()){
+        if (vo.getVehicle()) {
             tVehicleService.remove(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, vo.getId()));
             if (CollectionUtils.isNotEmpty(vo.getTVehicleVOList())) {
                 List<TVehicleEntity> tVehicleEntities = TVehicleConvert.INSTANCE.convertToEntityList(vo.getTVehicleVOList());
@@ -852,21 +933,53 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
         }
 
 
-
         if (entity.getStationId() != null && !entity.getStationId().equals(Constant.EMPTY)) {
-            JSONObject person = new JSONObject();
-            person.set("sendType", "1");
-            person.set("data", JSONUtil.toJsonStr(entity));
-            appointmentFeign.issuedPeople(person);
 
-            if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
-                String[] licensePlates = entity.getLicensePlate().split(",");
-                for (String licensePlate : licensePlates) {
-                    JSONObject vehicle = new JSONObject();
-                    vehicle.set("sendType", "2");
-                    entity.setLicensePlate(licensePlate);
-                    vehicle.set("data", JSONUtil.toJsonStr(entity));
-                    appointmentFeign.issuedPeople(vehicle);
+            String areaList = byId.getAreaList();
+            List<String> areas = JSONUtil.toList(areaList, String.class);
+
+            List<Long> result = areas.stream().filter(item -> item.contains("A")).map(item -> {
+                return Long.parseLong(item.substring(1));
+            }).collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(result)) {
+                //获取到所有的区域
+                List<SysSiteAreaEntity> sysSiteAreaEntities = sysSiteAreaService.listByIds(result);
+                //获取到人脸设备
+                if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(sysSiteAreaEntities)) {
+                    //获取到设备编码
+                    List<String> deviceIds = new ArrayList<>();
+                    for (SysSiteAreaEntity sysSiteAreaEntity : sysSiteAreaEntities) {
+                        deviceIds.add(sysSiteAreaEntity.getFaceInCode());
+                        deviceIds.add(sysSiteAreaEntity.getFaceOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarOutCode());
+                        deviceIds.add(sysSiteAreaEntity.getCarIntCode());
+                    }
+                    //通过中间表获取设备id
+                    List<SysAreacodeDeviceEntity> areacodeDeviceEntities = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>().in(SysAreacodeDeviceEntity::getAreaDeviceCode, deviceIds));
+                    if (com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(areacodeDeviceEntities)) {
+                        List<Long> ids = areacodeDeviceEntities.stream().map(SysAreacodeDeviceEntity::getDeviceId).toList();
+//                        List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.listByIds(ids);
+                        //下发设备
+                        JSONObject person = new JSONObject();
+                        person.set("sendType", "1");
+                        person.set("data", JSONUtil.toJsonStr(byId));
+                        person.set("personId", sysUser.getId());
+                        person.set("ids", JSONUtil.toJsonStr(ids));
+                        appointmentFeign.issuedPeople(person);
+                        if (StringUtils.isNotEmpty(byId.getLicensePlate())) {
+                            String[] licensePlates = byId.getLicensePlate().split(",");
+                            for (String licensePlate : licensePlates) {
+                                JSONObject vehicle = new JSONObject();
+                                vehicle.set("sendType", "2");
+                                entity.setLicensePlate(licensePlate);
+                                vehicle.set("data", JSONUtil.toJsonStr(entity));
+                                vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                                vehicle.set("personId", sysUser.getId());
+                                appointmentFeign.issuedPeople(vehicle);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -978,7 +1091,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
                     String code = "";
                     for (Map<String, String> sysRef : mainUserVO.getSysRefs()) {
-                        if (!StrUtil.isEmpty(sysRef.get("isMain"))  && sysRef.get("isMain").equals("1")) {
+                        if (!StrUtil.isEmpty(sysRef.get("isMain")) && sysRef.get("isMain").equals("1")) {
                             code = sysRef.get("deptCode");
                             break;
                         }
@@ -1029,6 +1142,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
     @Override
     public void updateStationIdList(List<SysUserVO> list) {
 
+        UserDetail user = SecurityUser.getUser();
+
         for (SysUserVO vo : list) {
 //            Boolean issued = false;
             SysUserEntity entity = new SysUserEntity();
@@ -1037,7 +1152,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             //查询车辆  --
             Long id = vo.getId();
 
-            List<TVehicleEntity> carNum = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId,id));
+            List<TVehicleEntity> carNum = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().eq(TVehicleEntity::getUserId, id));
             String join = String.join(",", carNum.stream().map(TVehicleEntity::getLicensePlate).toList());
 
             entity.setLicensePlate(join);
@@ -1047,25 +1162,25 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
             SysUserEntity byId = getById(vo.getId());
 
             //判断是否更换区域,删除之前得老区域，下发新站点和区域
-            if (StringUtils.isNotEmpty(byId.getAreaList())){
-                 String areaList = byId.getAreaList();
-                 List<String> areas = JSONUtil.toList(areaList, String.class);
-                 List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
-                     return Long.parseLong(item.substring(1));
-                 }).toList();
-                 if (CollectionUtils.isNotEmpty(result)){
-                     for (Long stationId : result) {
-                         //删除老站点ID
-                         byId.setStationId(stationId);
-                         deleteInfoToAgent(byId, byId);
-                     }
-                 }
+            if (StringUtils.isNotEmpty(byId.getAreaList())) {
+                String areaList = byId.getAreaList();
+                List<String> areas = JSONUtil.toList(areaList, String.class);
+                List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                    return Long.parseLong(item.substring(1));
+                }).toList();
+                if (CollectionUtils.isNotEmpty(result)) {
+                    for (Long stationId : result) {
+                        //删除老站点ID
+                        byId.setStationId(stationId);
+                        deleteInfoToAgent(byId, byId);
+                    }
+                }
             }
             // 更新实体
             this.updateById(entity);
 
             //下发
-            if (StringUtils.isNotEmpty(vo.getAreaList())){
+            if (StringUtils.isNotEmpty(vo.getAreaList())) {
 
                 String areaList = vo.getAreaList();
                 List<String> areas = JSONUtil.toList(areaList, String.class);
@@ -1098,6 +1213,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             person.set("sendType", "1");
                             person.set("data", JSONUtil.toJsonStr(byId));
                             person.set("ids", JSONUtil.toJsonStr(ids));
+                            person.set("personId", user.getId());
                             appointmentFeign.issuedPeople(person);
                             if (StringUtils.isNotEmpty(entity.getLicensePlate())) {
                                 String[] licensePlates = entity.getLicensePlate().split(",");
@@ -1107,6 +1223,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                                     entity.setLicensePlate(licensePlate);
                                     vehicle.set("data", JSONUtil.toJsonStr(entity));
                                     vehicle.set("ids", JSONUtil.toJsonStr(ids));
+                                    vehicle.set("personId", user.getId());
                                     appointmentFeign.issuedPeople(vehicle);
                                 }
                             }
@@ -1147,11 +1264,16 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 }
 
                 //读取excel所有图片
-                if (ExcelController.ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
-                    getPicturesXLS(workbook, pictureMap);
-                } else {
-                    getPicturesXLSX(workbook, pictureMap);
+                try {
+                    if (ExcelController.ExcelFormatEnum.XLS.getValue().equals(fileFormat)) {
+                        getPicturesXLS(workbook, pictureMap);
+                    } else {
+                        getPicturesXLSX(workbook, pictureMap);
+                    }
+                } catch (Exception e) {
+                    throw new ServerException("解析图片出现错误");
                 }
+
 
                 List<SysUserGysExcelVO> transferList = new ArrayList<>();
 
@@ -1220,12 +1342,12 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
 
 
                     //判断车牌号有没有，车牌号只能被创建一次
-                    if (org.apache.commons.lang3.StringUtils.isNotEmpty(sysUserEntity.getLicensePlate())){
+                    if (org.apache.commons.lang3.StringUtils.isNotEmpty(sysUserEntity.getLicensePlate())) {
                         long valusCount = tVehicleService.count(new QueryWrapper<TVehicleEntity>()
                                 .eq("license_plate", sysUserEntity.getLicensePlate())
                                 .eq("deleted", 0));
                         if (valusCount > 0) {
-                            throw new ServerException("车辆"+sysUserEntity.getLicensePlate()+"已存在，不能重复添加");
+                            throw new ServerException("车辆" + sysUserEntity.getLicensePlate() + "已存在，不能重复添加");
                         }
                         SysUserEntity oldusermobile = baseMapper.getByMobile(sysUserEntity.getMobile());
                         if (oldusermobile != null) {
@@ -1245,7 +1367,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             tVehicleEntity.setSupplierName(byId.getName());
                             tVehicleEntity.setCarClass("3");
                             saveCarLists.add(tVehicleEntity);
-                        }else {
+                        } else {
                             sysUserEntity.setUserType("2");
                             sysUserEntity.setPassword(password);
                             sysUserEntity.setOrgId(orgId);
@@ -1271,7 +1393,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                             saveCarLists.add(tVehicleEntity);
                         }
 
-                    }else {
+                    } else {
                         // 没有车牌号
                         sysUserEntity.setUserType("2");
                         sysUserEntity.setPassword(password);
@@ -1284,7 +1406,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     }
                 }
                 // 用户添加完成后，需要反向给车辆表设置司机ID
-                if(CollectionUtils.isNotEmpty(saveCarLists)){
+                if (CollectionUtils.isNotEmpty(saveCarLists)) {
                     saveCarLists.forEach(car -> {
                         String driverMobile = car.getDriverMobile();
                         SysUserEntity oldusermobile = baseMapper.getByMobile(driverMobile);
@@ -1296,6 +1418,8 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                     });
                     tVehicleService.saveBatch(saveCarLists);
                 }
+            } catch (Exception e) {
+                throw new ServerException(e.getMessage());
             } finally {
                 // 清理临时文件
                 if (tempFile.exists()) {
@@ -1303,7 +1427,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDao, SysUserEntit
                 }
             }
         } catch (IOException e) {
-            throw new ServerException("Error reading Excel from URL.");
+            throw new ServerException(e.getMessage());
         }
     }
 

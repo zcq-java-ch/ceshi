@@ -1,5 +1,6 @@
 package com.hxls.api.module.message;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +19,16 @@ public interface SmsApi {
      * @return 是否发送成功
      */
     boolean send(String mobile, Map<String, String> params);
+
+    /**
+     * 发送短信
+     *
+     * @param mobile 手机号
+     * @param params 参数
+     * @param id 模板序号
+     * @return 是否发送成功
+     */
+    boolean sendById(List<String> mobile, Map<String, String> params , Long id);
 
     /**
      * 发送短信

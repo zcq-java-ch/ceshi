@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,6 +23,11 @@ public class LoginConfig {
         return new SmsApi() {
             @Override
             public boolean send(String mobile, Map<String, String> params) {
+                return false;
+            }
+
+            @Override
+            public boolean sendById(List<String> mobile, Map<String, String> params, Long id) {
                 return false;
             }
 

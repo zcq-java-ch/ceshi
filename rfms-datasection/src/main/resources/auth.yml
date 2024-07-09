@@ -3,4 +3,4 @@ auth:
     - /upload/**
     - /car/listByCarNumber
     - /api/**
-    - /**
+    - /datasection/CallbackRecordsHttp/**

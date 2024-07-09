@@ -79,7 +79,6 @@ public class SysRoleController {
         List<Long> menuIdList = sysRoleMenuService.getMenuIdList(id,1);
         role.setMenuIdList(menuIdList);
 
-
         // 查询角色对应的菜单（移动端）
         List<Long> appMenuIdList = sysRoleMenuService.getMenuIdList(id,2);
         role.setAppMenuIdList(appMenuIdList);

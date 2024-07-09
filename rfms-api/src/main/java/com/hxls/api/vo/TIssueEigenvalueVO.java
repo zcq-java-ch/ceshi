@@ -1,6 +1,6 @@
-package com.hxls.appointment.pojo.vo;
+package com.hxls.api.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,7 +14,7 @@ public class TIssueEigenvalueVO {
     private List<String> fail;
 
     /**
-     * 下发站点名称
+     * 授权厂站
      */
     private String stationName;
 
@@ -54,26 +54,39 @@ public class TIssueEigenvalueVO {
     private String data;
 
     /**
-     * 状态  0：失败   1：下发中  2 正常
+     * 状态  0：停用   1：正常
      */
-    private Integer status = 0 ;
+    private Integer status;
+
 
     private Long id;
 
-    private Long creator;
 
-    private Date createTime;
+    private Long  creator;
+    private String  creatorName;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String createTime;
+
 
     private Long  updater;
+
 
     private Date updateTime;
 
     private Integer version;
-
     private Integer deleted;
 
-    private String name;
+
+    private String peopleName;
+    private String peopleCode;
+    private String faceUrl;
 
     private String carNumber;
+
+    private String masterIp;
+    private String time;
+
+    private String postName;
 
 }

@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -251,7 +252,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
-        objectLambdaQueryWrapper.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        objectLambdaQueryWrapper.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
         int inNumer = 0;
         if(CollectionUtil.isNotEmpty(allnbNumids)){
             objectLambdaQueryWrapper.in(TPersonAccessRecordsEntity::getDevicePersonId, allnbNumids);
@@ -307,7 +308,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
-        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities2 = baseMapper.selectList(objectLambdaQueryWrapper2);
         int inAllNumer = 0;
 
@@ -504,6 +505,19 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         return calendar.getTime();
     }
 
+    private Date getTodayMinOneMonth(Date date) {
+
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTime(date);
+        // 减少X个月
+        calendar.add(Calendar.MONTH, -1);
+
+        return calendar.getTime();
+    }
+
+
+
     private Date getTodayEnd() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -522,10 +536,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getDeleted, 0);
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
-        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities2 = baseMapper.selectList(objectLambdaQueryWrapper2);
 
         JSONArray objects = new JSONArray();
+        List<TPersonAccessRecordsEntity> in =new ArrayList<>();
+        List<TPersonAccessRecordsEntity> out =new ArrayList<>();
         // 按照姓名id进行分组
 //        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
 //                .stream()
@@ -550,7 +566,9 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                             String devicePersonId = entity.getDevicePersonId();
                             if (devicePersonId != null && !devicePersonId.isEmpty()) {
                                 return devicePersonId;
-                            } else {
+                            } else if (entity.getPersonId() !=null){
+                                return entity.getPersonName()+"_"+entity.getPersonId();
+                            }else {
                                 return entity.getPersonName();
                             }
                         }
@@ -565,18 +583,71 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
             // 找出每个分组中按照时间排序的最后一条数据
             TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
             if ("1".equals(lastRecord.getAccessType())) {
-                // 最后一次为入厂
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("name", lastRecord.getPersonName());
-                jsonObject.put("fire", lastRecord.getCompanyName());
-                jsonObject.put("post", lastRecord.getPositionName());
-                jsonObject.put("region", lastRecord.getChannelName());
-                objects.add(jsonObject);
+                in.add(lastRecord);
+//                // 最后一次为入厂
+//                JSONObject jsonObject = new JSONObject();
+//                jsonObject.put("name", lastRecord.getPersonName());
+//                jsonObject.put("fire", lastRecord.getCompanyName());
+//                jsonObject.put("post", lastRecord.getPositionName());
+//                jsonObject.put("region", lastRecord.getChannelName());
+//                objects.add(jsonObject);
             } else {
-                // 最后一次为出厂
+                //收集 最后一次为出厂
+                out.add(lastRecord);
             }
         }
+        for (TPersonAccessRecordsEntity tPersonAccessRecordsEntity : in) {
+
+            //比较最后一次入场是不是再其他类型出去过
+           if( checkTime(tPersonAccessRecordsEntity , out)){
+               JSONObject jsonObject = new JSONObject();
+               jsonObject.put("name", tPersonAccessRecordsEntity.getPersonName());
+               jsonObject.put("fire", tPersonAccessRecordsEntity.getCompanyName());
+               jsonObject.put("post", tPersonAccessRecordsEntity.getPositionName());
+               jsonObject.put("region", tPersonAccessRecordsEntity.getChannelName());
+               jsonObject.put("personId" , StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()) ? tPersonAccessRecordsEntity.getDevicePersonId() : tPersonAccessRecordsEntity.getPersonId());
+               objects.add(jsonObject);
+           }
+
+        }
+
+
+
+
         return objects;
+    }
+
+    private boolean checkTime(TPersonAccessRecordsEntity in, List<TPersonAccessRecordsEntity> out) {
+
+        if (CollectionUtils.isEmpty(out)){
+            return true;
+        }
+
+        //两个都为null,不做抵消
+        if (in.getPersonId() ==null && StringUtils.isEmpty(in.getDevicePersonId())){
+            return true;
+        }
+
+        for (TPersonAccessRecordsEntity outPerson : out) {
+            //首先比较人名字
+            //两个都为null,不做抵消
+            if (outPerson.getPersonId() ==null && StringUtils.isEmpty(outPerson.getDevicePersonId())){
+                return true;
+            }
+            //至少其中有一个值
+            if (outPerson.getPersonName().equals(in.getPersonName())) {
+                String outId = outPerson.getDevicePersonId() ==null? String.valueOf(outPerson.getPersonId()) : outPerson.getDevicePersonId();
+                String inId = in.getDevicePersonId() ==null? String.valueOf(in.getPersonId()) : in.getDevicePersonId();
+                if (outId.equals(inId)){
+                    //人员确认为同一个人员，判断时间是否需要抵消
+                    if (outPerson.getRecordTime().after(in.getRecordTime())) {
+                        return false;
+                    }
+                }
+            }
+        }
+        //不做抵消
+        return true;
     }
 
     @Override
@@ -693,11 +764,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     @Override
     public JSONArray numberOfAssemblersAndVehicles(JSONArray siteCoor) {
         JSONArray siteCoorAfter = siteCoor;
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(siteCoor)){
+        if (CollectionUtils.isNotEmpty(siteCoor)){
             for (int i = 0; i < siteCoor.size(); i++) {
                 JSONObject jsonObject = siteCoor.getJSONObject(i);
                 Long siteId = jsonObject.getLong("siteId");
-                Integer personnelOnlineTotal = querSitePersonnelOnlineTotal(siteId);
+               // Integer personnelOnlineTotal = querSitePersonnelOnlineTotal(siteId);
+                Integer personnelOnlineTotal = queryTheDetailsOfSitePersonnel(siteId).size();
                 Integer vehicleOnlineTotal = querSiteVehicleOnlineTotal(siteId);
                 jsonObject.put("numberOfPeopleAtTheSite", personnelOnlineTotal);
                 jsonObject.put("numberOfStops", vehicleOnlineTotal);

@@ -8,16 +8,23 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.cache.RedisCache;
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.system.convert.SysUserConvert;
 import com.hxls.system.entity.*;
+import com.hxls.system.query.TBannerQuery;
 import com.hxls.system.service.*;
 import com.hxls.system.vo.SysNoticeVO;
+import com.hxls.system.vo.SysUserVO;
+import com.hxls.system.vo.TBannerVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,42 +41,42 @@ public class SystemServerApi {
 
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private TDeviceManagementService tDeviceManagementService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     protected SysAreacodeDeviceService sysAreacodeDeviceService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private TManufacturerService tManufacturerService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private TVehicleService tVehicleService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private SysUserService sysUserService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private SysNoticeService sysNoticeService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private SysOrgService sysOrgService;
     /**
      * javadoc
-     * */
+     */
     @Autowired
     private SysSiteAreaService sysSiteAreaService;
 
@@ -78,9 +85,10 @@ public class SystemServerApi {
 
     @Autowired
     private AppointmentFeign appointmentFeign;
+
     /**
      * javadoc
-     * */
+     */
     @PostMapping("/queryAllDeviceList")
     @Operation(summary = "查询所有站点的编码和主ip")
     public JSONArray queryAllDeviceList() {
@@ -116,18 +124,19 @@ public class SystemServerApi {
     }
 
     /**
-      * &#064;author:  Mryang
-      * @Description: 准确的讲，传过来的并不是ip而是客户端的 设备名称
-     *                  在万众设备下 我们需要将平台的ipAddress设置为和
-     *                  客户端的设备名称一样，我们才能将客户端的设备与平台
-     *                  设置的设备相对应起来
-      * @Date: 23:34 2024/4/22
-      * @param agentDeviceName 设备关联字段
-      * @return entries 消息内容
-      */
+     * &#064;author:  Mryang
+     *
+     * @param agentDeviceName 设备关联字段
+     * @return entries 消息内容
+     * @Description: 准确的讲，传过来的并不是ip而是客户端的 设备名称
+     * 在万众设备下 我们需要将平台的ipAddress设置为和
+     * 客户端的设备名称一样，我们才能将客户端的设备与平台
+     * 设置的设备相对应起来
+     * @Date: 23:34 2024/4/22
+     */
     @PostMapping("/useTheAccountToQueryDeviceInformation")
     @Operation(summary = "useTheAccountToQueryDeviceInformation")
-    public JSONObject useTheAccountToQueryDeviceInformation(@RequestParam("agentDeviceName") final String agentDeviceName){
+    public JSONObject useTheAccountToQueryDeviceInformation(@RequestParam("agentDeviceName") final String agentDeviceName) {
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
@@ -136,17 +145,17 @@ public class SystemServerApi {
         System.out.println("当前万众客户端传过来的设备名称是：" + agentDeviceName);
         System.out.println("是否在数据库中找到了对应的数据：" + tDeviceManagementEntities.toString());
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)) {
             TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
 
             // 通过设备id找到通道id和通道名字
             Long channelId = 1L;
             String channelName = "";
             SysSiteAreaEntity sysSiteAreaEntity = sysAreacodeDeviceService.queryChannelByDeviceId(tDeviceManagementEntity.getId());
-            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)){
+            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)) {
                 channelId = sysSiteAreaEntity.getId();
                 channelName = sysSiteAreaEntity.getAreaName();
-            }else {
+            } else {
             }
             // 获取厂商名字
             Long manufacturerId = tDeviceManagementEntity.getManufacturerId();
@@ -169,26 +178,36 @@ public class SystemServerApi {
     }
 
     @PostMapping(value = "/useTheDeviceSnToQueryDeviceInformation")
-    public JSONObject useTheDeviceSnToQueryDeviceInformation(@RequestParam("deviceSn") String deviceSn){
+    public JSONObject useTheDeviceSnToQueryDeviceInformation(@RequestParam("deviceSn") String deviceSn) {
+
+        String masterCode = "";
+
+        if (deviceSn.contains("&")) {
+            deviceSn = deviceSn.split("&")[1];
+            masterCode = deviceSn.split("&")[0];
+        }
+
+
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeviceSn, deviceSn);
+        tDeviceManagementEntityQueryWrapper.eq(StringUtils.isNotEmpty(masterCode), TDeviceManagementEntity::getMasterSn, masterCode);
         List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
-        System.out.println("当前海康客户端传过来的设备名称是："+deviceSn);
-        System.out.println("是否在数据库中找到了对应的数据："+tDeviceManagementEntities.toString());
+        System.out.println("当前海康客户端传过来的设备名称是：" + deviceSn);
+        System.out.println("是否在数据库中找到了对应的数据：" + tDeviceManagementEntities.toString());
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)) {
             TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
 
             // 通过设备id找到通道id和通道名字
             Long channel_id = 1L;
             String channel_name = "";
             SysSiteAreaEntity sysSiteAreaEntity = sysAreacodeDeviceService.queryChannelByDeviceId(tDeviceManagementEntity.getId());
-            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)){
+            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)) {
                 channel_id = sysSiteAreaEntity.getId();
                 channel_name = sysSiteAreaEntity.getAreaName();
-            }else {
+            } else {
             }
             // 获取厂商名字
             Long manufacturerId = tDeviceManagementEntity.getManufacturerId();
@@ -210,26 +229,26 @@ public class SystemServerApi {
     }
 
     @PostMapping(value = "/useTheIpaddressToQueryDeviceInformation")
-    public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress){
+    public JSONObject useTheIpaddressToQueryDeviceInformation(@RequestParam("ipAddress") String ipAddress) {
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getIpAddress, ipAddress);
         List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
-        System.out.println("当前海康人脸客户端传过来的设备名称是："+ipAddress);
-        System.out.println("是否在数据库中找到了对应的数据："+tDeviceManagementEntities.toString());
+        System.out.println("当前海康人脸客户端传过来的设备名称是：" + ipAddress);
+        System.out.println("是否在数据库中找到了对应的数据：" + tDeviceManagementEntities.toString());
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)) {
             TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
 
             // 通过设备id找到通道id和通道名字
             Long channel_id = 1L;
             String channel_name = "";
             SysSiteAreaEntity sysSiteAreaEntity = sysAreacodeDeviceService.queryChannelByDeviceId(tDeviceManagementEntity.getId());
-            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)){
+            if (ObjectUtil.isNotEmpty(sysSiteAreaEntity)) {
                 channel_id = sysSiteAreaEntity.getId();
                 channel_name = sysSiteAreaEntity.getAreaName();
-            }else {
+            } else {
             }
             // 获取厂商名字
             Long manufacturerId = tDeviceManagementEntity.getManufacturerId();
@@ -252,14 +271,14 @@ public class SystemServerApi {
     }
 
     @PostMapping(value = "/queryVehicleInformationByLicensePlateNumber")
-    public JSONObject queryVehicleInformationByLicensePlateNumber(@RequestParam("licensePlates") String licensePlates){
+    public JSONObject queryVehicleInformationByLicensePlateNumber(@RequestParam("licensePlates") String licensePlates) {
         LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
         tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
         tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getLicensePlate, licensePlates);
         List<TVehicleEntity> tVehicleEntities = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tVehicleEntities)){
+        if (CollectionUtil.isNotEmpty(tVehicleEntities)) {
             TVehicleEntity tVehicleEntity = tVehicleEntities.get(0);
 
             entries.put("carType", tVehicleEntity.getCarType());
@@ -274,7 +293,7 @@ public class SystemServerApi {
             entries.put("driverName", tVehicleEntity.getDriverName());
             entries.put("driverMobile", tVehicleEntity.getDriverMobile());
             entries.put("imageUrl", tVehicleEntity.getImageUrl());
-            entries.put("stationId", tVehicleEntity.getStationId());
+            entries.put("stationId", tVehicleEntity.getSiteId());
         }
 //        else {
 //            LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -304,9 +323,9 @@ public class SystemServerApi {
 
     /**
      * 查询厂站看板人员信息
-     * */
+     */
     @PostMapping(value = "/queryInformationOnkanbanPersonnelStation")
-    public JSONObject queryInformationOnkanbanPersonnelStation(@RequestParam("siteId") Long siteId){
+    public JSONObject queryInformationOnkanbanPersonnelStation(@RequestParam("siteId") Long siteId) {
         LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
@@ -323,7 +342,7 @@ public class SystemServerApi {
         int all = size + pzNum;
 
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(sysUserEntities)){
+        if (CollectionUtil.isNotEmpty(sysUserEntities)) {
             // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
             entries.put("numberOfPeopleRegistered", all);
 
@@ -333,7 +352,7 @@ public class SystemServerApi {
 
             // 按照 busis 字段进行分组
             Map<String, Long> typeCounts = sysUserEntities.stream()
-                    .filter(sysUserEntity ->  StringUtils.isNotEmpty(sysUserEntity.getBusis()))
+                    .filter(sysUserEntity -> StringUtils.isNotEmpty(sysUserEntity.getBusis()))
                     .collect(Collectors.groupingBy(SysUserEntity::getBusis, Collectors.counting()));
             // 打印每个类型及其数量
             JSONObject objects = new JSONObject();
@@ -352,7 +371,7 @@ public class SystemServerApi {
                 postobjects.put(entry2.getKey(), entry2.getValue());
             }
             entries.put("postobjects", postobjects);
-        }else {
+        } else {
             // 在册人员数量=站点员工数量+派驻期内派驻该站点人数
             entries.put("numberOfPeopleRegistered", 0);
             entries.put("numberOfPeopleRegisteredIdList", new ArrayList<>());
@@ -363,14 +382,14 @@ public class SystemServerApi {
     }
 
     /**
+     * @param siteId
      * @author: Mryang
      * @Description: 用于查询该站点的内部人员中，关联的车辆总数
      * @Date: 2024/4/21 22:53
-     * @param siteId
      * @return: JSONObject
      */
     @PostMapping(value = "/checkTheTotalNumberOfRegisteredVehicles")
-    public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId){
+    public JSONObject checkTheTotalNumberOfRegisteredVehicles(@RequestParam("siteId") Long siteId) {
         JSONObject entries = new JSONObject();
         int totalCar = 0;
 
@@ -380,12 +399,12 @@ public class SystemServerApi {
         wrapper.eq(SysUserEntity::getStatus, "1");
         wrapper.eq(SysUserEntity::getDeleted, "0");
         List<SysUserEntity> userEntityList = sysUserService.list(wrapper);
-        if (CollectionUtils.isNotEmpty(userEntityList)){
+        if (CollectionUtils.isNotEmpty(userEntityList)) {
             List<Long> userIds = userEntityList.stream()
                     .map(SysUserEntity::getId)
                     .collect(Collectors.toList());
 
-            if (CollectionUtils.isNotEmpty(userIds)){
+            if (CollectionUtils.isNotEmpty(userIds)) {
                 LambdaQueryWrapper<TVehicleEntity> tVehicleEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getStatus, 1);
                 tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
@@ -410,7 +429,7 @@ public class SystemServerApi {
      * @return: JSONObject
      */
     @PostMapping(value = "/sendSystemMessage")
-    public cn.hutool.json.JSONObject sendSystemMessage(@RequestParam("type") String type, @RequestParam("siteId") Long siteId){
+    public cn.hutool.json.JSONObject sendSystemMessage(@RequestParam("type") String type, @RequestParam("siteId") Long siteId) {
         //根据站点id获取站点管理员列表
         SysOrgEntity byId = sysOrgService.getById(siteId);
         //判断是否设置站点管理
@@ -438,13 +457,13 @@ public class SystemServerApi {
     }
 
     /**
-      * @author: Mryang
-      * @Description: 其他服务调用接口
-     *                  查询站点数量，车辆通道数据量，人员通道数量
-      * @Date: 22:57 2024/4/22
-      * @Param:
-      * @return:
-      */
+     * @author: Mryang
+     * @Description: 其他服务调用接口
+     * 查询站点数量，车辆通道数据量，人员通道数量
+     * @Date: 22:57 2024/4/22
+     * @Param:
+     * @return:
+     */
     @SuppressWarnings({"checkstyle:FinalParameters", "checkstyle:MagicNumber", "checkstyle:Indentation"})
     @PostMapping(value = "/querySiteNumAndChannelNum")
     public JSONObject querySiteNumAndChannelNum() {
@@ -464,12 +483,12 @@ public class SystemServerApi {
         int carChannelNum = 0;
         for (int i = 0; i < areaEntities.size(); i++) {
             SysSiteAreaEntity sysSiteAreaEntity = areaEntities.get(i);
-            if (StringUtils.isNotBlank(sysSiteAreaEntity.getFaceInCode()) && StringUtils.isNotBlank(sysSiteAreaEntity.getFaceOutCode())) {
+            if (StringUtils.isNotBlank(sysSiteAreaEntity.getFaceInCode()) || StringUtils.isNotBlank(sysSiteAreaEntity.getFaceOutCode())) {
                 // 如果人脸进出设备不为空，那么人脸通道数量+1
                 faceChannelNum += 1;
             }
 
-            if (StringUtils.isNotBlank(sysSiteAreaEntity.getCarIntCode()) && StringUtils.isNotBlank(sysSiteAreaEntity.getCarOutCode())) {
+            if (StringUtils.isNotBlank(sysSiteAreaEntity.getCarIntCode()) || StringUtils.isNotBlank(sysSiteAreaEntity.getCarOutCode())) {
                 // 如果人脸进出设备不为空，那么人脸通道数量+1
                 carChannelNum += 1;
             }
@@ -484,12 +503,12 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 查询车牌设备和人脸设备 在线离线情况
-      * @date 14:30 2024/4/23
-      * @param 无
-      * @return JSONObject
-      */
+     * @param
+     * @return JSONObject
+     * @author Mryang
+     * @description 查询车牌设备和人脸设备 在线离线情况
+     * @date 14:30 2024/4/23
+     */
     @PostMapping(value = "/QueryNumberVehiclesAndFacesOnlineAndOffline")
     public JSONObject QueryNumberVehiclesAndFacesOnlineAndOffline() {
         LambdaQueryWrapper<TDeviceManagementEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -524,12 +543,12 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 查询全部站点的名字与id与经纬度
-      * @date 16:02 2024/4/23
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 查询全部站点的名字与id与经纬度
+     * @date 16:02 2024/4/23
+     */
     @PostMapping(value = "/querySiteCoordinates")
     public JSONArray querySiteCoordinates() {
         JSONArray objects = new JSONArray();
@@ -540,7 +559,7 @@ public class SystemServerApi {
         // 只查询组织类型为站点的
         objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4);
         List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
-        if (CollectionUtils.isNotEmpty(sysOrgEntities)){
+        if (CollectionUtils.isNotEmpty(sysOrgEntities)) {
             for (int i = 0; i < sysOrgEntities.size(); i++) {
                 SysOrgEntity sysOrgEntity = sysOrgEntities.get(i);
                 JSONObject entries = new JSONObject();
@@ -558,12 +577,12 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 通过手机号查询用户信息
-      * @date 11:40 2024/4/24
-      * @param telephone
-      * @return JSONObject
-      */
+     * @param telephone
+     * @return JSONObject
+     * @author Mryang
+     * @description 通过手机号查询用户信息
+     * @date 11:40 2024/4/24
+     */
     @PostMapping(value = "/queryUserInformationThroughMobilePhoneNumber")
     public JSONObject queryUserInformationThroughMobilePhoneNumber(@RequestParam("telephone") String telephone) {
         LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -572,7 +591,7 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysUserEntity::getMobile, telephone);
         List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtils.isNotEmpty(userEntities)){
+        if (CollectionUtils.isNotEmpty(userEntities)) {
             SysUserEntity sysUserEntity = userEntities.get(0);
             entries.put("orgId", sysUserEntity.getOrgId());
             entries.put("orgName", sysUserEntity.getOrgName());
@@ -587,12 +606,12 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 通过用户唯一编码查询用户信息
-      * @date 10:10 2024/4/25
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 通过用户唯一编码查询用户信息
+     * @date 10:10 2024/4/25
+     */
     @PostMapping(value = "/queryUserInformationUserId")
     public JSONObject queryUserInformationUserId(@RequestParam("deviceUserId") String deviceUserId) {
         LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -601,7 +620,7 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysUserEntity::getId, deviceUserId);
         List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtils.isNotEmpty(userEntities)){
+        if (CollectionUtils.isNotEmpty(userEntities)) {
             SysUserEntity sysUserEntity = userEntities.get(0);
             entries.put("orgId", sysUserEntity.getOrgId());
             entries.put("orgName", sysUserEntity.getOrgName());
@@ -618,12 +637,12 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 通过车牌查询车辆信息
-      * @date 11:24 2024/5/11
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 通过车牌查询车辆信息
+     * @date 11:24 2024/5/11
+     */
     @PostMapping(value = "/queryUserInformationLicensePlate")
     public JSONObject queryUserInformationLicensePlate(@RequestParam("LicensePlate") String LicensePlate) {
         LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -632,7 +651,7 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysUserEntity::getLicensePlate, LicensePlate);
         List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtils.isNotEmpty(userEntities)){
+        if (CollectionUtils.isNotEmpty(userEntities)) {
             SysUserEntity sysUserEntity = userEntities.get(0);
             entries.put("orgId", sysUserEntity.getOrgId());
             entries.put("orgName", sysUserEntity.getOrgName());
@@ -649,15 +668,15 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 通过传入的userIds 查询这些userid是不是内部用户id,如果是，则返回
-      * @date 17:19 2024/5/14
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 通过传入的userIds 查询这些userid是不是内部用户id,如果是，则返回
+     * @date 17:19 2024/5/14
+     */
     @PostMapping(value = "/queryNbUserIdByUserIdS")
     public JSONObject queryNbUserIdByUserIdS(@RequestParam("collect") List<Long> collect) {
-        if(!CollectionUtils.isNotEmpty(collect)){
+        if (!CollectionUtils.isNotEmpty(collect)) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("userIds", new ArrayList<>());
             return jsonObject;
@@ -669,50 +688,50 @@ public class SystemServerApi {
         List<SysUserEntity> userlist = sysUserService.list(objectLambdaQueryWrapper);
 
         List<Long> userIds = userlist.stream()
-                    .filter(user -> "1".equals(user.getUserType())) // 根据 userType 进行过滤
-                    .map(SysUserEntity::getId) // 提取满足条件的用户的 id
-                    .collect(Collectors.toList()); // 将 id 收集到列表中
+                .filter(user -> "1".equals(user.getUserType())) // 根据 userType 进行过滤
+                .map(SysUserEntity::getId) // 提取满足条件的用户的 id
+                .collect(Collectors.toList()); // 将 id 收集到列表中
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("userIds", userIds);
         return jsonObject;
     }
 
     /**
-      * @author Mryang
-      * @description 查询改用户id或用户名字，在该站点中是否是留宿人员，如果是 返回ture 否则返回false
-      * @date 9:14 2024/5/16
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 查询改用户id或用户名字，在该站点中是否是留宿人员，如果是 返回ture 否则返回false
+     * @date 9:14 2024/5/16
+     */
     @PostMapping(value = "queryIsStayByUser")
-    public boolean queryIsStayByUser(@RequestParam("personId") Long personId,@RequestParam("siteId") Long siteId){
+    public boolean queryIsStayByUser(@RequestParam("personId") Long personId, @RequestParam("siteId") Long siteId) {
         LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStatus, 1);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getDeleted, 0);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getStationId, siteId);
         sysUserEntityLambdaQueryWrapper.eq(SysUserEntity::getId, personId);
         List<SysUserEntity> list = sysUserService.list(sysUserEntityLambdaQueryWrapper);
-        if (CollectionUtils.isNotEmpty(list)){
+        if (CollectionUtils.isNotEmpty(list)) {
             SysUserEntity sysUserEntity = list.get(0);
             Integer isStay = sysUserEntity.getIsStay();
-            if (isStay == 1){
+            if (isStay == 1) {
                 return true;
-            }else {
+            } else {
                 return false;
             }
-        }else{
+        } else {
             return false;
         }
     }
 
 
     /**
-      * @author Mryang
-      * @description 通过用户姓名返回用户信息，如果有多个  则返回一个
-      * @date 9:32 2024/6/4
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 通过用户姓名返回用户信息，如果有多个  则返回一个
+     * @date 9:32 2024/6/4
+     */
     @PostMapping(value = "/queryUserInformationUserName")
     public JSONObject queryUserInformationUserName(@RequestParam("userName") String userName) {
         LambdaQueryWrapper<SysUserEntity> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -721,7 +740,7 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysUserEntity::getRealName, userName);
         List<SysUserEntity> userEntities = sysUserService.list(objectLambdaQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtils.isNotEmpty(userEntities)){
+        if (CollectionUtils.isNotEmpty(userEntities)) {
             SysUserEntity sysUserEntity = userEntities.get(0);
             entries.put("orgId", sysUserEntity.getOrgId());
             entries.put("orgName", sysUserEntity.getOrgName());
@@ -738,11 +757,11 @@ public class SystemServerApi {
     }
 
     /**
+     * @param
+     * @return
      * @author Mryang
      * @description 查询车牌列表关联的车的 随车清单，行驶证等图片
      * @date 10:52 2024/6/11
-     * @param
-     * @return
      */
     @PostMapping(value = "/queryVehiclePhotosThroughLicensePlateList")
     public JSONArray queryVehiclePhotosThroughLicensePlateList(@RequestBody JSONObject plateNumberList) {
@@ -754,7 +773,7 @@ public class SystemServerApi {
         tVehicleEntityLambdaQueryWrapper.eq(TVehicleEntity::getDeleted, 0);
         tVehicleEntityLambdaQueryWrapper.in(TVehicleEntity::getLicensePlate, jsonArray);
         List<TVehicleEntity> vehicleEntityList = tVehicleService.list(tVehicleEntityLambdaQueryWrapper);
-        if (CollectionUtils.isNotEmpty(vehicleEntityList)){
+        if (CollectionUtils.isNotEmpty(vehicleEntityList)) {
             for (int i = 0; i < vehicleEntityList.size(); i++) {
                 JSONObject jsonObject = new JSONObject();
                 TVehicleEntity tVehicleEntity = vehicleEntityList.get(i);
@@ -768,21 +787,21 @@ public class SystemServerApi {
     }
 
     /**
-      * @author Mryang
-      * @description 通过站点IP查询站点ID
-      * @date 14:00 2024/6/11
-      * @param
-      * @return
-      */
+     * @param
+     * @return
+     * @author Mryang
+     * @description 通过站点IP查询站点ID
+     * @date 14:00 2024/6/11
+     */
     @PostMapping(value = "/queryTheSiteIDBySiteIP")
-    public JSONObject queryTheSiteIDBySiteIP(@RequestParam("ipAddress") String ipAddress){
+    public JSONObject queryTheSiteIDBySiteIP(@RequestParam("ipAddress") String ipAddress) {
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getMasterIp, ipAddress);
         List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
         JSONObject entries = new JSONObject();
-        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)){
+        if (CollectionUtil.isNotEmpty(tDeviceManagementEntities)) {
             TDeviceManagementEntity tDeviceManagementEntity = tDeviceManagementEntities.get(0);
             entries.put("siteId", tDeviceManagementEntity.getSiteId());
             entries.put("siteName", tDeviceManagementEntity.getSiteName());
@@ -795,10 +814,64 @@ public class SystemServerApi {
         JSONObject objects = new JSONObject();
 
         SysOrgEntity sysOrgEntities = sysOrgService.getById(stationId);
-        if (ObjectUtil.isNotEmpty(sysOrgEntities)){
+        if (ObjectUtil.isNotEmpty(sysOrgEntities)) {
             objects.put("stationName", sysOrgEntities.getName());
         }
         return objects;
     }
+
+
+    @GetMapping("userList")
+    public List<String> userList(@RequestParam String userType) {
+        List<SysUserEntity> list = sysUserService.list(new LambdaQueryWrapper<SysUserEntity>().eq(SysUserEntity::getUserType, userType));
+
+        List<SysUserVO> sysUserVOS = SysUserConvert.INSTANCE.convertList(list);
+
+        if (CollectionUtils.isNotEmpty(sysUserVOS)) {
+            List<String> ids = sysUserVOS.stream().map(item -> {
+                return item.getId().toString();
+            }).toList();
+            redisCache.set("userList", ids.toString(), 60 * 30);
+            return ids;
+        }
+
+        return new ArrayList<>();
+    }
+
+
+    @GetMapping("getPhoneBySiteId")
+    public List<String> getPhoneBySiteId(@RequestParam("stationId") Long stationId) {
+        SysOrgEntity sysOrgEntities = sysOrgService.getById(stationId);
+        if (ObjectUtil.isNotEmpty(sysOrgEntities)) {
+            String siteAdminIds = sysOrgEntities.getSiteAdminIds();
+            if (StringUtils.isNotEmpty(siteAdminIds)) {
+                List<Long> toList = stringToList(siteAdminIds);
+                List<SysUserEntity> sysUserEntities = sysUserService.listByIds(toList);
+
+                if (CollectionUtils.isNotEmpty(sysUserEntities)){
+                   return sysUserEntities.stream().map(SysUserEntity::getMobile).toList();
+                }
+            }
+        }
+
+
+        return new ArrayList<>();
+    }
+
+    private List<Long> stringToList(String siteAdminIds) {
+
+        // 去掉开头和结尾的方括号
+        siteAdminIds = siteAdminIds.substring(1, siteAdminIds.length() - 1);
+        // 使用逗号分割字符串
+        String[] idArray = siteAdminIds.split(",");
+        // 创建List<String>并添加分割后的元素
+        List<Long> idList = new ArrayList<>();
+        for (String str : idArray) {
+            // 去掉空格并添加到List中
+            idList.add(Long.parseLong(str.trim()));
+        }
+        return idList;
+    }
+
 
 }

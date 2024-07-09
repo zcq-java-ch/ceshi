@@ -124,7 +124,7 @@
     </select>
 
     <select id="selectDevices" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT  device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password, site_code as siteCode,
+        SELECT  id, device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password, site_code as siteCode,site_id,
                 master_ip as master ,manufacturer_code as type  FROM t_device_management where device_type = #{deviceType} and site_id = #{siteId} and deleted = 0 and status = 1
     </select>
 
@@ -143,11 +143,17 @@
 
 
     <select id="selectNewByIds" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT  device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password,site_code as siteCode,
+        SELECT  device_sn as code, ip_address as ip, account as username, password ,master_sn ,master_account ,master_password,site_code as siteCode,site_id,
         master_ip as master ,manufacturer_code as type  FROM t_device_management where device_type = #{deviceType} and  id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+
+    </select>
+    <select id="getAllDictByTypeAndCode" resultType="java.lang.String">
+
+        SELECT dict_label  FROM sys_dict_data where dict_type_id = #{type} and dict_value = #{value} and deleted = 0
+
 
     </select>
 

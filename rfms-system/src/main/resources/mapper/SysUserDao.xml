@@ -73,4 +73,9 @@
 		</if>
 	</select>
 
+
+	<select id="getPostByCode" resultType="java.lang.String">
+		select post_name from sys_user where id = #{code}
+	</select>
+
 </mapper>

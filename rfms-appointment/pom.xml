@@ -19,6 +19,24 @@
 			<artifactId>rfms-framework</artifactId>
 			<version>${revision}</version>
 		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>com.hxls</groupId>-->
+<!--			<artifactId>rfms-module-message</artifactId>-->
+<!--			<version>${revision}</version>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>com.hxls</groupId>-->
+<!--			<artifactId>rfms-module-monitor</artifactId>-->
+<!--			<version>${revision}</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>com.hxls</groupId>-->
+<!--			<artifactId>rfms-module-quartz</artifactId>-->
+<!--			<version>${revision}</version>-->
+<!--		</dependency>-->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>

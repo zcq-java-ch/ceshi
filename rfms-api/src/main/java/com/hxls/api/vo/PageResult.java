@@ -17,6 +17,8 @@ public class PageResult<T> implements Serializable {
     @Schema(description = "列表数据")
     private List<T> list;
 
+
+
     /**
      * 分页
      * @param list   列表数据

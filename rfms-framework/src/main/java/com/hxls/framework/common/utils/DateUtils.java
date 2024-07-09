@@ -3,6 +3,9 @@ package com.hxls.framework.common.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -54,4 +57,22 @@ public class DateUtils {
         }
         return null;
     }
+
+
+    /**
+     * 获取今天的开始 到结束时间
+     * @return 返回 String[]"yyyy-MM-dd HH:mm:ss"
+     */
+    public static String[] getStartAndEndTime() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = now.toLocalDate().atTime(LocalTime.MAX);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String start = startOfDay.format(formatter);
+        String end = endOfDay.format(formatter);
+
+        return new String[]{start, end};
+    }
+
 }

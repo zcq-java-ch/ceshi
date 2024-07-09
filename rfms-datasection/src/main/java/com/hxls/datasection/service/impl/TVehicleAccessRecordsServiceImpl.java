@@ -358,7 +358,7 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
 
         JSONArray objects = new JSONArray();
         for (int i = 0; i < tVehicleAccessRecordsEntities.size(); i++) {
-            TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = tVehicleAccessRecordsEntities.get(0);
+            TVehicleAccessRecordsEntity tVehicleAccessRecordsEntity = tVehicleAccessRecordsEntities.get(i);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("licensePlateNumber", tVehicleAccessRecordsEntity.getPlateNumber());
             jsonObject.put("driver", tVehicleAccessRecordsEntity.getDriverName());

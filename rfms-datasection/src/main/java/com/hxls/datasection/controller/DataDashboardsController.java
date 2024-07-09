@@ -1,6 +1,8 @@
 package com.hxls.datasection.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.vo.PageResult;
@@ -8,7 +10,12 @@ import com.hxls.api.vo.TAppointmentVO;
 import com.hxls.datasection.entity.TVehicleAccessRecordsEntity;
 import com.hxls.datasection.service.DataDashboardsService;
 import com.hxls.datasection.service.TVehicleAccessRecordsService;
+import com.hxls.framework.common.constant.Constant;
+import com.hxls.framework.common.exception.ErrorCode;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.framework.security.user.SecurityUser;
+import com.hxls.framework.security.user.UserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -16,6 +23,7 @@ import lombok.SneakyThrows;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -42,23 +50,35 @@ public class DataDashboardsController {
         // 通过站点查询数据
         JSONObject jsonObject = new JSONObject();
         // 1. 人员信息部分
+
         JSONObject jsonper = dataDashboardsService.personnelInformationSection(stationId);
-        jsonObject.put("personnelInformationSection", jsonper);
         // 2. 车辆信息部分
+
         JSONObject jsonveh = dataDashboardsService.vehicleInformationSection(stationId);
         jsonObject.put("vehicleInformationSection", jsonveh);
+
         // 3. 站点人员明细部分
         JSONObject jsonsite = dataDashboardsService.sitePersonnelBreakdownSection(stationId);
         jsonObject.put("sitePersonnelBreakdownSection", jsonsite);
+
         // 4. 车辆出入明细部分
         JSONObject jsonvehic = dataDashboardsService.vehicleAccessDetails(stationId);
         jsonObject.put("vehicleAccessDetails", jsonvehic);
+
         // 5. 外部预约人员明细部分
         JSONObject jsonbreak = dataDashboardsService.breakdownOfExternalAppointments(stationId);
         jsonObject.put("breakdownOfExternalAppointments", jsonbreak);
+
         // 6. 站点人员明细统计
         JSONObject jsonsiteTj = dataDashboardsService.sitePersonnelBreakdownSectionTj(jsonsite);
         jsonObject.put("sitePersonnelBreakdownSectionTj", jsonsiteTj);
+
+        //替换人员信息部分
+        jsonper.put("realTimeTotalNumberOfPeople" ,jsonsiteTj.getString("sum") );
+        jsonper.put("companyPersonnel" ,jsonsiteTj.getString("company") );
+        jsonper.put("residency" ,jsonsiteTj.getString("supplier") );
+        jsonper.put("externalAppointments" ,jsonsiteTj.getString("other") );
+        jsonObject.put("personnelInformationSection", jsonper);
 
         return Result.ok(jsonObject);
     }
@@ -92,6 +112,14 @@ public class DataDashboardsController {
     @Operation(summary = "数据看板-安保看板")
     @PreAuthorize("hasAuthority('datasection:guard:page')")
     public Result<PageResult<TAppointmentVO>> guardPage(@RequestBody AppointmentDTO data) {
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+        if (user ==null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
+            data.setDataScopeList(CollectionUtils.isNotEmpty(user.getDataScopeList()) ? user.getDataScopeList() : List.of(user.getOrgId()));
+        }
         PageResult<TAppointmentVO> board = appointmentFeign.board(data);
         return Result.ok(board);
     }
@@ -133,19 +161,54 @@ public class DataDashboardsController {
         return Result.ok();
     }
 
-
     @GetMapping("/appointmentSum")
     @Operation(summary = "数据看板-预约汇总")
     @PreAuthorize("hasAuthority('datasection:appointment:sum')")
-    public Result< JSONObject> appointmentSum(@RequestParam Long id) {
-        JSONObject entries = appointmentFeign.appointmentSum(id , 2L);
+    public Result< JSONObject> appointmentSum() {
+
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+
+        if (user ==null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+
+        String siteId = "1";
+
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            siteId =  user.getOrgId().toString();
+        }
+
+        if (CollectionUtils.isNotEmpty(user.getDataScopeList())){
+            siteId = StrUtil.join("," , user.getDataScopeList());
+        }
+
+        JSONObject entries = appointmentFeign.appointmentSum(siteId , 2L);
         return Result.ok(entries);
     }
+
     @GetMapping("/guardSum")
     @Operation(summary = "数据看板-安保汇总")
     @PreAuthorize("hasAuthority('datasection:guard:sum')")
-    public Result<JSONObject> guardSum(@RequestParam Long id) {
-        JSONObject entries = appointmentFeign.appointmentSum(id , 1L);
+    public Result<JSONObject> guardSum() {
+
+        //配置查询权限
+        UserDetail user = SecurityUser.getUser();
+        if (user ==null){
+            throw new ServerException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+
+        String siteId = "1";
+
+        if (!user.getSuperAdmin().equals(Constant.SUPER_ADMIN)) {
+            siteId =  user.getOrgId().toString();
+        }
+
+        if (CollectionUtils.isNotEmpty(user.getDataScopeList())){
+            siteId = StrUtil.join("," , user.getDataScopeList());
+        }
+
+        JSONObject entries = appointmentFeign.appointmentSum(siteId , 1L);
         return Result.ok(entries);
     }
 

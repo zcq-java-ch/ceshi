@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.api.module.message.SmsApi;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
@@ -24,7 +25,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,6 +42,8 @@ public class ResourceController {
     private final StorageProperties storageProperties;
     private final SysUserService sysUserService;
     private final TVehicleService tVehicleService;
+
+    private final SmsApi smsApi;
 
 
     @GetMapping("page")
@@ -141,12 +146,32 @@ public class ResourceController {
 
             tVehicleEntityList.add(tVehicleEntity);
         }
-
         tVehicleService.saveBatch(tVehicleEntityList);
-
     }
 
 
+
+
+//    @GetMapping("senMessage")
+//    @Operation(summary = "发送短信")
+//    public Result<String> senMessage(@RequestParam String phone , @RequestParam Long id ) {
+//
+//        Map<String , String> map =new HashMap<>();
+//        map.put("stationName" , "两江国际");
+//        map.put("appointmentType" , "员工预约");
+//        map.put("companyName" , "华西绿舍本部");
+//        map.put("name" , "张三");
+//       // map.put("" , "");
+//
+//        Map<String , String> map2 =new HashMap<>();
+//        map2.put("stationName" , "两江国际");
+//        map2.put("masterName" , "六楼主厅");
+//
+//
+//        smsApi.sendById(List.of(phone) , id==1? map :map2 , id);
+//
+//        return Result.ok();
+//    }
 
 
 }

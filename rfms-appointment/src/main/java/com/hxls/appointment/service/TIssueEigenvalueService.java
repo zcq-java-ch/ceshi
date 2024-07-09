@@ -1,6 +1,11 @@
 package com.hxls.appointment.service;
 
+import cn.hutool.json.JSONObject;
+import com.hxls.api.dto.appointment.TIssueEigenvalueDTO;
 import com.hxls.appointment.pojo.entity.TIssueEigenvalue;
+import com.hxls.appointment.pojo.vo.TIssueEigenvalueVO;
+import com.hxls.appointment.pojo.vo.TIssueVO;
+import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 
 /**
@@ -10,4 +15,27 @@ import com.hxls.framework.mybatis.service.BaseService;
 */
 public interface TIssueEigenvalueService extends BaseService<TIssueEigenvalue> {
 
+    Long save(TIssueEigenvalueVO data);
+
+
+    /**
+     * 分页查询
+     * @param data
+     * @return
+     */
+    PageResult<TIssueEigenvalueVO> pageList(TIssueEigenvalueDTO data);
+
+
+    /**
+     * 重新下发
+     * @param id
+     * @return
+     */
+    void issue(Long id);
+
+    /**
+     * 修改状态
+     * @param data
+     */
+    String updateTIssueEigenvalue(TIssueVO data);
 }

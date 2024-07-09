@@ -38,7 +38,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
     /**
      * 人员信息部分
-     * */
+     */
     @Override
     public JSONObject personnelInformationSection(Long stationId) {
 
@@ -73,11 +73,11 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
         JSONObject jsonObject = new JSONObject();
         // 在册人数
-        jsonObject.put("numberOfPeopleRegistered", numberOfPeopleRegistered+pzNum);
+        jsonObject.put("numberOfPeopleRegistered", numberOfPeopleRegistered + pzNum);
         // 在册厂内
         jsonObject.put("inTheRegisteredFactory", zccn);
         // 在册厂外
-        jsonObject.put("outsideTheRegisteredFactory", numberOfPeopleRegistered+pzNum-zccn);
+        jsonObject.put("outsideTheRegisteredFactory", numberOfPeopleRegistered + pzNum - zccn);
         // 预拌人数 预制人数 等业务与人数
         jsonObject.put("numberOfPeopleReadyToMix", busisAll);
         // 实时总人数
@@ -94,9 +94,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
         return jsonObject;
     }
+
     /**
      * 车辆信息部分
-     * */
+     */
     @Override
     public JSONObject vehicleInformationSection(Long stationId) {
         // 查询在册车辆总数
@@ -120,9 +121,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         jsonObject.put("theNumberOfShipments", theNumberOfShipments);
         return jsonObject;
     }
+
     /**
      * 站点人员明细部分
-     * */
+     */
     @Override
     public JSONObject sitePersonnelBreakdownSection(Long stationId) {
         JSONArray siteArray = tPersonAccessRecordsService.queryTheDetailsOfSitePersonnel(stationId);
@@ -142,6 +144,9 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
             jsonObject1.put("post", jsonObject.getString("post"));
             // 所在区域
             jsonObject1.put("region", jsonObject.getString("region"));
+
+            jsonObject1.put("personId", jsonObject.getString("personId"));
+
             objects.add(jsonObject1);
         }
 
@@ -150,9 +155,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         jsonObject.put("sitePersonnelDetails", objects);
         return jsonObject;
     }
+
     /**
      * 车辆出入明细部分
-     * */
+     */
     @Override
     public JSONObject vehicleAccessDetails(Long stationId) throws ParseException {
         JSONArray siteArray = tVehicleAccessRecordsService.queryTheDetailsOfSiteCar(stationId);
@@ -185,7 +191,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 //                e.printStackTrace();
                 System.out.println("时间转化异常");
             }
-            jsonObject1.put("time", formattedDate);
+            jsonObject1.put("time", formattedDate.substring(10));
             // 进出类型
             jsonObject1.put("typeOfEntryAndExit", jsonObject.getString("typeOfEntryAndExit"));
             objects.add(jsonObject1);
@@ -196,9 +202,10 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         jsonObject.put("vehicleEntryAndExitDetails", objects);
         return jsonObject;
     }
+
     /**
      * 外部预约人员明细部分
-     * */
+     */
     @Override
     public JSONObject breakdownOfExternalAppointments(Long stationId) {
         JSONArray objects1 = appointmentFeign.checkTheDetailsOfExternalAppointments(stationId, 1, 999);
@@ -212,13 +219,13 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
             // 序号
             jsonObject1.put(SERIAL_NUMBER, serialNumber);
             // 预约人
-            jsonObject1.put("thePersonWhoMadeTheReservation", jsonObject.get("thePersonWhoMadeTheReservation" ));
+            jsonObject1.put("thePersonWhoMadeTheReservation", jsonObject.get("thePersonWhoMadeTheReservation"));
             // 总人数
             jsonObject1.put("totalNumberOfPeople", jsonObject.getLong("totalNumberOfPeople"));
             // 公司
-            jsonObject1.put("firm", jsonObject.get("firm" ));
+            jsonObject1.put("firm", jsonObject.get("firm"));
             // 入厂事由
-            jsonObject1.put("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory" ));
+            jsonObject1.put("reasonForEnteringTheFactory", jsonObject.get("reasonForEnteringTheFactory"));
             entries.add(jsonObject1);
         }
 
@@ -230,7 +237,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
     /**
      * 基本信息部分
-     * */
+     */
     @SuppressWarnings("checkstyle:Indentation")
     @Override
     public JSONObject basicInformationSection() {
@@ -266,7 +273,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
     /**
      * 实名制信息部分
-     * */
+     */
     @Override
     public JSONObject realNameInformationSection() {
         // 查询全部厂站的人员和车辆统计信息
@@ -299,7 +306,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
     /**
      * 地图部分
-     * */
+     */
     @Override
     public JSONObject mapSection() {
         // 查询站点坐标
@@ -315,31 +322,53 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
     @Override
     public JSONObject sitePersonnelBreakdownSectionTj(JSONObject jsonsite) {
+
+        List<String> userList = userFeign.userList("1");
+        List<String> userList2 = userFeign.userList("2");
+        int company = 0;
+        int other = 0;
+
         JSONObject regionCount = new JSONObject();
-        regionCount.put("未设置区域",0);
+        regionCount.put("未设置区域", 0);
         JSONArray jsonArray = jsonsite.getJSONArray("sitePersonnelDetails");
-        if (CollectionUtils.isNotEmpty(jsonArray)){
+        if (CollectionUtils.isNotEmpty(jsonArray)) {
             // 遍历JSONArray中的每一个JSONObject
             for (int i = 0; i < jsonArray.size(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String region = jsonObject.getString("region");
                 // 如果map中已经有这个region，就增加计数，否则初始化计数为1
-                if (StringUtils.isNotEmpty(region)){
-                    if (regionCount.containsKey(region)){
+                if (StringUtils.isNotEmpty(region)) {
+                    if (regionCount.containsKey(region)) {
                         Integer integer = regionCount.getInteger(region);
                         integer += 1;
                         regionCount.put(region, integer);
-                    }else {
+                    } else {
                         regionCount.put(region, 1);
                     }
-                }else {
+                } else {
                     Integer integer = regionCount.getInteger("未设置区域");
                     integer += 1;
                     regionCount.put("未设置区域", integer);
                 }
 
+                //判断人员是否是
+                String personId = jsonObject.getString("personId");
+
+                if (CollectionUtils.isNotEmpty(userList) && userList.contains(personId)) {
+                    company++;
+                }else
+                if (CollectionUtils.isNotEmpty(userList2) && userList2.contains(personId)) {
+                    other++;
+                }
+
+
             }
         }
+        regionCount.put("sum", jsonArray.size());
+        regionCount.put("company", company);
+        regionCount.put("supplier", other);
+        regionCount.put("other",jsonArray.size()-company-other);
+
         return regionCount;
     }
 }

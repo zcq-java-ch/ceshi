@@ -3,6 +3,7 @@ package com.hxls.api.feign.system;
 import com.alibaba.fastjson.JSONObject;
 import com.hxls.api.feign.ServerNames;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -37,4 +38,8 @@ public interface UserFeign {
 
     @PostMapping(value = "api/system/queryUserInformationUserName")
     JSONObject queryUserInformationUserName(@RequestParam("userName") String userName);
+
+    @GetMapping(value = "api/system/userList")
+    List<String> userList(@RequestParam("userType") String userType );
+
 }

@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.api.module.message.SmsApi;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ErrorCode;
 import com.hxls.framework.common.exception.ServerException;
@@ -79,7 +80,13 @@ public class ResourceByLoginController {
      */
     private final SysParamsService sysParamsService;
 
+    /**
+     *
+     */
     private final SysAreacodeDeviceService sysAreacodeDeviceService;
+
+
+    private final SmsApi smsApi;
 
     @GetMapping("person")
     @Operation(summary = "人员下拉")

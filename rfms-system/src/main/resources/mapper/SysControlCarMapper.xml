@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.system.dao.SysControlCarMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.system.entity.SysControlCar">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="siteId" column="site_id" jdbcType="BIGINT"/>
+            <result property="siteName" column="site_name" jdbcType="VARCHAR"/>
+            <result property="licensePlate" column="license_plate" jdbcType="VARCHAR"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,site_id,site_name,
+        license_plate,version,status,
+        deleted,creator,create_time,
+        updater,update_time
+    </sql>
+</mapper>

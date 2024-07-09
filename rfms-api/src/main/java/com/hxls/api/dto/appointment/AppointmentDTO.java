@@ -42,6 +42,8 @@ public class AppointmentDTO  implements Serializable {
 
     private Boolean result = false;
 
+    List<Long> dataScopeList;
+
     @Schema(description = "厂站id")
     private Long siteId;
 

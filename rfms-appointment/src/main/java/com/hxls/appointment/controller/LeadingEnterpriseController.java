@@ -83,6 +83,7 @@ public class LeadingEnterpriseController {
             map.put("params", JSONUtil.toJsonStr(params));
             String post = HttpUtil.post("https://lvshe.huashijc.com/third/open/api/send_data", JSONUtil.toJsonStr(map));
             responseBodyList bean = JSONUtil.toBean(post, responseBodyList.class);
+
             if (!bean.getCode().equals("1001")) {
                 return Result.error(505, bean.getCodeMsg());
             }
@@ -91,10 +92,15 @@ public class LeadingEnterpriseController {
             for (recordInfo datum : bean.getData()) {
                 datum.setFreightVolume(new BigDecimal(datum.getFirstWeight()).subtract(new BigDecimal(datum.getSecondWeight())));
                 datum.setUnit("t");
+                if (datum.getCarNum().equals("川K00001")){
+                    datum.setCarNum("电A00001");
+                }
             }
+
             bean.getData().addAll(recordInfoList);
 
             List<recordInfo> recordInfos = bean.getData();
+
 
             //todo 还需要通过车牌号找到车辆基础信息
             List<String> carNumberList = bean.getData().stream().map(recordInfo::getCarNum).toList();

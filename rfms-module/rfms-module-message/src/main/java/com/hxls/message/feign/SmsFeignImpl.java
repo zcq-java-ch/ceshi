@@ -7,6 +7,7 @@ import com.hxls.message.sms.service.SmsService;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +24,11 @@ public class SmsFeignImpl implements SmsFeign {
     @Override
     public Boolean send(String mobile, Map<String, String> params) {
         return smsService.send(mobile, params);
+    }
+
+    @Override
+    public Boolean sendById(List<String> mobile, Map<String, String> params, Long id) {
+        return smsService.sendById(mobile , params , id);
     }
 
     @Override

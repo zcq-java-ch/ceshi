@@ -53,6 +53,10 @@ public class TDeviceManagementController {
 //            }
 //        }
 
+        if ( query.getSiteId() != null  &&  query.getSiteId()==779) {
+            query.setSiteId(1440L);
+        }
+
         PageResult<TDeviceManagementVO> page = tDeviceManagementService.page(query);
 
         return Result.ok(page);

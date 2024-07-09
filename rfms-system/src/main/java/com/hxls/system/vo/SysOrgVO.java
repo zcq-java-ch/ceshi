@@ -94,4 +94,9 @@ public class SysOrgVO extends TreeNodeByCode<SysOrgVO> {
 
     @Schema(description = "前端分级使用")
     private String areaId;
+
+    @Schema(description ="是否管控 , 1是  0否")
+    private Integer isControl;
+
+
 }

@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +27,19 @@ public interface SmsFeign {
      */
     @PostMapping(value = "api/message/sms/send")
     Boolean send(@RequestParam("mobile") String mobile, @RequestParam("params") Map<String, String> params);
+
+
+
+    /**
+     * 根据模板发送短信
+     *
+     * @param mobile 手机号
+     * @param params 参数
+     * @return 是否发送成功
+     */
+    @PostMapping(value = "api/message/sms/sendById")
+    Boolean sendById(@RequestParam("mobile") List<String> mobile, @RequestParam("params") Map<String, String> params , @RequestParam("id") Long id);
+
 
     /**
      * 发送短信

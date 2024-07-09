@@ -5,14 +5,19 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hxls.api.dto.appointment.AppointmentDTO;
+import com.hxls.api.dto.appointment.TIssueEigenvalueDTO;
 import com.hxls.appointment.pojo.entity.TAppointmentEntity;
 import com.hxls.appointment.pojo.entity.TAppointmentPersonnel;
+import com.hxls.appointment.pojo.entity.TIssueEigenvalue;
 import com.hxls.appointment.pojo.query.TAppointmentQuery;
 import com.hxls.appointment.pojo.vo.TAppointmentVO;
+import com.hxls.appointment.pojo.vo.TAppointmentVehicleVO;
 import com.hxls.appointment.pojo.vo.TIssueEigenvalueVO;
+import com.hxls.appointment.pojo.vo.TIssueVO;
 import com.hxls.appointment.server.RabbitMqManager;
 import com.hxls.appointment.service.TAppointmentPersonnelService;
 import com.hxls.appointment.service.TAppointmentService;
+import com.hxls.appointment.service.TIssueEigenvalueService;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
@@ -50,6 +55,8 @@ public class AppointmentApiController {
     private final TAppointmentService tAppointmentService;
     private final TAppointmentPersonnelService tAppointmentPersonnelService;
 
+    private final TIssueEigenvalueService issueEigenvalueService;
+
     @PostMapping("establish")
     @Operation(summary = "建立站点队列")
     public AppointmentDTO establish(@RequestBody AppointmentDTO data) {
@@ -86,7 +93,6 @@ public class AppointmentApiController {
         query.setOther(true);
         PageResult<TAppointmentVO> page = tAppointmentService.page(query);
         return Result.ok(page);
-
     }
 
     @PutMapping
@@ -118,7 +124,7 @@ public class AppointmentApiController {
     }
 
     @GetMapping(value = "/sum/{id}/{type}")
-    public JSONObject appointmentSum(@PathVariable Long id, @PathVariable Long type) {
+    public JSONObject appointmentSum(@PathVariable String id, @PathVariable Long type) {
         return tAppointmentService.appointmentSum(id, type);
     }
 
@@ -266,9 +272,32 @@ public class AppointmentApiController {
 
     @PostMapping("/addTIssueEigenvalue")
     @Operation(summary = "回调操作接口")
-    public void updateTIssueEigenvalue(@RequestBody TIssueEigenvalueVO data){
+    public Result<String> updateTIssueEigenvalue(@RequestBody TIssueVO data){
+       return Result.ok(issueEigenvalueService.updateTIssueEigenvalue(data));
+    }
 
-        tAppointmentService.updateTIssueEigenvalue(data);
+    @PostMapping("pageListIssue")
+    @Operation(summary = "获取下发表分页")
+    public PageResult<TIssueEigenvalueVO> pageListIssue(@RequestBody TIssueEigenvalueDTO data) {
+        return   issueEigenvalueService.pageList(data);
 
     }
+
+
+    @GetMapping("issue")
+    @Operation(summary = "重新下发")
+    public void issue(@RequestParam Long id) {
+        issueEigenvalueService.issue(id);
+
+    }
+
+
+    @GetMapping("getAppointmentCar")
+    @Operation(summary = "获取预约车辆")
+    public List<TAppointmentVehicleVO> getAppointmentCar(@RequestParam Long siteId) {
+      return   tAppointmentService.getAppointmentCar(siteId);
+
+    }
+
+
 }

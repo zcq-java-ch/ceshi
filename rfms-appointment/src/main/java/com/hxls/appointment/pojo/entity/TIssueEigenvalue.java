@@ -57,7 +57,7 @@ public class TIssueEigenvalue extends BaseEntity {
     private String data;
 
     /**
-     * 状态  0：停用   1：正常
+     * 状态  0：失败 ， 1下发中 ， 2正常
      */
     private Integer status;
 

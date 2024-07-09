@@ -12,24 +12,23 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.hxls.api.feign.appointment.AppointmentFeign;
+import com.hxls.api.vo.TAppointmentVehicleVO;
 import com.hxls.framework.common.constant.Constant;
 import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.TreeByCodeUtils;
 import com.hxls.framework.mybatis.service.impl.BaseServiceImpl;
+import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
 import com.hxls.system.cache.MainPlatformCache;
 import com.hxls.system.convert.SysOrgConvert;
 import com.hxls.system.dao.SysOrgDao;
 import com.hxls.system.dao.SysRoleDataScopeDao;
 import com.hxls.system.dao.SysUserDao;
-import com.hxls.system.entity.SysOrgEntity;
-import com.hxls.system.entity.SysRoleDataScopeEntity;
-import com.hxls.system.entity.SysUserEntity;
+import com.hxls.system.entity.*;
 import com.hxls.system.query.SysOrgQuery;
-import com.hxls.system.service.SysOrgService;
-import com.hxls.system.service.SysRoleDataScopeService;
-import com.hxls.system.service.SysUserService;
+import com.hxls.system.service.*;
 import com.hxls.system.vo.MainPostVO;
 import com.hxls.system.vo.OrganizationVO;
 import com.hxls.system.vo.SysOrgVO;
@@ -52,6 +51,10 @@ import java.util.stream.Collectors;
 public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> implements SysOrgService {
     private final SysUserDao sysUserDao;
     private final SysRoleDataScopeDao sysRoleDataScopeDao;
+    private final TVehicleService tVehicleService;
+    private final SysDictDataService sysDictDataService;
+    private final AppointmentFeign appointmentFeign;
+    private final SysControlCarService sysControlCarService;
 
     @Override
     public PageResult<SysOrgVO> page(SysOrgQuery query) {
@@ -355,6 +358,128 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
         return SysOrgConvert.INSTANCE.convertList(list);
 
+
+    }
+
+    @Override
+    public void setStation(Long id) {
+
+        UserDetail user = SecurityUser.getUser();
+
+        List<SysControlCar> controlCars = new ArrayList<>();
+
+        //开始管控车辆
+        //第一步 查询 所有车辆表中 权限存在这个厂站的车辆
+        List<TVehicleEntity> tVehicleEntities = tVehicleService
+                .list(new LambdaQueryWrapper<TVehicleEntity>().like(TVehicleEntity::getAreaList,id.toString()));
+
+        //第一步 查询 所有车辆表中 权限存在这个厂站的车辆
+        List<SysUserEntity> sysUserEntities = sysUserDao
+                .selectList(new LambdaQueryWrapper<SysUserEntity>().like(SysUserEntity::getAreaList , id.toString()));
+
+        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+            List<Long> userId = sysUserEntities.stream().map(SysUserEntity::getId).toList();
+            List<TVehicleEntity> newList =new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(tVehicleEntities)){
+                newList.addAll(tVehicleEntities);
+            }
+            //查询到有权限管控的车辆
+            List<TVehicleEntity> tVehicleEntityList = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getUserId, userId));
+            if(CollectionUtils.isNotEmpty(tVehicleEntityList)){
+                newList.addAll(tVehicleEntityList);
+            }
+
+            //去除掉不需要管控的车辆
+            List<SysDictDataEntity> dataEntities = sysDictDataService.list(new LambdaQueryWrapper<SysDictDataEntity>().eq(SysDictDataEntity ::getDictTypeId , 38 ));
+
+            if (CollectionUtils.isNotEmpty(dataEntities)){
+                throw new ServerException("请先维护所需管控车辆标准");
+            }
+
+            List<String> dataValues = dataEntities.stream().map(SysDictDataEntity::getDictValue).toList();
+
+
+            //
+            List<TVehicleEntity> result = newList.stream().filter(item -> item.getCarType().equals("2") || item.getCarType().equals("3")).filter(item -> dataValues.contains(item.getEmissionStandard())).toList();
+
+            if (CollectionUtils.isNotEmpty(result)){
+                for (TVehicleEntity tVehicleEntity : result) {
+                    SysControlCar sysControlCar = new SysControlCar();
+                    sysControlCar.setType(1);
+                    sysControlCar.setSiteId(id);
+                    sysControlCar.setLicensePlate(tVehicleEntity.getLicensePlate());
+                    controlCars.add(sysControlCar);
+                }
+            }
+        }
+
+        //第二步 查询今天之后  所有还在预约此厂站的车辆
+        List<TAppointmentVehicleVO> appointmentCar = appointmentFeign.getAppointmentCar(id);
+
+        if (CollectionUtils.isNotEmpty(appointmentCar)){
+            for (TAppointmentVehicleVO tVehicleEntity : appointmentCar) {
+                SysControlCar sysControlCar = new SysControlCar();
+                sysControlCar.setType(2);
+                sysControlCar.setSiteId(id);
+                sysControlCar.setLicensePlate(tVehicleEntity.getPlateNumber());
+                sysControlCar.setRemark(tVehicleEntity.getAppointmentId().toString());
+                controlCars.add(sysControlCar);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(controlCars)){
+
+            sysControlCarService.saveBatch(controlCars);
+
+            for (SysControlCar controlCar : controlCars) {
+                controlCar.setStationId(controlCar.getSiteId());
+                controlCar.setPersonId(user.getId());
+                controlCar.setIsControl("1");
+                JSONObject vehicle = new JSONObject();
+                vehicle.set("sendType", "2");
+                vehicle.set("data", JSONUtil.toJsonStr(controlCar));
+                vehicle.set("DELETE", "DELETE");
+                appointmentFeign.issuedPeople(vehicle);
+            }
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public void offStationControl(Long id) {
+
+        UserDetail user = SecurityUser.getUser();
+
+        List<SysControlCar> controlCars = sysControlCarService.list(new LambdaQueryWrapper<SysControlCar>()
+                .eq(SysControlCar::getSiteId , id));
+        //需要下发
+        if (CollectionUtils.isNotEmpty(controlCars)){
+            //按照类型分组
+            Map<Integer, List<SysControlCar>> integerListMap = controlCars.stream().collect(Collectors.groupingBy(SysControlCar::getType));
+            for (Integer type : integerListMap.keySet()) {
+                List<SysControlCar> controlCars1 = integerListMap.get(type);
+                if (type.equals(2)){
+                    //预约类型
+                    for (SysControlCar sysControlCar : controlCars1) {
+                        com.alibaba.fastjson.JSONObject jsonObject = appointmentFeign.guardInformation(Long.parseLong(sysControlCar.getRemark()));
+                        //获取时间
+
+                    }
+                }else {
+                    for (SysControlCar controlCar : controlCars1) {
+                        controlCar.setStationId(controlCar.getSiteId());
+                        controlCar.setPersonId(user.getId());
+                        controlCar.setIsControl("1");
+                        JSONObject vehicle = new JSONObject();
+                        vehicle.set("sendType", "2");
+                        vehicle.set("data", JSONUtil.toJsonStr(controlCar));
+                        appointmentFeign.issuedPeople(vehicle);
+                    }
+                }
+            }
+            removeBatchByIds(controlCars);
+        }
 
     }
 
