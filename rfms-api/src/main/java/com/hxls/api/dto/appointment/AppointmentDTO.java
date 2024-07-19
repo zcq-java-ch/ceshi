@@ -52,7 +52,7 @@ public class AppointmentDTO  implements Serializable {
 
     @Schema(description = "提交时间")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private String[] creatTime;
+    private String[] createTime;
 
     @NotNull(message = "页码不能为空")
     @Min(value = 1, message = "页码最小值为 1")

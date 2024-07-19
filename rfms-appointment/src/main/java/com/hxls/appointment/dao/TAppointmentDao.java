@@ -142,4 +142,7 @@ public interface TAppointmentDao extends BaseDao<TAppointmentEntity> {
    List<JSONObject> selectNewByIds(@Param("ids") List<Long> list , @Param("deviceType")String deviceType );
 
    String getAllDictByTypeAndCode(@Param("type")int i , @Param("value")String value);
+
+
+   int getCountBySiteId(@Param("siteId")Long siteId);
 }

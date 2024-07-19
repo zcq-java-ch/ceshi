@@ -110,6 +110,7 @@ public class SysAuthServiceImpl implements SysAuthService {
         // 保存用户信息到缓存
         tokenStoreCache.saveUser(userTokenVO.getAccessToken(), user);
         return userTokenVO;
+
     }
 
     @Override

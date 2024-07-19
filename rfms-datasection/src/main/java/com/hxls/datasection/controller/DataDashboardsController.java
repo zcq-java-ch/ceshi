@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
 @RequestMapping("datasection/dataDashboards")
@@ -34,6 +37,10 @@ public class DataDashboardsController {
     private final DataDashboardsService dataDashboardsService;
     private final AppointmentFeign appointmentFeign;
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
+    /**
+     * 注入线程池
+     */
+    private final ThreadPoolExecutor executor;
 
     /**
       * @author: Mryang
@@ -51,6 +58,10 @@ public class DataDashboardsController {
         JSONObject jsonObject = new JSONObject();
         // 1. 人员信息部分
 
+//        CompletableFuture<JSONObject> future1 = CompletableFuture.supplyAsync(() -> {
+//            return dataDashboardsService.personnelInformationSection(stationId);
+//        }, executor);
+//
         JSONObject jsonper = dataDashboardsService.personnelInformationSection(stationId);
         // 2. 车辆信息部分
 
@@ -81,6 +92,7 @@ public class DataDashboardsController {
         jsonObject.put("personnelInformationSection", jsonper);
 
         return Result.ok(jsonObject);
+
     }
 
     /**
@@ -94,13 +106,18 @@ public class DataDashboardsController {
     @Operation(summary = "数据看板-公司看板")
     @PreAuthorize("hasAuthority('datasection:TPersonAccessRecords:page')")
     public Result<JSONObject> companyKanban() {
+
         JSONObject jsonObject = new JSONObject();
+
         // 1. 基本信息部分
         JSONObject jsonper = dataDashboardsService.basicInformationSection();
         jsonObject.put("basicInformationSection", jsonper);
+
+
         // 2. 实名制信息部分
         JSONObject jsonveh = dataDashboardsService.realNameInformationSection();
         jsonObject.put("realNameInformationSection", jsonveh);
+
         // 3. 地图部分
         JSONObject jsonsite = dataDashboardsService.mapSection();
         jsonObject.put("mapSection", jsonsite);

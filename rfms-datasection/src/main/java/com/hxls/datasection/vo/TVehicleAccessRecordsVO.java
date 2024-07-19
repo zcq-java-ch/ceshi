@@ -164,4 +164,11 @@ public class TVehicleAccessRecordsVO implements Serializable {
 	@ExcelIgnore
 	@Schema(description = "行驶证照片")
 	private String licenseImage;
+
+	@ExcelIgnore
+	@Schema(description = "运输量")
+	private String transportVolume;
+	@ExcelIgnore
+	@Schema(description = "运输货物")
+	private String transportGoods;
 }

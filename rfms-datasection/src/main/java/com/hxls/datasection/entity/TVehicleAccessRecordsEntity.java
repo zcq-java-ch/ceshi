@@ -1,5 +1,6 @@
 package com.hxls.datasection.entity;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hxls.framework.common.utils.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -59,8 +60,6 @@ public class TVehicleAccessRecordsEntity extends BaseEntity {
 
 	@Schema(description = "设备名字")
 	private String deviceName;
-
-
 
 	/**
 	* 记录时间
@@ -135,5 +134,11 @@ public class TVehicleAccessRecordsEntity extends BaseEntity {
 	 */
 	private String licenseImage;
 
+
+	@TableField(exist = false)
+	private String transportVolume;
+
+	@TableField(exist = false)
+	private String transportGoods;
 
 }

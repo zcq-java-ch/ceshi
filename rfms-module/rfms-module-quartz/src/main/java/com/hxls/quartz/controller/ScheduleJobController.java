@@ -126,4 +126,7 @@ public class ScheduleJobController {
             throw new ServerException("只允许添加有@Service注解的Bean！");
         }
     }
+
+
+
 }

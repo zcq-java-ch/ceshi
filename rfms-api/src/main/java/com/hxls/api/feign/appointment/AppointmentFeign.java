@@ -118,4 +118,9 @@ public interface AppointmentFeign {
 
     @GetMapping("api/appointment/getAppointmentCar")
     List<TAppointmentVehicleVO> getAppointmentCar(@RequestParam("siteId") Long siteId);
+
+    @GetMapping("api/appointment/getPersonInfo")
+    JSONObject getPersonInfo(@RequestParam("personId") Long personId);
+    @GetMapping("api/appointment/getInformationById")
+    List<String> getInformationById(@RequestParam("id")Long id);
 }

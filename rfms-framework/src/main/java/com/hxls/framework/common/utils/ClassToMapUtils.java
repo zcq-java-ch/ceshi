@@ -28,6 +28,7 @@ public class ClassToMapUtils {
             return map;
 
         } catch (Exception e) {
+            System.out.println("类转换map发生异常 --- ");
             return map;
         }
     }

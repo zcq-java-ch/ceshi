@@ -140,4 +140,11 @@ public interface TAppointmentService extends BaseService<TAppointmentEntity> {
      * @return
      */
     List<TAppointmentVehicleVO> getAppointmentCar(Long siteId);
+
+    /**
+     * 根据id查询外部人员信息
+     * @param personId
+     * @return
+     */
+    JSONObject getPersonInfo(Long personId);
 }

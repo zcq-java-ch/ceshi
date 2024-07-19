@@ -51,4 +51,8 @@ public class TVehicleAccessRecordsQuery extends Query {
     @Schema(description = "司机手机号码")
     private String driverPhone;
 
+
+    @Schema(description = "车辆类型")
+    private String vehicleModel;
+
 }

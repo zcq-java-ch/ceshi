@@ -70,7 +70,6 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         // 查询外部预约总数
         JSONObject jsonObject4 = appointmentFeign.queryTotalAppointments(stationId);
         Integer wbyyzs = jsonObject4.getInteger("numberOfExternalAppointments");
-
         JSONObject jsonObject = new JSONObject();
         // 在册人数
         jsonObject.put("numberOfPeopleRegistered", numberOfPeopleRegistered + pzNum);
@@ -88,10 +87,8 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
         jsonObject.put("residency", wbzp);
         // 外部预约
         jsonObject.put("externalAppointments", wbyyzs);
-
         // 工种人员数量集合
         jsonObject.put("jobs", postAll);
-
         return jsonObject;
     }
 
@@ -160,7 +157,7 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      * 车辆出入明细部分
      */
     @Override
-    public JSONObject vehicleAccessDetails(Long stationId) throws ParseException {
+    public JSONObject vehicleAccessDetails(Long stationId)  {
         JSONArray siteArray = tVehicleAccessRecordsService.queryTheDetailsOfSiteCar(stationId);
 
         JSONArray objects = new JSONArray();
@@ -276,17 +273,21 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
      */
     @Override
     public JSONObject realNameInformationSection() {
+
         // 查询全部厂站的人员和车辆统计信息
         JSONObject statistics = tPersonAccessRecordsService.queryAllVehicleAndPersonStatistics();
         Integer numberOfFactoryStation = statistics.getInteger("numberOfFactoryStation");
         JSONObject busisStatistics = statistics.getJSONObject("busisStatistics");
         Integer numberOfCarStation = statistics.getInteger("numberOfCarStation");
         JSONObject catTypeStatistics = statistics.getJSONObject("catTypeStatistics");
+        Integer numberOfResidents = statistics.getInteger("numberOfResidents");
+        Integer numberOfExternalAppointments = statistics.getInteger("numberOfExternalAppointments");
+
 
         // 在预约服务中查询派驻人数和外部预约人数
-        JSONObject appstatistics = appointmentFeign.queryStatisticsallPeopleReservation();
-        Integer numberOfResidents = appstatistics.getInteger("numberOfResidents");
-        Integer numberOfExternalAppointments = appstatistics.getInteger("numberOfExternalAppointments");
+//        JSONObject appstatistics = appointmentFeign.queryStatisticsallPeopleReservation();
+//        Integer numberOfResidents = appstatistics.getInteger("numberOfResidents");
+//        Integer numberOfExternalAppointments = appstatistics.getInteger("numberOfExternalAppointments");
 
         JSONObject jsonObject = new JSONObject();
         // 厂站实时总人数
@@ -356,12 +357,9 @@ public class DataDashboardsServiceImpl implements DataDashboardsService {
 
                 if (CollectionUtils.isNotEmpty(userList) && userList.contains(personId)) {
                     company++;
-                }else
-                if (CollectionUtils.isNotEmpty(userList2) && userList2.contains(personId)) {
+                }else if (CollectionUtils.isNotEmpty(userList2) && userList2.contains(personId)) {
                     other++;
                 }
-
-
             }
         }
         regionCount.put("sum", jsonArray.size());

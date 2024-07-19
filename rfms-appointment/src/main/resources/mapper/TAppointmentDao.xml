@@ -156,5 +156,10 @@
 
 
     </select>
+    <select id="getCountBySiteId" resultType="java.lang.Integer">
+
+            select count(*) from sys_control_car where site_id =  #{siteId} and deleted = 0 ;
+
+    </select>
 
 </mapper>

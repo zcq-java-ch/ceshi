@@ -269,7 +269,6 @@ public class AppointmentApiController {
         return objects;
     }
 
-
     @PostMapping("/addTIssueEigenvalue")
     @Operation(summary = "回调操作接口")
     public Result<String> updateTIssueEigenvalue(@RequestBody TIssueVO data){
@@ -299,5 +298,18 @@ public class AppointmentApiController {
 
     }
 
+    @GetMapping("getPersonInfo")
+    @Operation(summary = "获取预约车辆")
+    public JSONObject getPersonInfo(@RequestParam Long personId) {
+        return   tAppointmentService.getPersonInfo(personId);
+
+    }
+
+    @GetMapping("getInformationById")
+    @Operation(summary = "获取详细信息")
+    public List<String> getInformationById(@RequestParam Long id) {
+        return   issueEigenvalueService.getInformationById(id);
+
+    }
 
 }

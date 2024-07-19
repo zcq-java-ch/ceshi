@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.api.feign.system.DeviceFeign;
 import com.hxls.api.feign.system.UserFeign;
 import com.hxls.api.feign.system.VehicleFeign;
@@ -42,6 +43,7 @@ public class CallbackRecordsController {
     private final UserFeign userFeign;
     private final TVehicleAccessRecordsService tVehicleAccessRecordsService;
     private final VehicleFeign vehicleFeign;
+    private final AppointmentFeign appointmentFeign;
     private static final String NOTFIND_DEVICE = "设备未找到";
 
     /**
@@ -482,6 +484,15 @@ public class CallbackRecordsController {
                             body.setPositionName(userDetail.getString("postName"));
                             body.setBusis(userDetail.getString("busis"));
                             body.setPersonName(userDetail.getString("personName"));
+                        }else {
+                            //查找是否是外部预约人员
+                            JSONObject personInfo = appointmentFeign.getPersonInfo(Long.parseLong(personId));
+                            if (ObjectUtils.isNotEmpty(personInfo)) {
+                                body.setCompanyName(personInfo.getString("orgName"));
+                                body.setPhone(personInfo.getString("phone"));
+                                body.setPositionName(personInfo.getString("postName"));
+                                body.setPersonName(personInfo.getString("personName"));
+                            }
                         }
                     }
                     tPersonAccessRecordsService.save(body);

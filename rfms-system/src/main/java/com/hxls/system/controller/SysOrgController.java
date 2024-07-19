@@ -9,14 +9,13 @@ import com.hxls.framework.operatelog.annotations.OperateLog;
 import com.hxls.framework.operatelog.enums.OperateTypeEnum;
 import com.hxls.framework.security.user.SecurityUser;
 import com.hxls.framework.security.user.UserDetail;
+import com.hxls.system.entity.SysOnlineLog;
 import com.hxls.system.entity.SysOrgEntity;
 import com.hxls.system.query.SysOrgQuery;
-import com.hxls.system.query.SysUserQuery;
 import com.hxls.system.service.SysControlCarService;
+import com.hxls.system.service.SysOnlineLogService;
 import com.hxls.system.service.SysOrgService;
 import com.hxls.system.vo.SysOrgVO;
-import com.hxls.system.vo.SysUserVO;
-import com.hxls.system.vo.TVehicleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,9 +26,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,6 +42,7 @@ import java.util.Objects;
 public class SysOrgController {
     private final SysOrgService sysOrgService;
     private final SysControlCarService sysControlCarService;
+    private final SysOnlineLogService sysOnlineLogService;
 
     @GetMapping("page")
     @Operation(summary = "分页")
@@ -181,15 +178,14 @@ public class SysOrgController {
         return Result.ok();
     }
 
-    @GetMapping("offStationControl")
-    @Operation(summary = "解除厂站管控")
-    @OperateLog(type = OperateTypeEnum.UPDATE)
-    @PreAuthorize("hasAuthority('system:org:offStationControl')")
-    public Result<String> offStationControl(@RequestParam Long id) {
+    @GetMapping("pageOffLine")
+    @Operation(summary = "查看代理服务离线情况")
+    //@PreAuthorize("hasAuthority('system:org:offStationControl')")
+    public Result<PageResult<SysOnlineLog>> pageOffLine(@ParameterObject @Valid SysOrgQuery query) {
 
-        sysOrgService.offStationControl(id);
+        PageResult<SysOnlineLog> sysOnlineLogPageResult = sysOnlineLogService.pageList(query);
 
-        return Result.ok();
+        return Result.ok(sysOnlineLogPageResult);
     }
 
 

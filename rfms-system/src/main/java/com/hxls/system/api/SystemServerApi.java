@@ -86,6 +86,7 @@ public class SystemServerApi {
     @Autowired
     private AppointmentFeign appointmentFeign;
 
+
     /**
      * javadoc
      */
@@ -182,16 +183,19 @@ public class SystemServerApi {
 
         String masterCode = "";
 
+        String sn = deviceSn ;
+
+
         if (deviceSn.contains("&")) {
-            deviceSn = deviceSn.split("&")[1];
-            masterCode = deviceSn.split("&")[0];
+            sn = deviceSn.split("&")[0];
+            masterCode = deviceSn.split("&")[1];
         }
 
 
         LambdaQueryWrapper<TDeviceManagementEntity> tDeviceManagementEntityQueryWrapper = new LambdaQueryWrapper<>();
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getStatus, 1);
         tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeleted, 0);
-        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeviceSn, deviceSn);
+        tDeviceManagementEntityQueryWrapper.eq(TDeviceManagementEntity::getDeviceSn, sn);
         tDeviceManagementEntityQueryWrapper.eq(StringUtils.isNotEmpty(masterCode), TDeviceManagementEntity::getMasterSn, masterCode);
         List<TDeviceManagementEntity> tDeviceManagementEntities = tDeviceManagementService.list(tDeviceManagementEntityQueryWrapper);
         System.out.println("当前海康客户端传过来的设备名称是：" + deviceSn);
@@ -294,6 +298,8 @@ public class SystemServerApi {
             entries.put("driverMobile", tVehicleEntity.getDriverMobile());
             entries.put("imageUrl", tVehicleEntity.getImageUrl());
             entries.put("stationId", tVehicleEntity.getSiteId());
+           entries.put("transportVolume" , tVehicleEntity.getTransportVolume()) ;
+           entries.put("transportGoods" ,  tVehicleEntity.getTransportGoods());
         }
 //        else {
 //            LambdaQueryWrapper<SysUserEntity> sysUserEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -474,31 +480,43 @@ public class SystemServerApi {
         objectLambdaQueryWrapper.eq(SysOrgEntity::getProperty, 4);
         List<SysOrgEntity> sysOrgEntities = sysOrgService.list(objectLambdaQueryWrapper);
 
+
+        //获取所有得通道 --
         LambdaQueryWrapper<SysSiteAreaEntity> objectLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper1.eq(SysSiteAreaEntity::getStatus, 1);
         objectLambdaQueryWrapper1.eq(SysSiteAreaEntity::getDeleted, 0);
         List<SysSiteAreaEntity> areaEntities = sysSiteAreaService.list(objectLambdaQueryWrapper1);
 
+        //获取所有已绑定设备得通道
+        List<SysAreacodeDeviceEntity> list = sysAreacodeDeviceService.list(new LambdaQueryWrapper<SysAreacodeDeviceEntity>()
+                .eq(SysAreacodeDeviceEntity::getStatus , 1));
+
         int faceChannelNum = 0;
         int carChannelNum = 0;
-        for (int i = 0; i < areaEntities.size(); i++) {
-            SysSiteAreaEntity sysSiteAreaEntity = areaEntities.get(i);
-            if (StringUtils.isNotBlank(sysSiteAreaEntity.getFaceInCode()) || StringUtils.isNotBlank(sysSiteAreaEntity.getFaceOutCode())) {
-                // 如果人脸进出设备不为空，那么人脸通道数量+1
-                faceChannelNum += 1;
-            }
 
-            if (StringUtils.isNotBlank(sysSiteAreaEntity.getCarIntCode()) || StringUtils.isNotBlank(sysSiteAreaEntity.getCarOutCode())) {
-                // 如果人脸进出设备不为空，那么人脸通道数量+1
-                carChannelNum += 1;
+        if (CollectionUtils.isNotEmpty(list)){
+            List<String> list1 = list.stream().map(SysAreacodeDeviceEntity::getAreaDeviceCode).toList();
+
+            for (int i = 0; i < areaEntities.size(); i++) {
+
+                SysSiteAreaEntity sysSiteAreaEntity = areaEntities.get(i);
+                if (list1.contains(sysSiteAreaEntity.getFaceInCode()) || list1.contains(sysSiteAreaEntity.getFaceOutCode())){
+                    // 如果人脸进出设备不为空，那么人脸通道数量+1
+                    faceChannelNum += 1;
+                }
+
+                if (list1.contains(sysSiteAreaEntity.getCarIntCode()) || list1.contains(sysSiteAreaEntity.getCarOutCode())){
+                    // 如果人脸进出设备不为空，那么人脸通道数量+1
+                    carChannelNum += 1;
+                }
+
             }
 
         }
-
         JSONObject entries = new JSONObject();
         entries.put("numberOfSites", sysOrgEntities.size());
-        entries.put("vehicularAccess", faceChannelNum);
-        entries.put("personnelAccess", carChannelNum);
+        entries.put("vehicularAccess", carChannelNum);
+        entries.put("personnelAccess", faceChannelNum);
         return entries;
     }
 
@@ -872,6 +890,7 @@ public class SystemServerApi {
         }
         return idList;
     }
+
 
 
 }

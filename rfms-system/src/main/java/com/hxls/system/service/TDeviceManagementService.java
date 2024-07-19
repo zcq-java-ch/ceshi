@@ -6,6 +6,7 @@ import com.hxls.system.vo.TDeviceManagementVO;
 import com.hxls.system.query.TDeviceManagementQuery;
 import com.hxls.system.entity.TDeviceManagementEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -25,4 +26,5 @@ public interface TDeviceManagementService extends BaseService<TDeviceManagementE
     void delete(List<Long> idList);
 
     List<String> updateStatus(List<TDeviceManagementVO> list);
+
 }

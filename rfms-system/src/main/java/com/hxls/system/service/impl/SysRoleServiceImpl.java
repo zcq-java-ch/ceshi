@@ -73,7 +73,9 @@ public class SysRoleServiceImpl extends BaseServiceImpl<SysRoleDao, SysRoleEntit
         SysRoleEntity entity = SysRoleConvert.INSTANCE.convert(vo);
 
         // 保存角色
-        entity.setDataScope(DataScopeEnum.SELF.getValue());
+        if (vo.getDataScope() ==null ){
+            entity.setDataScope(DataScopeEnum.SELF.getValue());
+        }
 
         baseMapper.insert(entity);
         // 保存角色菜单关系(pc端)

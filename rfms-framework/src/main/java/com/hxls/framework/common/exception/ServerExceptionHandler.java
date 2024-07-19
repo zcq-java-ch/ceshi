@@ -26,6 +26,7 @@ public class ServerExceptionHandler {
     public Result<String> handleException(ServerException ex) {
 
         return Result.error(ex.getCode(), ex.getMsg());
+
     }
 
     /**

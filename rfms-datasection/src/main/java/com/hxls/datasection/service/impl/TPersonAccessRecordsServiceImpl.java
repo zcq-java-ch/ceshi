@@ -510,8 +510,8 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         Calendar calendar = Calendar.getInstance();
 
         calendar.setTime(date);
-        // 减少X个月
-        calendar.add(Calendar.MONTH, -1);
+        // 减少X个周
+        calendar.add(Calendar.WEEK_OF_YEAR, -1);
 
         return calendar.getTime();
     }
@@ -528,6 +528,11 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
     }
 
 
+    /**
+     * 计算当前厂站得在场人员
+     * @param stationId
+     * @return
+     */
     @Override
     public JSONArray queryTheDetailsOfSitePersonnel(Long stationId) {
         String format = "yyyy-MM-dd HH:mm:ss";
@@ -535,18 +540,20 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getDeleted, 0);
-        objectLambdaQueryWrapper2.eq(TPersonAccessRecordsEntity::getSiteId, stationId);
-        objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
+        objectLambdaQueryWrapper2.eq(stationId != null , TPersonAccessRecordsEntity::getSiteId, stationId);
+
+        //如果是两江国际
+        if (stationId != null && stationId == 930 ){
+            objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        }else {
+            objectLambdaQueryWrapper2.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
+        }
+
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities2 = baseMapper.selectList(objectLambdaQueryWrapper2);
 
         JSONArray objects = new JSONArray();
         List<TPersonAccessRecordsEntity> in =new ArrayList<>();
         List<TPersonAccessRecordsEntity> out =new ArrayList<>();
-        // 按照姓名id进行分组
-//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = tPersonAccessRecordsEntities2
-//                .stream()
-//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
 
         // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
         List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities2.stream()
@@ -574,30 +581,19 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                         }
                 ));
 
-
         for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
-            String devicePersonId = entry.getKey();
             List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
-
-
             // 找出每个分组中按照时间排序的最后一条数据
             TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
             if ("1".equals(lastRecord.getAccessType())) {
+                // 最后一次为入厂
                 in.add(lastRecord);
-//                // 最后一次为入厂
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("name", lastRecord.getPersonName());
-//                jsonObject.put("fire", lastRecord.getCompanyName());
-//                jsonObject.put("post", lastRecord.getPositionName());
-//                jsonObject.put("region", lastRecord.getChannelName());
-//                objects.add(jsonObject);
             } else {
                 //收集 最后一次为出厂
                 out.add(lastRecord);
             }
         }
         for (TPersonAccessRecordsEntity tPersonAccessRecordsEntity : in) {
-
             //比较最后一次入场是不是再其他类型出去过
            if( checkTime(tPersonAccessRecordsEntity , out)){
                JSONObject jsonObject = new JSONObject();
@@ -608,12 +604,7 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                jsonObject.put("personId" , StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()) ? tPersonAccessRecordsEntity.getDevicePersonId() : tPersonAccessRecordsEntity.getPersonId());
                objects.add(jsonObject);
            }
-
         }
-
-
-
-
         return objects;
     }
 
@@ -650,8 +641,16 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         return true;
     }
 
+    //todo 需要修改的方法
     @Override
     public JSONObject queryAllVehicleAndPersonStatistics() {
+
+        List<String> userList = userFeign.userList("1");
+        List<String> userList2 = userFeign.userList("2");
+        int company = 0;
+        int other = 0;
+
+
         /**
          * 查询人员统计
          * */
@@ -660,14 +659,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         LambdaQueryWrapper<TPersonAccessRecordsEntity> objectLambdaQueryWrapper3 = new LambdaQueryWrapper<>();
         objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getStatus, 1);
         objectLambdaQueryWrapper3.eq(TPersonAccessRecordsEntity::getDeleted, 0);
-        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayStart()), timeformat.format(getTodayEnd()));
+        objectLambdaQueryWrapper3.between(TPersonAccessRecordsEntity::getRecordTime,  timeformat.format(getTodayMinOneMonth(new Date())), timeformat.format(getTodayEnd()));
         List<TPersonAccessRecordsEntity> tPersonAccessRecordsEntities3 = baseMapper.selectList(objectLambdaQueryWrapper3);
 
-        int numberOfFactoryStation = 0;
-        // 按照姓名id进行分组
-//        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = tPersonAccessRecordsEntities3.stream()
-//                .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()))
-//                .collect(Collectors.groupingBy(TPersonAccessRecordsEntity::getDevicePersonId));
+        List<TPersonAccessRecordsEntity> in =new ArrayList<>();
+        List<TPersonAccessRecordsEntity> out =new ArrayList<>();
+        List<TPersonAccessRecordsEntity> personAccessRecordsEntityArrayList = new ArrayList<>();
 
         // 首先过滤掉 devicePersonId 为空且 personName 也为空的数据
         List<TPersonAccessRecordsEntity> filteredList1 = tPersonAccessRecordsEntities3.stream()
@@ -681,33 +678,39 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
                 .collect(Collectors.toList());
 
         // 按照姓名进行分组，当devicePersonId为空时
-        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId3 = filteredList1.stream()
+        Map<String, List<TPersonAccessRecordsEntity>> groupedByDevicePersonId2 = filteredList1.stream()
                 .collect(Collectors.groupingBy(
                         entity -> {
                             String devicePersonId = entity.getDevicePersonId();
                             if (devicePersonId != null && !devicePersonId.isEmpty()) {
                                 return devicePersonId;
-                            } else {
+                            }else if (entity.getPersonId() !=null){
+                                return entity.getPersonName()+"_"+entity.getPersonId();
+                            }else {
                                 return entity.getPersonName();
                             }
                         }
                 ));
 
-
-        List<TPersonAccessRecordsEntity> personAccessRecordsEntityArrayList = new ArrayList<>();
-        // 打印每个分组并更新inNumer变量
-        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId3.entrySet()) {
+        for (Map.Entry<String, List<TPersonAccessRecordsEntity>> entry : groupedByDevicePersonId2.entrySet()) {
             List<TPersonAccessRecordsEntity> recordsList = entry.getValue();
             // 找出每个分组中按照时间排序的最后一条数据
             TPersonAccessRecordsEntity lastRecord = Collections.max(recordsList, Comparator.comparing(TPersonAccessRecordsEntity::getRecordTime));
             if ("1".equals(lastRecord.getAccessType())) {
                 // 最后一次为入厂
-                numberOfFactoryStation += 1;
-                personAccessRecordsEntityArrayList.add(lastRecord);
+                in.add(lastRecord);
             } else {
-                // 最后一次为出厂
+                //收集 最后一次为出厂
+                out.add(lastRecord);
             }
         }
+        for (TPersonAccessRecordsEntity tPersonAccessRecordsEntity : in) {
+            //比较最后一次入场是不是再其他类型出去过
+            if( checkTime(tPersonAccessRecordsEntity , out)){
+                personAccessRecordsEntityArrayList.add(tPersonAccessRecordsEntity);
+            }
+        }
+
         // 按照 busis 字段进行分组
         Map<String, Long> typeCounts = personAccessRecordsEntityArrayList.stream()
                 .filter(tPersonAccessRecordsEntity -> StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getBusis()))
@@ -715,6 +718,23 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         // 打印每个类型及其数量
         JSONObject busisStatistics = new JSONObject();
         busisStatistics.putAll(typeCounts);
+
+        for (TPersonAccessRecordsEntity tPersonAccessRecordsEntity : personAccessRecordsEntityArrayList) {
+
+
+
+
+            String personId = StringUtils.isNotEmpty(tPersonAccessRecordsEntity.getDevicePersonId()) ? tPersonAccessRecordsEntity.getDevicePersonId() :
+                    tPersonAccessRecordsEntity.getPersonId() == null? "" : tPersonAccessRecordsEntity.getPersonId().toString();
+            if (CollectionUtils.isNotEmpty(userList) && userList.contains(personId)) {
+                company++;
+            }else if (CollectionUtils.isNotEmpty(userList2) && userList2.contains(personId)) {
+                other++;
+            }
+        }
+
+
+
 
 
         /**
@@ -753,10 +773,12 @@ public class TPersonAccessRecordsServiceImpl extends BaseServiceImpl<TPersonAcce
         JSONObject catTypeStatistics = new JSONObject();
         catTypeStatistics.putAll(modelCounts);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("numberOfFactoryStation", numberOfFactoryStation);
+        jsonObject.put("numberOfFactoryStation", personAccessRecordsEntityArrayList.size());
         jsonObject.put("busisStatistics", busisStatistics);
         jsonObject.put("numberOfCarStation", numberOfCarStation);
         jsonObject.put("catTypeStatistics", catTypeStatistics);
+        jsonObject.put("numberOfResidents" , other);
+        jsonObject.put("numberOfExternalAppointments",personAccessRecordsEntityArrayList.size() - other - company);
         return jsonObject;
     }
 

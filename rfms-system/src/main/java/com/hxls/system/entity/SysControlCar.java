@@ -52,6 +52,10 @@ public class SysControlCar extends BaseEntity implements Serializable{
 
     @TableField(exist = false)
     private String isControl;
+    @TableField(exist = false)
+    private String startTime;
+    @TableField(exist = false)
+    private String deadline;
 
 
     private static final long serialVersionUID = 1L;

@@ -25,14 +25,9 @@ import com.hxls.system.controller.ExcelController;
 import com.hxls.system.convert.TVehicleConvert;
 import com.hxls.system.dao.SysUserDao;
 import com.hxls.system.dao.TVehicleDao;
-import com.hxls.system.entity.SysAreacodeDeviceEntity;
-import com.hxls.system.entity.SysSiteAreaEntity;
-import com.hxls.system.entity.SysUserEntity;
-import com.hxls.system.entity.TVehicleEntity;
+import com.hxls.system.entity.*;
 import com.hxls.system.query.TVehicleQuery;
-import com.hxls.system.service.SysAreacodeDeviceService;
-import com.hxls.system.service.SysSiteAreaService;
-import com.hxls.system.service.TVehicleService;
+import com.hxls.system.service.*;
 import com.hxls.system.vo.SysUserVO;
 import com.hxls.system.vo.TVehicleExcelVO;
 import com.hxls.system.vo.TVehicleVO;
@@ -78,6 +73,9 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     private final SysUserDao sysUserDao;
     private final SysSiteAreaService sysSiteAreaService;
     private final SysAreacodeDeviceService sysAreacodeDeviceService;
+    private final SysControlCarService sysControlCarService;
+    private final SysDictDataService sysDictDataService;
+
 
     @Override
     public PageResult<TVehicleVO> page(TVehicleQuery query) {
@@ -107,13 +105,23 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                 wrapper.in(TVehicleEntity::getSupplierId, CollectionUtils.isEmpty(user.getDataScopeList()) ? List.of(Constant.EMPTY) : user.getDataScopeList());
             }
         }
-
-
         return wrapper;
     }
 
     @Override
     public void save(TVehicleVO vo) {
+        List<TVehicleVO> add = new ArrayList<>();
+        if (StringUtils.isEmpty(vo.getAreaList()) && vo.getSiteId()!=null ){
+            List<String> areaList = new ArrayList<>();
+            areaList.add("S"+vo.getSiteId());
+            vo.setAreaList(areaList.toString());
+        }
+        add.add(vo);
+
+        if (StringUtils.isNotEmpty(vo.getAreaList())){
+            checkContollerSite(add);
+        }
+
         //判断车牌号有没有，车牌号只能被创建一次
         long valusCount = baseMapper.selectCount(new QueryWrapper<TVehicleEntity>()
                 .eq("license_plate", vo.getLicensePlate())
@@ -174,6 +182,19 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
 
     @Override
     public void update(TVehicleVO vo) {
+
+        List<TVehicleVO> update = new ArrayList<>();
+        if (StringUtils.isEmpty(vo.getAreaList()) && vo.getSiteId()!=null ){
+            List<String> areaList = new ArrayList<>();
+            areaList.add("S"+vo.getSiteId());
+            vo.setAreaList(areaList.toString());
+
+        }
+        update.add(vo);
+        if (StringUtils.isNotEmpty(vo.getAreaList())){
+            checkContollerSite(update);
+        }
+
         // 判断车牌号是否存在
         TVehicleEntity byLicensePlate = baseMapper.getByLicensePlate(vo.getLicensePlate());
         if (byLicensePlate != null && !byLicensePlate.getId().equals(vo.getId())) {
@@ -348,7 +369,23 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     public void updateStatus(List<TVehicleVO> list) {
         for (TVehicleVO vo : list) {
+
             TVehicleEntity byId = getById(vo.getId());
+
+            List<TVehicleVO> update = new ArrayList<>();
+            if (StringUtils.isEmpty(byId.getAreaList()) && byId.getSiteId()!=null ){
+                List<String> areaList = new ArrayList<>();
+                areaList.add("S"+byId.getSiteId());
+                byId.setAreaList(areaList.toString());
+
+            }
+
+            update.add(TVehicleConvert.INSTANCE.convert(byId));
+            if (StringUtils.isNotEmpty(byId.getAreaList())){
+                checkContollerSite(update);
+            }
+
+
             TVehicleEntity entity = new TVehicleEntity();
             entity.setId(vo.getId());
             if (vo.getStatus() != null) {
@@ -480,6 +517,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     }
                     if (row.getCell(2) != null) {
                         tVehicleExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(2)));
+                        if (StringUtils.isNotEmpty(tVehicleExcelVO.getEmissionStandardName())){
+                            throw new ServerException("排放标准是必填数据");
+                        }
+                    }else {
+                        throw new ServerException("排放标准是必填数据");
                     }
                     if (row.getCell(3) != null) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -536,7 +578,7 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     }
                     tVehicle.setSiteId(siteId);
                     tVehicle.setStatus(1);
-                    tVehicle.setCarClass("4");
+                    tVehicle.setCarClass("2");
                     //查询车辆驾驶员信息
                     String driverMobile = tVehicle.getDriverMobile();
                     if (StrUtil.isNotEmpty(driverMobile)) {
@@ -836,6 +878,11 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                     }
                     if (row.getCell(2) != null) {
                         tVehicleExcelVO.setEmissionStandardName(this.getCellValue(row.getCell(2)));
+                        if (StringUtils.isNotEmpty(tVehicleExcelVO.getEmissionStandardName())){
+                            throw new ServerException("排放标准是必填数据");
+                        }
+                    }else {
+                        throw new ServerException("排放标准是必填数据");
                     }
                     if (row.getCell(3) != null) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -927,6 +974,8 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
     @Override
     public void updateStationIdList(List<TVehicleVO> list) {
 
+        checkContollerSite(list);
+
         for (TVehicleVO vo : list) {
 //            Boolean issued = false;
             TVehicleEntity entity = TVehicleConvert.INSTANCE.convert(vo);
@@ -935,7 +984,6 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
             //查询车辆详情
             TVehicleEntity byId = getById(id);
             //判断是否更换区域,删除之前得老区域，下发新站点和区域
-
             if (StringUtils.isNotEmpty(byId.getAreaList())&&StringUtils.isNotEmpty(vo.getAreaList()) && !byId.getAreaList().equals(vo.getAreaList())){
                 String areaList = byId.getAreaList();
                 List<String> areas = JSONUtil.toList(areaList, String.class);
@@ -986,6 +1034,56 @@ public class TVehicleServiceImpl extends BaseServiceImpl<TVehicleDao, TVehicleEn
                             vehicle.set("data", JSONUtil.toJsonStr(entity));
                             vehicle.set("ids", JSONUtil.toJsonStr(ids));
                             appointmentFeign.issuedPeople(vehicle);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkContollerSite(List<TVehicleVO> list) {
+
+        //判断是否有管控厂站
+        List<Long> control = sysControlCarService.getContro();
+
+        //去除掉不需要管控的车辆
+        List<SysDictDataEntity> dataEntities = sysDictDataService.list(new LambdaQueryWrapper<SysDictDataEntity>().eq(SysDictDataEntity::getDictTypeId, 38));
+
+        if (CollectionUtils.isEmpty(dataEntities)) {
+            throw new ServerException("请先维护所需管控车辆标准");
+        }
+        List<String> dataValues = dataEntities.stream().map(SysDictDataEntity::getDictValue).toList();
+
+        //添加判断
+        if (CollectionUtils.isNotEmpty(control) && StringUtils.isNotEmpty(list.get(0).getAreaList())){
+            String areaList = list.get(0).getAreaList();
+            List<String> areas = JSONUtil.toList(areaList, String.class);
+            List<Long> result = areas.stream().filter(item -> item.contains("S")).map(item -> {
+                return Long.parseLong(item.substring(1));
+            }).toList();
+
+            for (Long siteId : result) {
+                if (control.contains(siteId)){
+                    //查看此时车辆是否能够下发
+                    for (TVehicleVO vo : list) {
+                        //查询车辆  --
+                        if (vo.getId()!=null){
+                            Long id = vo.getId();
+                            //查询车辆详情
+                            TVehicleEntity byId = getById(id);
+
+                            if (!byId.getCarType().equals("1")){
+
+                                if (dataValues.contains(byId.getEmissionStandard())){
+                                    throw new ServerException(byId.getLicensePlate()+"操作失败 ,此厂站正在管控中");
+                                }
+                            }
+                        }else {
+                            if (!vo.getCarType().equals("1")) {
+                                if (dataValues.contains(vo.getEmissionStandard())){
+                                    throw new ServerException(vo.getLicensePlate()+"操作失败 ,此厂站正在管控中");
+                                }
+                            }
                         }
                     }
                 }

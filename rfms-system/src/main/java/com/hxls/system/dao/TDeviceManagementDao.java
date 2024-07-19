@@ -4,6 +4,8 @@ import com.hxls.framework.mybatis.dao.BaseDao;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDateTime;
+
 /**
 * 设备管理表
 *
@@ -12,5 +14,7 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface TDeviceManagementDao extends BaseDao<TDeviceManagementEntity> {
-	
+
+
+
 }

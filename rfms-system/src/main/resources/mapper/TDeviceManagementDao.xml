@@ -29,4 +29,5 @@
         <result property="masterPassword" column="master_password"/>
     </resultMap>
 
+
 </mapper>

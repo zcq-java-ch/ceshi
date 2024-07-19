@@ -1,5 +1,7 @@
 package com.hxls.system.controller;
 
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.hxls.framework.common.exception.ServerException;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.common.utils.Result;
 import com.hxls.framework.operatelog.annotations.OperateLog;
@@ -103,7 +105,6 @@ public class TVehicleController {
     @PreAuthorize("hasAuthority('system:vehicle:update')")
     public Result<String> update(@RequestBody @Valid TVehicleVO vo){
         tVehicleService.update(vo);
-
         return Result.ok();
     }
 
@@ -113,10 +114,8 @@ public class TVehicleController {
     @PreAuthorize("hasAuthority('system:vehicle:delete')")
     public Result<String> delete(@RequestBody List<Long> idList){
         tVehicleService.delete(idList);
-
         return Result.ok();
     }
-
 
     /**
      * 隐蔽性企业查询接口
@@ -197,6 +196,16 @@ public class TVehicleController {
         if (vo.getImageUrl().isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
+
+        //判断是否管控厂站
+        List<Long> control = sysControlCarService.getContro();
+
+        if (CollectionUtils.isNotEmpty(control)){
+            if (control.contains(vo.getSiteId())){
+                throw new ServerException("此厂站正在管控中,无法导入车辆,请手动添加");
+            }
+        }
+
         tVehicleService.importByExcelWithPictures(vo.getImageUrl(),vo.getSiteId());
 
         return Result.ok();
@@ -210,6 +219,7 @@ public class TVehicleController {
         if (vo.getImageUrl().isEmpty()) {
             return Result.error("请选择需要上传的文件");
         }
+
         tVehicleService.importGysWithPictures(vo.getImageUrl(),vo.getSupplierId(), vo.getSupplierName());
 
         return Result.ok();

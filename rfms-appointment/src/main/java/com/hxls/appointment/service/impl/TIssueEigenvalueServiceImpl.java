@@ -59,9 +59,7 @@ public class TIssueEigenvalueServiceImpl extends BaseServiceImpl<TIssueEigenvalu
         //主表转换
         TIssueEigenvalue entity = TIssueEigenvalueConvert.INSTANCE.convert(data);
         int insert = this.baseMapper.insert(entity);
-
         return entity.getId();
-
     }
 
     @Override
@@ -71,10 +69,12 @@ public class TIssueEigenvalueServiceImpl extends BaseServiceImpl<TIssueEigenvalu
         wrapper.eq(data.getSiteId() != null, TIssueEigenvalue::getStationId, data.getSiteId());
         wrapper.eq(data.getStatus() != null, TIssueEigenvalue::getStatus, data.getStatus());
         wrapper.eq(data.getAreaId() !=null , TIssueEigenvalue::getAreaId, data.getAreaId());
+        wrapper.eq(StringUtils.isNotEmpty(data.getCarNo()) ,TIssueEigenvalue::getDeviceId,data.getCarNo() );
+        wrapper.eq(StringUtils.isNotEmpty(data.getName()) ,TIssueEigenvalue::getDeviceId,data.getName() );
         wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TIssueEigenvalue::getCreateTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
 
         wrapper.eq(data.getType() != null , TIssueEigenvalue::getType,data.getType());
-        wrapper.orderByDesc(TIssueEigenvalue::getCreateTime);
+        wrapper.orderByDesc(TIssueEigenvalue::getId);
         Page<TIssueEigenvalue> page = new Page<>(data.getPage(), data.getLimit());
         IPage<TIssueEigenvalue> result = page(page, wrapper);
 
@@ -144,7 +144,25 @@ public class TIssueEigenvalueServiceImpl extends BaseServiceImpl<TIssueEigenvalu
             updateBatchById(upList);
         }
 
-        return result.toString();
+        if (!result.isEmpty()) {
+            return result.substring(1);
+        } else {
+            return "";
+        }
+
+    }
+
+
+    @Override
+    public List<String> getInformationById(Long id) {
+
+        TIssueEigenvalue byId = getById(id);
+        //["32056_18200257251_10.31.11.9","32056_18200257251_10.31.150.116","32056_18200257251_10.31.150.120","32056_18200257251_10.31.150.115","32056_18200257251_10.31.11.1","32056_18200257251_10.31.11.5","32056_18200257251_10.31.150.117","32056_18200257251_10.31.150.118","32056_18200257251_10.31.150.119","32056_18200257251_10.31.11.10"]
+        String deviceName = byId.getDeviceName();
+        if (StringUtils.isNotEmpty(deviceName)){
+            return JSONUtil.toList(deviceName, String.class);
+        }
+        return new ArrayList<>();
     }
 }
 

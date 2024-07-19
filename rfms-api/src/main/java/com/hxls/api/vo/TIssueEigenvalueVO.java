@@ -41,7 +41,7 @@ public class TIssueEigenvalueVO {
     /**
      * 设备id
      */
-    private Long deviceId;
+    private String deviceId;
 
     /**
      * 下发类型（1为人员 ， 2为车辆）
@@ -85,8 +85,13 @@ public class TIssueEigenvalueVO {
     private String carNumber;
 
     private String masterIp;
+
+    private String masterName;
+
     private String time;
 
     private String postName;
+
+    private String orgName;
 
 }

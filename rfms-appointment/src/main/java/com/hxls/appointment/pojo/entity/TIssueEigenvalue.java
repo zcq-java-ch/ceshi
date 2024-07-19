@@ -44,7 +44,7 @@ public class TIssueEigenvalue extends BaseEntity {
     /**
      * 设备id
      */
-    private Long deviceId;
+    private String deviceId;
 
     /**
      * 下发类型（1为人员 ， 2为车辆）

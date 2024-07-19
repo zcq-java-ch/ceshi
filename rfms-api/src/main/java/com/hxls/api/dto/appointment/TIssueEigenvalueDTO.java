@@ -18,6 +18,15 @@ public class TIssueEigenvalueDTO implements Serializable {
     @Schema(description = "预约类型（数据字典）")
     private Long areaId;
 
+    @Schema(description = "人员姓名")
+    private String name;
+
+    @Schema(description = "操作类型")
+    private String operate;
+
+    @Schema(description = "车牌号")
+    private String carNo;
+
     @Schema(description = "提交时间")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private String[] creatTime;

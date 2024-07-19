@@ -15,7 +15,7 @@ public interface DataDashboardsService{
 
     JSONObject sitePersonnelBreakdownSection(Long stationId);
 
-    JSONObject vehicleAccessDetails(Long stationId) throws ParseException;
+    JSONObject vehicleAccessDetails(Long stationId);
 
     JSONObject breakdownOfExternalAppointments(Long stationId);
 

@@ -6,14 +6,17 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.feign.appointment.AppointmentFeign;
 import com.hxls.framework.common.cache.RedisCache;
 import com.hxls.framework.common.utils.Result;
+import com.hxls.system.entity.SysOnlineLog;
 import com.hxls.system.entity.SysSiteAreaEntity;
 import com.hxls.system.entity.TDeviceManagementEntity;
 import com.hxls.system.entity.TManufacturerEntity;
 import com.hxls.system.service.SysAreacodeDeviceService;
+import com.hxls.system.service.SysOnlineLogService;
 import com.hxls.system.service.TDeviceManagementService;
 import com.hxls.system.service.TManufacturerService;
 import jakarta.annotation.Resource;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -57,6 +61,9 @@ public class IndexController {
     @Resource
     private RedisCache redisCache;
 
+    @Resource
+    private  SysOnlineLogService sysOnlineLogService;
+
     @Autowired
     private TDeviceManagementService tDeviceManagementService;
 
@@ -65,6 +72,7 @@ public class IndexController {
 
     @Autowired
     private TManufacturerService tManufacturerService;
+
 
 
     @GetMapping("/")
@@ -76,6 +84,18 @@ public class IndexController {
     @GetMapping("/heartbeat")
     public Result<JSONObject> getheartbeat(@RequestParam String ip){
         System.out.println("接收到的ip为 ："+ip);
+
+        //心跳机制 -- 清除离线标记
+        redisCache.delete("MESSAGE:"+ip);
+
+        List<SysOnlineLog> list = sysOnlineLogService.list(new LambdaQueryWrapper<SysOnlineLog>().eq(SysOnlineLog::getMasterIp,ip)
+                .isNull(SysOnlineLog::getOnDate));
+        if (CollectionUtils.isNotEmpty(list)){
+            for (SysOnlineLog sysOnlineLog : list) {
+                sysOnlineLog.setOnDate(LocalDateTime.now());
+            }
+            sysOnlineLogService.updateBatchById(list);
+        }
 
         try {
             /**
@@ -109,10 +129,10 @@ public class IndexController {
                     // 如果有设备，则需要设置redis，记录设备在线
                     if ("1".equals(deviceType1)){
                         // 如果是人脸
-                        redisCache.set("DEVICES_STATUS:FACE:"+deviceSn1, 1, 180);
+                        redisCache.set("DEVICES_STATUS:FACE:"+deviceSn1, 1, 60*5);
                     }else {
                         // 如果是车辆
-                        redisCache.set("DEVICES_STATUS:CAR:"+deviceSn1, 1, 180);
+                        redisCache.set("DEVICES_STATUS:CAR:"+deviceSn1, 1, 60*5);
                     }
 
 

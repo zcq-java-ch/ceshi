@@ -8,6 +8,8 @@ import com.hxls.appointment.pojo.vo.TIssueVO;
 import com.hxls.framework.common.utils.PageResult;
 import com.hxls.framework.mybatis.service.BaseService;
 
+import java.util.List;
+
 /**
 * @author admin
 * @description 针对表【t_issue_eigenvalue(下发特征值表)】的数据库操作Service
@@ -38,4 +40,11 @@ public interface TIssueEigenvalueService extends BaseService<TIssueEigenvalue> {
      * @param data
      */
     String updateTIssueEigenvalue(TIssueVO data);
+
+    /**
+     * 获取详细信息
+     * @param id
+     * @return
+     */
+    List<String> getInformationById(Long id);
 }

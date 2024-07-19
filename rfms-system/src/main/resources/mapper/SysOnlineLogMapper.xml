@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hxls.system.dao.SysOnlineLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.hxls.system.entity.SysOnlineLog">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="siteId" column="site_id" jdbcType="BIGINT"/>
+            <result property="masterIp" column="master_ip" jdbcType="VARCHAR"/>
+            <result property="offDate" column="off_date" jdbcType="TIMESTAMP"/>
+            <result property="onDate" column="on_date" jdbcType="TIMESTAMP"/>
+            <result property="version" column="version" jdbcType="INTEGER"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+            <result property="creator" column="creator" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,site_id,master_ip,
+        off_date,on_date,version,
+        deleted,creator,create_time,
+        updater,update_time
+    </sql>
+</mapper>

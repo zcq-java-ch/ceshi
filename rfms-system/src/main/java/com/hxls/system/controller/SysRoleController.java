@@ -116,8 +116,8 @@ public class SysRoleController {
     @OperateLog(type = OperateTypeEnum.UPDATE)
     @PreAuthorize("hasAuthority('sys:role:update')")
     public Result<String> dataScope(@RequestBody @Valid SysRoleDataScopeVO vo) {
-        sysRoleService.dataScope(vo);
 
+        sysRoleService.dataScope(vo);
         return Result.ok();
     }
 

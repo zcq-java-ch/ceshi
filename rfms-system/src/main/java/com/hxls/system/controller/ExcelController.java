@@ -13,7 +13,6 @@ import com.hxls.system.service.SysUserService;
 import com.hxls.system.vo.SysUserGysExcelVO;
 import com.hxls.system.config.BaseImageUtils;
 import com.hxls.system.vo.SysUserImportVO;
-import com.qcloud.cos.transfer.Transfer;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

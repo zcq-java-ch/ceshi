@@ -102,11 +102,19 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
                         String newlicenseImage = domain + licenseImage;
                         tVehicleAccessRecordsEntity.setLicenseImage(newlicenseImage);
                     }
+                }
+                String plateNumber = tVehicleAccessRecordsEntity.getPlateNumber();
+                JSONObject jsonObject = vehicleFeign.queryVehicleInformationByLicensePlateNumber(plateNumber);
 
+                if (jsonObject!=null){
+                    //entries.put("transportVolume" , tVehicleEntity.getTransportVolume()) ;
+                    //           entries.put("transportGoods" ,  tVehicleEntity.getTransportGoods());
+
+                    tVehicleAccessRecordsEntity.setTransportVolume(jsonObject.getString("transportVolume"));
+                    tVehicleAccessRecordsEntity.setTransportGoods(jsonObject.getString("transportGoods"));
                 }
             }
         }
-
         return new PageResult<>(TVehicleAccessRecordsConvert.INSTANCE.convertList(page.getRecords()), page.getTotal());
     }
 
@@ -118,6 +126,11 @@ public class TVehicleAccessRecordsServiceImpl extends BaseServiceImpl<TVehicleAc
         wrapper.between(StringUtils.isNotEmpty(query.getStartRecordTime()) && StringUtils.isNotEmpty(query.getEndRecordTime()), TVehicleAccessRecordsEntity::getRecordTime, query.getStartRecordTime(), query.getEndRecordTime());
         wrapper.like(StringUtils.isNotEmpty(query.getPlateNumber()), TVehicleAccessRecordsEntity::getPlateNumber, query.getPlateNumber());
         wrapper.like(StringUtils.isNotEmpty(query.getDriverName()), TVehicleAccessRecordsEntity::getDriverName, query.getDriverName());
+
+        if (StringUtils.isNotEmpty(query.getVehicleModel())){
+            String[] split = query.getVehicleModel().split(",");
+            wrapper.in(  TVehicleAccessRecordsEntity::getVehicleModel,split);
+        }
         if (baseUser.getSuperAdmin().equals(Constant.SUPER_ADMIN)){
 
         }else {

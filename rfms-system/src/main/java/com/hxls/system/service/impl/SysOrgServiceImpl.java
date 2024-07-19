@@ -77,27 +77,27 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
         wrapper.like(StringUtils.isNotEmpty(query.getName()), SysOrgEntity::getName, query.getName());
         wrapper.eq(query.getProperty() != null, SysOrgEntity::getProperty, query.getProperty());
-        if (StrUtil.isEmpty(query.getPcode())){
+        if (StrUtil.isEmpty(query.getPcode())) {
             wrapper.in(CollectionUtils.isNotEmpty(query.getOrgList()), SysOrgEntity::getId, query.getOrgList());
         }
 
-        if (query.getCreator()!=null){
-            wrapper.or().eq(SysOrgEntity::getCreator,query.getCreator());
+        if (query.getCreator() != null) {
+            wrapper.or().eq(SysOrgEntity::getCreator, query.getCreator());
         }
         return wrapper;
     }
 
-    private Boolean checkData(SysOrgEntity sysOrgEntity, List<SysOrgEntity> list,String pcode) {
+    private Boolean checkData(SysOrgEntity sysOrgEntity, List<SysOrgEntity> list, String pcode) {
 
-        if (sysOrgEntity.getPcode() == null){
+        if (sysOrgEntity.getPcode() == null) {
             return false;
         }
-        if ( sysOrgEntity.getPcode().equals(pcode)){
+        if (sysOrgEntity.getPcode().equals(pcode)) {
             return true;
         }
         for (SysOrgEntity item : list) {
             if (item.getPcode().equals(sysOrgEntity.getCode())) {
-                return checkData(item, list,pcode);
+                return checkData(item, list, pcode);
             }
         }
         return false;
@@ -118,7 +118,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         List<SysOrgEntity> list = list();
 
         //添加上级组织
-        checkUpData(entityList ,list );
+        checkUpData(entityList, list);
 
 
         return TreeByCodeUtils.build(SysOrgConvert.INSTANCE.convertList(entityList));
@@ -126,26 +126,27 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
     /**
      * 将上级组织添加进去
+     *
      * @param entityList 返回组织
-     * @param list 全量组织
+     * @param list       全量组织
      */
     private void checkUpData(List<SysOrgEntity> entityList, List<SysOrgEntity> list) {
 
         Set<String> code = new HashSet<>();
         List<String> codes = entityList.stream().map(SysOrgEntity::getCode).collect(Collectors.toList());
         for (SysOrgEntity sysOrgEntity : entityList) {
-           if (StringUtils.isNotEmpty(sysOrgEntity.getPcode()) && !codes.contains(sysOrgEntity.getPcode())){
-               code.add(sysOrgEntity.getPcode());
-           }
+            if (StringUtils.isNotEmpty(sysOrgEntity.getPcode()) && !codes.contains(sysOrgEntity.getPcode())) {
+                code.add(sysOrgEntity.getPcode());
+            }
         }
 
-        if (CollectionUtils.isNotEmpty(code)){
+        if (CollectionUtils.isNotEmpty(code)) {
             for (SysOrgEntity sysOrgEntity : list) {
-                if (code.contains(sysOrgEntity.getCode())){
+                if (code.contains(sysOrgEntity.getCode())) {
                     entityList.add(sysOrgEntity);
                 }
             }
-            checkUpData(entityList , list);
+            checkUpData(entityList, list);
         }
     }
 
@@ -166,17 +167,16 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         SysOrgEntity byCode = getByCode(pcode);
         Long pId = byCode.getId();
 
-        List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,pId));
-        if (CollectionUtils.isNotEmpty(list)){
+        List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId, pId));
+        if (CollectionUtils.isNotEmpty(list)) {
             List<Long> result = list.stream().map(SysRoleDataScopeEntity::getRoleId).distinct().collect(Collectors.toList());
             for (Long roleId : result) {
-                SysRoleDataScopeEntity add =new SysRoleDataScopeEntity();
+                SysRoleDataScopeEntity add = new SysRoleDataScopeEntity();
                 add.setRoleId(roleId);
                 add.setOrgId(entity.getId());
                 sysRoleDataScopeDao.insert(add);
             }
         }
-
 
 
     }
@@ -214,20 +214,20 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         }
 
         //如果原有组织和现有组织的父级不一样，则需要修改数据权限
-        if (!byId.getPcode().equals(vo.getPcode())){
+        if (!byId.getPcode().equals(vo.getPcode())) {
             //修改完之后，需要删除之前的数据权限，将新的组织添加的新的数据权限下边
             Long id = vo.getId();
-            sysRoleDataScopeDao.delete(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,id));
+            sysRoleDataScopeDao.delete(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId, id));
 
             String pcode = vo.getPcode();
             SysOrgEntity byCode = getByCode(pcode);
             Long pId = byCode.getId();
 
-            List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId,pId));
-            if (CollectionUtils.isNotEmpty(list)){
+            List<SysRoleDataScopeEntity> list = sysRoleDataScopeDao.selectList(new LambdaQueryWrapper<SysRoleDataScopeEntity>().eq(SysRoleDataScopeEntity::getOrgId, pId));
+            if (CollectionUtils.isNotEmpty(list)) {
                 List<Long> result = list.stream().map(SysRoleDataScopeEntity::getRoleId).distinct().collect(Collectors.toList());
                 for (Long roleId : result) {
-                    SysRoleDataScopeEntity add =new SysRoleDataScopeEntity();
+                    SysRoleDataScopeEntity add = new SysRoleDataScopeEntity();
                     add.setRoleId(roleId);
                     add.setOrgId(entity.getId());
                     sysRoleDataScopeDao.insert(add);
@@ -371,28 +371,28 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         //开始管控车辆
         //第一步 查询 所有车辆表中 权限存在这个厂站的车辆
         List<TVehicleEntity> tVehicleEntities = tVehicleService
-                .list(new LambdaQueryWrapper<TVehicleEntity>().like(TVehicleEntity::getAreaList,id.toString()));
+                .list(new LambdaQueryWrapper<TVehicleEntity>().like(TVehicleEntity::getAreaList, id.toString()));
 
         //第一步 查询 所有车辆表中 权限存在这个厂站的车辆
         List<SysUserEntity> sysUserEntities = sysUserDao
-                .selectList(new LambdaQueryWrapper<SysUserEntity>().like(SysUserEntity::getAreaList , id.toString()));
+                .selectList(new LambdaQueryWrapper<SysUserEntity>().like(SysUserEntity::getAreaList, id.toString()));
 
-        if (CollectionUtils.isNotEmpty(sysUserEntities)){
+        if (CollectionUtils.isNotEmpty(sysUserEntities)) {
             List<Long> userId = sysUserEntities.stream().map(SysUserEntity::getId).toList();
-            List<TVehicleEntity> newList =new ArrayList<>();
-            if(CollectionUtils.isNotEmpty(tVehicleEntities)){
+            List<TVehicleEntity> newList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(tVehicleEntities)) {
                 newList.addAll(tVehicleEntities);
             }
             //查询到有权限管控的车辆
             List<TVehicleEntity> tVehicleEntityList = tVehicleService.list(new LambdaQueryWrapper<TVehicleEntity>().in(TVehicleEntity::getUserId, userId));
-            if(CollectionUtils.isNotEmpty(tVehicleEntityList)){
+            if (CollectionUtils.isNotEmpty(tVehicleEntityList)) {
                 newList.addAll(tVehicleEntityList);
             }
 
             //去除掉不需要管控的车辆
-            List<SysDictDataEntity> dataEntities = sysDictDataService.list(new LambdaQueryWrapper<SysDictDataEntity>().eq(SysDictDataEntity ::getDictTypeId , 38 ));
+            List<SysDictDataEntity> dataEntities = sysDictDataService.list(new LambdaQueryWrapper<SysDictDataEntity>().eq(SysDictDataEntity::getDictTypeId, 38));
 
-            if (CollectionUtils.isNotEmpty(dataEntities)){
+            if (CollectionUtils.isEmpty(dataEntities)) {
                 throw new ServerException("请先维护所需管控车辆标准");
             }
 
@@ -400,9 +400,14 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
 
 
             //
-            List<TVehicleEntity> result = newList.stream().filter(item -> item.getCarType().equals("2") || item.getCarType().equals("3")).filter(item -> dataValues.contains(item.getEmissionStandard())).toList();
+            List<TVehicleEntity> result = newList.stream().filter(item -> {
+                return item.getCarType() != null;
+            }).filter(item -> item.getCarType().equals("2") || item.getCarType().equals("3")).filter(item -> {
+                return item.getEmissionStandard() != null;
+            }).filter(item -> dataValues.contains(item.getEmissionStandard())).toList();
 
-            if (CollectionUtils.isNotEmpty(result)){
+
+            if (CollectionUtils.isNotEmpty(result)) {
                 for (TVehicleEntity tVehicleEntity : result) {
                     SysControlCar sysControlCar = new SysControlCar();
                     sysControlCar.setType(1);
@@ -416,7 +421,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         //第二步 查询今天之后  所有还在预约此厂站的车辆
         List<TAppointmentVehicleVO> appointmentCar = appointmentFeign.getAppointmentCar(id);
 
-        if (CollectionUtils.isNotEmpty(appointmentCar)){
+        if (CollectionUtils.isNotEmpty(appointmentCar)) {
             for (TAppointmentVehicleVO tVehicleEntity : appointmentCar) {
                 SysControlCar sysControlCar = new SysControlCar();
                 sysControlCar.setType(2);
@@ -427,7 +432,7 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
             }
         }
 
-        if (CollectionUtils.isNotEmpty(controlCars)){
+        if (CollectionUtils.isNotEmpty(controlCars)) {
 
             sysControlCarService.saveBatch(controlCars);
 
@@ -452,33 +457,48 @@ public class SysOrgServiceImpl extends BaseServiceImpl<SysOrgDao, SysOrgEntity> 
         UserDetail user = SecurityUser.getUser();
 
         List<SysControlCar> controlCars = sysControlCarService.list(new LambdaQueryWrapper<SysControlCar>()
-                .eq(SysControlCar::getSiteId , id));
+                .eq(SysControlCar::getSiteId, id));
         //需要下发
-        if (CollectionUtils.isNotEmpty(controlCars)){
+        if (CollectionUtils.isNotEmpty(controlCars)) {
             //按照类型分组
             Map<Integer, List<SysControlCar>> integerListMap = controlCars.stream().collect(Collectors.groupingBy(SysControlCar::getType));
             for (Integer type : integerListMap.keySet()) {
                 List<SysControlCar> controlCars1 = integerListMap.get(type);
-                if (type.equals(2)){
+                if (type.equals(2)) {
                     //预约类型
-                    for (SysControlCar sysControlCar : controlCars1) {
-                        com.alibaba.fastjson.JSONObject jsonObject = appointmentFeign.guardInformation(Long.parseLong(sysControlCar.getRemark()));
+                    for (SysControlCar controlCar : controlCars1) {
+                        com.alibaba.fastjson.JSONObject jsonObject = appointmentFeign.guardInformation(Long.parseLong(controlCar.getRemark()));
                         //获取时间
-
+                        com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
+                        String deadline = data.getString("endTime");
+                        String startTime = data.getString("startTime");
+                        controlCar.setStartTime(startTime);
+                        controlCar.setDeadline(deadline);
+                        controlCar.setStationId(controlCar.getSiteId());
+                        controlCar.setPersonId(user.getId());
+                        controlCar.setIsControl("1");
+                        JSONObject vehicle = new JSONObject();
+                        vehicle.set("sendType", "2");
+                        vehicle.set("personId" , user.getId());
+                        vehicle.set("isControl" ,"1" );
+                        vehicle.set("data", JSONUtil.toJsonStr(controlCar));
+                        appointmentFeign.issuedPeople(vehicle);
                     }
-                }else {
+                } else {
                     for (SysControlCar controlCar : controlCars1) {
                         controlCar.setStationId(controlCar.getSiteId());
                         controlCar.setPersonId(user.getId());
                         controlCar.setIsControl("1");
                         JSONObject vehicle = new JSONObject();
                         vehicle.set("sendType", "2");
+                        vehicle.set("personId" , user.getId());
+                        vehicle.set("isControl" ,"1" );
                         vehicle.set("data", JSONUtil.toJsonStr(controlCar));
                         appointmentFeign.issuedPeople(vehicle);
                     }
                 }
             }
-            removeBatchByIds(controlCars);
+            sysControlCarService.removeByIds(controlCars);
         }
 
     }

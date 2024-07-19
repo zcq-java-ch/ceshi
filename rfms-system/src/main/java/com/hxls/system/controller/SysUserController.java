@@ -110,8 +110,6 @@ public class SysUserController {
         if (CollectionUtils.isNotEmpty(result)){
             vo.setTVehicleVOList(  TVehicleConvert.INSTANCE.convertList(result) );
         }
-
-
         return Result.ok(vo);
     }
 
@@ -141,7 +139,6 @@ public class SysUserController {
                 user.setStationName(byId.getName());
             }
         }
-
         //查询组织名字  -- 修改为全路径
         if (user.getOrgId() != null) {
             SysOrgEntity byId = sysOrgService.getById(user.getOrgId());
@@ -218,10 +215,8 @@ public class SysUserController {
         if (StrUtil.isBlank(vo.getPassword())) {
             return Result.error("密码不能为空");
         }
-
         // 密码加密
         vo.setPassword(passwordEncoder.encode(vo.getPassword()));
-
         // 保存
         sysUserService.save(vo);
 

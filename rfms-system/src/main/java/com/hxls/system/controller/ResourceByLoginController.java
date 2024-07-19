@@ -86,7 +86,6 @@ public class ResourceByLoginController {
     private final SysAreacodeDeviceService sysAreacodeDeviceService;
 
 
-    private final SmsApi smsApi;
 
     @GetMapping("person")
     @Operation(summary = "人员下拉")

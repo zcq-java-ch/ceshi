@@ -178,6 +178,7 @@ public class SysUserVO implements Serializable, TransPojo {
     @Schema(description = "区域id")
     private String areaList;
 
+    private String version;
 
     private Boolean vehicle = false;
 

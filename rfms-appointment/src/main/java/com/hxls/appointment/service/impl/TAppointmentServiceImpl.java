@@ -16,9 +16,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hxls.api.dto.appointment.AppointmentDTO;
 import com.hxls.api.dto.message.MessageDTO;
 import com.hxls.api.feign.datasection.DatasectionFeign;
-import com.hxls.api.feign.message.SmsFeign;
 import com.hxls.api.feign.system.StationFeign;
 import com.hxls.api.feign.system.UserFeign;
+
 import com.hxls.api.module.message.SmsApi;
 import com.hxls.appointment.config.StorageImagesProperties;
 import com.hxls.appointment.convert.TAppointmentConvert;
@@ -52,8 +52,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -121,7 +119,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     /*
      * 短息API
      */
-    private final SmsFeign smsApi;
+    private final SmsApi smsApi;
 
     /**
      * 注入线程池
@@ -281,8 +279,12 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void save(TAppointmentVO vo) {
+        //检查管控属性
+        checkCar(vo);
+
         //主表转换
         TAppointmentEntity entity = TAppointmentConvert.INSTANCE.convert(vo);
+
         //检查预约单是否有未完成得预约信息
         List<TAppointmentEntity> tAppointmentEntityList = list(new LambdaQueryWrapper<TAppointmentEntity>().eq(TAppointmentEntity::getSiteId, vo.getSiteId()).le(TAppointmentEntity::getStartTime, vo.getStartTime()).ge(TAppointmentEntity::getEndTime, vo.getEndTime()));
         if (CollectionUtils.isNotEmpty(tAppointmentEntityList)) {
@@ -306,7 +308,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 }
             }
         }
-
         //默认启用
         entity.setStatus(Constant.ENABLE);
         //插入主预约信息单
@@ -329,6 +330,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 }
                 //判断是否有车辆清单
                 List<TAppointmentVehicleVO> vehicleList = vo.getVehicleList();
+
                 if (CollectionUtils.isNotEmpty(vehicleList)) {
                     List<TAppointmentVehicle> tAppointmentVehicles = vehicleList.stream().map(item -> {
                         TAppointmentVehicle tAppointmentVehicle = new TAppointmentVehicle();
@@ -355,15 +357,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     String domain = properties.getConfig().getDomain();
                     String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                     List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
-//
-//                    List<String> dictValue = null;
-//
-//                    List<com.alibaba.fastjson.JSONObject> allDictByType = appointmentDao.getAllDictByType(37);
-//                    if (CollectionUtils.isNotEmpty(allDictByType)){
-//                        dictValue = allDictByType.stream().map(item -> {
-//                            return item.getString("dict_value");
-//                        }).toList();
-//                    }
 
 
                     for (String device : strings) {
@@ -382,16 +375,10 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 entries.set("deviceInfos", JSONUtil.toJsonStr(jsonObjects));
                                 entries.set("password", jsonObjects.get(0).get("password"));
 
-//                                //判断 是否是需要修改下发人员id的站点
-//                                if (CollectionUtils.isNotEmpty(dictValue) && dictValue.contains(siteCode)){
-//                                    if (StringUtils.isNotEmpty(personnel.getPhone())){
-//                                        entries.set("peopleCode", personnel.getPhone());
-//                                    }
-//                                }
-
                                 TIssueEigenvalueVO tIssueEigenvalueVO = new TIssueEigenvalueVO();
                                 tIssueEigenvalueVO.setStationId(byId.getSiteId());
                                 tIssueEigenvalueVO.setType(1);
+                                tIssueEigenvalueVO.setDeviceId(personnel.getExternalPersonnel());
                                 tIssueEigenvalueVO.setStatus(1);
                                 tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(entries));
                                 tIssueEigenvalueVO.setAreaId(Long.parseLong(byId.getAppointmentType()));
@@ -441,6 +428,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 tIssueEigenvalueVO.setStationId(byId.getSiteId());
                                 tIssueEigenvalueVO.setType(2);
                                 tIssueEigenvalueVO.setStatus(1);
+                                tIssueEigenvalueVO.setDeviceId(tAppointmentVehicle.getPlateNumber());
                                 tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(entries));
                                 tIssueEigenvalueVO.setAreaId(Long.parseLong(byId.getAppointmentType()));
                                 tIssueEigenvalueVO.setAreaName(entries.getStr("DELETE") == null ? "新增" : "删除");
@@ -459,6 +447,25 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                     sendMessage(vo.getSiteId(), vo);
                 }, executor);
 
+            }
+        }
+    }
+
+    private void checkCar(TAppointmentVO vo) {
+
+        //首先判断是否是管控厂站
+        int countBySiteId = appointmentDao.getCountBySiteId(vo.getSiteId());
+        if (countBySiteId > 0 && CollectionUtils.isNotEmpty(vo.getVehicleList()) ){
+            //拿取字典里面的管控类型
+            List<com.alibaba.fastjson.JSONObject> allDictByType = appointmentDao.getAllDictByType(38);
+            List<String> dictValue = allDictByType.stream().map(item -> item.getString("dict_value")).toList();
+
+            for (TAppointmentVehicleVO tAppointmentVehicleVO : vo.getVehicleList()) {
+                if (!tAppointmentVehicleVO.getVehicleModel().equals("1")) {
+                    if (dictValue.contains(tAppointmentVehicleVO.getEmissionStandard())){
+                        throw new ServerException("厂站正在管控中,请清除大车中非安全排放标准名单");
+                    }
+                }
             }
         }
     }
@@ -686,6 +693,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     }
 
     @Override
+    @Transactional
     public void updateByAudit(TAppointmentVO vo) {
         //修改主表的信息
         if (CollectionUtils.isEmpty(vo.getIds())) {
@@ -703,6 +711,19 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                 //根据指定通道下发数据
                 Long id = entity.getId();
                 TAppointmentEntity byId = getById(id);
+
+                //检查管控 --开始
+                TAppointmentVO tAppointmentVO = new TAppointmentVO();
+                List<TAppointmentVehicle> appointmentVehicles = tAppointmentVehicleService.list(
+                        new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId ,id ));
+                if (CollectionUtils.isNotEmpty(appointmentVehicles)){
+                    tAppointmentVO.setSiteId(byId.getSiteId());
+                    tAppointmentVO.setVehicleList(TAppointmentVehicleConvert.INSTANCE.convertList(appointmentVehicles));
+                    checkCar(tAppointmentVO);
+                }
+                //检查管控 --结束
+
+
                 if (byId.getAppointmentType().equals("1") || byId.getAppointmentType().equals("2") || byId.getAppointmentType().equals("6")) {
 
                     List<TAppointmentVehicle> list = tAppointmentVehicleService.list(new LambdaQueryWrapper<TAppointmentVehicle>().eq(
@@ -724,18 +745,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                 byId.setSiteId(Long.parseLong(split[1]));
                             }
                         }
-
-
-//                        //判断是否是特殊站点
-//                        List<String> dictValue = null;
-//
-//                        List<com.alibaba.fastjson.JSONObject> allDictByType1 = appointmentDao.getAllDictByType(37);
-//                        if (CollectionUtils.isNotEmpty(allDictByType1)){
-//                            dictValue = allDictByType1.stream().map(item -> {
-//                                return item.getString("dict_value");
-//                            }).toList();
-//                        }
-
 
                         String siteCode = appointmentDao.selectSiteCodeById(byId.getSiteId());
                         List<String> strings = appointmentDao.selectManuFacturerIdById(byId.getSiteId(), "1");
@@ -759,6 +768,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                     tIssueEigenvalueVO.setStationId(byId.getSiteId());
                                     tIssueEigenvalueVO.setType(1);
                                     tIssueEigenvalueVO.setStatus(1);
+                                    tIssueEigenvalueVO.setDeviceId(personnel.getExternalPersonnel());
                                     tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(entries));
                                     tIssueEigenvalueVO.setAreaId(Long.parseLong(byId.getAppointmentType()));
                                     tIssueEigenvalueVO.setAreaName(entries.getStr("DELETE") == null ? "新增" : "删除");
@@ -823,6 +833,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                     TIssueEigenvalueVO tIssueEigenvalueVO = new TIssueEigenvalueVO();
                                     tIssueEigenvalueVO.setStationId(byId.getSiteId());
                                     tIssueEigenvalueVO.setType(2);
+                                    tIssueEigenvalueVO.setDeviceId(tAppointmentVehicle.getPlateNumber());
                                     tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(entries));
                                     tIssueEigenvalueVO.setStatus(1);
                                     tIssueEigenvalueVO.setAreaName(entries.getStr("DELETE") == null ? "新增" : "删除");
@@ -891,7 +902,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         wrapper.eq(TAppointmentEntity::getStatus, Constant.ENABLE);
         wrapper.in(CollectionUtils.isNotEmpty(data.getDataScopeList()) , TAppointmentEntity::getSiteId , data.getDataScopeList());
         wrapper.in(CollectionUtils.isNotEmpty(data.getAppointmentTypeList()), TAppointmentEntity::getAppointmentType, data.getAppointmentTypeList());
-        wrapper.between(ArrayUtils.isNotEmpty(data.getCreatTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreatTime()) ? data.getCreatTime()[1] : null);
+        wrapper.ne(TAppointmentEntity::getReviewStatus , "0");
+        wrapper.between(ArrayUtils.isNotEmpty(data.getCreateTime()), TAppointmentEntity::getCreateTime, ArrayUtils.isNotEmpty(data.getCreateTime()) ? data.getCreateTime()[0] : null, ArrayUtils.isNotEmpty(data.getCreateTime()) ? data.getCreateTime()[1] : null);
         wrapper.ge(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getStartTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[0] : null);
         wrapper.le(ArrayUtils.isNotEmpty(data.getAppointmentTime()), TAppointmentEntity::getEndTime, ArrayUtils.isNotEmpty(data.getAppointmentTime()) ? data.getAppointmentTime()[1] : null);
         wrapper.orderByDesc(TAppointmentEntity::getReviewTime);
@@ -1060,6 +1072,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             tIssueEigenvalueVO.setStatus(1);
                             tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(sendData));
                             tIssueEigenvalueVO.setAreaId(0L);
+                            tIssueEigenvalueVO.setDeviceId(peopleName);
                             tIssueEigenvalueVO.setAreaName(data.getStr("DELETE") == null ? "新增" : "删除");
                             tIssueEigenvalueVO.setCreator(personId);
                             Long saveId = issueEigenvalueService.save(tIssueEigenvalueVO);
@@ -1112,6 +1125,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             TIssueEigenvalueVO tIssueEigenvalueVO = new TIssueEigenvalueVO();
                             tIssueEigenvalueVO.setStationId(jsonObject.getLong("site_id"));
                             tIssueEigenvalueVO.setType(2);
+                            tIssueEigenvalueVO.setDeviceId(licensePlate);
                             tIssueEigenvalueVO.setStatus(1);
                             tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(sendData));
                             tIssueEigenvalueVO.setAreaId(StringUtils.isNotEmpty(isControl) ? 7L :0L);
@@ -1223,12 +1237,15 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         String nowFormatted = timeformat.format(now);
 
         // 设置startTime小于等于当前时间
-        wrapper.ge(TAppointmentEntity::getStartTime, nowFormatted);
+        wrapper.le(TAppointmentEntity::getStartTime, nowFormatted);
         // 设置endTime大于等于当前时间
-        wrapper.le(TAppointmentEntity::getEndTime, nowFormatted);
+        wrapper.ge(TAppointmentEntity::getEndTime, nowFormatted);
+        //设置厂站
+        wrapper.eq(TAppointmentEntity::getSiteId, siteId);
+        //设置审核状态
+        List<String> status = Stream.of("1", "2").toList();
+        wrapper.in(TAppointmentEntity::getReviewStatus, status);
 
-        wrapper.eq(TAppointmentEntity::getSiteId, siteId);
-        wrapper.eq(TAppointmentEntity::getSiteId, siteId);
         return wrapper;
     }
 
@@ -1469,6 +1486,21 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         //获取主表
         TAppointmentEntity mainOne = getById(id);
 
+
+        //检查管控 --开始
+        TAppointmentVO tAppointmentVO = new TAppointmentVO();
+        List<TAppointmentVehicle> appointmentVehicles = tAppointmentVehicleService.list(
+                new LambdaQueryWrapper<TAppointmentVehicle>().eq(TAppointmentVehicle::getAppointmentId ,id ));
+        if (CollectionUtils.isNotEmpty(appointmentVehicles)){
+            tAppointmentVO.setSiteId(mainOne.getSiteId());
+            tAppointmentVO.setVehicleList(TAppointmentVehicleConvert.INSTANCE.convertList(appointmentVehicles));
+            checkCar(tAppointmentVO);
+        }
+        //检查管控 --结束
+
+
+
+
         //获取到厂站id
         Long stationId = mainOne.getSiteId();
 
@@ -1515,6 +1547,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                                         tIssueEigenvalueVO.setStationId(stationId);
                                         tIssueEigenvalueVO.setType(1);
                                         tIssueEigenvalueVO.setStatus(1);
+                                        tIssueEigenvalueVO.setDeviceId(personnel.getExternalPersonnel());
                                         tIssueEigenvalueVO.setAreaId(Long.parseLong(mainOne.getAppointmentType()));
                                         tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(entries));
                                         tIssueEigenvalueVO.setAreaName(entries.getStr("DELETE") == null ? "新增" : "删除");
@@ -1556,6 +1589,7 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
                             tIssueEigenvalueVO.setStationId(stationId);
                             tIssueEigenvalueVO.setType(2);
                             tIssueEigenvalueVO.setStatus(1);
+                            tIssueEigenvalueVO.setDeviceId(name);
                             tIssueEigenvalueVO.setAreaId(Long.parseLong(mainOne.getAppointmentType()));
                             tIssueEigenvalueVO.setData(JSONUtil.toJsonStr(sendData));
                             tIssueEigenvalueVO.setAreaName(sendData.getStr("DELETE") == null ? "新增" : "删除");
@@ -1614,6 +1648,8 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
     }
 
 
+
+
     /**
      * 发送短信
      *
@@ -1621,10 +1657,6 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
      * @param vo
      */
     private void sendMessage(Long siteId, TAppointmentVO vo) {
-
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-        }, executor);
-
 
         List<String> phoneBySiteId = stationFeign.getPhoneBySiteId(siteId);
 
@@ -1664,6 +1696,23 @@ public class TAppointmentServiceImpl extends BaseServiceImpl<TAppointmentDao, TA
         }
 
 
+    }
+
+
+    @Override
+    public JSONObject getPersonInfo(Long personId) {
+        List<TAppointmentPersonnel> list = tAppointmentPersonnelService.list(new LambdaQueryWrapper<TAppointmentPersonnel>()
+                .eq(TAppointmentPersonnel::getUserId ,personId));
+
+        JSONObject entries = new JSONObject();
+        if (CollectionUtils.isNotEmpty(list)){
+            TAppointmentPersonnel tAppointmentPersonnel = list.get(0);
+            entries.set("personName" ,tAppointmentPersonnel.getExternalPersonnel() );
+            entries.set("phone" ,tAppointmentPersonnel.getPhone() );
+            entries.set("orgName" ,tAppointmentPersonnel.getOrgName() );
+            entries.set("postName" ,tAppointmentPersonnel.getPositionName() );
+        }
+        return entries;
     }
 
 
